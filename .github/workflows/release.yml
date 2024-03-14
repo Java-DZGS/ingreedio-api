@@ -23,7 +23,5 @@ jobs:
           main_branch: "master"
           merge_back_from_main: false
           version: ${{ inputs.version }}
-          version_increment: "minor"
-          dry_run: "true"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
