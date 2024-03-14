@@ -13,6 +13,7 @@ name: Release
 
 jobs:
   release_workflow:
+    permissions: write-all
     runs-on: ubuntu-latest
     steps:
       - name: gitflow-workflow-action release workflows
