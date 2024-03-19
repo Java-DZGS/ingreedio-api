@@ -25,6 +25,9 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	//testImplementation 'org.springframework.kafka:spring-kafka-test'
 	//testImplementation 'org.springframework.security:spring-security-test'
+	compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.28'
+	implementation 'org.springframework.data:spring-data-commons:{spring-data-version}'
+	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 }
 
 tasks.named('test') {
