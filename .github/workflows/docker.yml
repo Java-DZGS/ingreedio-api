@@ -27,3 +27,4 @@ jobs:
       with:
         name: api-docker-image
         path: api-image.tar
+        retention-days: 14
