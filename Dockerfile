@@ -1,14 +1,9 @@
-FROM eclipse-temurin:21-jdk-alpine as build
+FROM gradle:jdk21-alpine as build
 WORKDIR /workspace/app
 
-COPY gradlew .
-#COPY .gradle .gradle
-COPY gradle gradle
-COPY build.gradle .
-COPY settings.gradle .
-COPY src src
+COPY . .
 
-RUN ./gradlew assemble
+RUN gradle assemble
 RUN mkdir -p build/dependency && (cd build/dependency; jar -xf ../libs/*.jar)
 
 FROM eclipse-temurin:21-jdk-alpine
