@@ -1,6 +1,7 @@
 package pl.edu.pw.mini.ingreedio.api.model;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter

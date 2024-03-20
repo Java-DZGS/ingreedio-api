@@ -16,7 +16,14 @@ public class Review {
     private final Integer dislikesCount;
     private final Integer reportsCount;
 
-    public Review(Integer id, Integer userId, Integer productId, Integer rating, String content, Integer likesCount, Integer dislikesCount, Integer reportsCount) {
+    public Review(Integer id,
+                  Integer userId,
+                  Integer productId,
+                  Integer rating,
+                  String content,
+                  Integer likesCount,
+                  Integer dislikesCount,
+                  Integer reportsCount) {
         this.id = id;
         this.userId = userId;
         this.productId = productId;
