@@ -1,43 +1,73 @@
 package pl.edu.pw.mini.ingreedio.api.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import java.util.List;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
+@Entity
 public class Product {
-    private final Long id;
-    private final String name;
-    private final List<Category> categories;
-    private final List<Ingredient> ingredients;
-    private final String url;
-    private final String provider;
-    private final String brand;
-    private final String shortDescription;
-    private final String longDescription;
-    private final Double volume;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    private String url;
+    private String provider;
+    private String brand;
+    private String shortDescription;
+    private String longDescription;
+    private Double volume;
 
-    public Product(Long id,
-                   String name,
-                   List<Category> categories,
-                   List<Ingredient> ingredients,
+    public Product(String name,
                    String url,
                    String provider,
                    String brand,
                    String shortDescription,
                    String longDescription,
                    Double volume) {
-        this.id = id;
         this.name = name;
-        this.categories = categories;
-        this.ingredients = ingredients;
         this.url = url;
         this.provider = provider;
         this.brand = brand;
         this.shortDescription = shortDescription;
         this.longDescription = longDescription;
         this.volume = volume;
+    }
+  
+    public Product() {
+
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public String getProvider() {
+        return provider;
+    }
+
+    public String getBrand() {
+        return brand;
+    }
+
+    public String getShortDescription() {
+        return shortDescription;
+    }
+
+    public String getLongDescription() {
+        return longDescription;
+    }
+
+    public Double getVolume() {
+        return volume;
     }
 }

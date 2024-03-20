@@ -1,27 +1,39 @@
 package pl.edu.pw.mini.ingreedio.api.model;
 
-import java.util.List;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
-@Getter
-@Setter
+@Entity
+@Table(name = "IngreedioUser")
 public class User {
-    private final Integer id;
-    private final String email;
-    private final String displayName;
-    private final List<Ingredient> favoriteProducts;
-    private final List<Ingredient> allergens;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    private String email;
+    private String displayName;
 
-    public User(Integer id,
-                String email,
-                String displayName,
-                List<Ingredient> favoriteProducts,
-                List<Ingredient> allergens) {
-        this.id = id;
+    public User(String email,
+                String displayName) {
         this.email = email;
         this.displayName = displayName;
-        this.favoriteProducts = favoriteProducts;
-        this.allergens = allergens;
     }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public User() {
+    }
+
 }
