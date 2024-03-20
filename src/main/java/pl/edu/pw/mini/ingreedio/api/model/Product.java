@@ -35,7 +35,7 @@ public class Product {
         this.longDescription = longDescription;
         this.volume = volume;
     }
-
+  
     public Product() {
 
     }
