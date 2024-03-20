@@ -1,0 +1,30 @@
+name: Build and Prepare Docker Image
+
+on:
+  push:
+    branches:
+      - develop
+      - master
+
+jobs:
+  build_and_prepare:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      # Checkout your repository content into GitHub Actions runner
+
+    - name: Build Docker image
+      run: docker build . -t ingreedio/api:latest
+      # Builds the Docker image
+
+    - name: Save Docker image
+      run: docker save ingreedio/api:latest -o api-image.tar
+      # Saves the Docker image as a tarball
+
+    - name: Upload Docker image as an artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: api-docker-image
+        path: api-image.tar
+        retention-days: 14
