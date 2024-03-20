@@ -6,11 +6,10 @@ import lombok.Setter;
 
 import java.util.List;
 
-@RequiredArgsConstructor
 @Getter
 @Setter
 public class Product {
-    private final Integer id;
+    private final Long id;
     private final String name;
     private final List<Category> categories;
     private final List<Ingredient> ingredients;
@@ -21,4 +20,16 @@ public class Product {
     private final String longDescription;
     private final Double volume;
 
+    public Product(Long id, String name, List<Category> categories, List<Ingredient> ingredients, String url, String provider, String brand, String shortDescription, String longDescription, Double volume) {
+        this.id = id;
+        this.name = name;
+        this.categories = categories;
+        this.ingredients = ingredients;
+        this.url = url;
+        this.provider = provider;
+        this.brand = brand;
+        this.shortDescription = shortDescription;
+        this.longDescription = longDescription;
+        this.volume = volume;
+    }
 }

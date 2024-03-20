@@ -3,12 +3,8 @@ package pl.edu.pw.mini.ingreedio.api.model;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
-
-@Document
-@RequiredArgsConstructor
 @Getter
 @Setter
 public class User {
@@ -17,4 +13,12 @@ public class User {
     private final String displayName;
     private final List<Ingredient> favoriteProducts;
     private final List<Ingredient> allergens;
+
+    public User(Integer id, String email, String displayName, List<Ingredient> favoriteProducts, List<Ingredient> allergens) {
+        this.id = id;
+        this.email = email;
+        this.displayName = displayName;
+        this.favoriteProducts = favoriteProducts;
+        this.allergens = allergens;
+    }
 }
