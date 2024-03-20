@@ -4,7 +4,10 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import pl.edu.pw.mini.ingreedio.api.model.User;
 import pl.edu.pw.mini.ingreedio.api.service.UserService;
 
@@ -18,11 +21,13 @@ public class UserController {
     public UserController(UserService userService) {
         this.userService = userService;
     }
+    
     @GetMapping
     public ResponseEntity<List<User>> getAllProducts() {
         List<User> users = userService.getAllUsers();
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
+    
     @GetMapping("/{id}")
     public ResponseEntity<User> getProductById(@PathVariable Integer id) {
         User user = userService.getUserById(id);
@@ -32,6 +37,7 @@ public class UserController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+    
     @PostMapping
     public ResponseEntity<User> addProduct(@RequestBody User user) {
         User savedUser = userService.addUser(user);
