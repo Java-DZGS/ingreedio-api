@@ -1,4 +1,4 @@
 databaseChangeLog:
   - include:
-      file: test-data/dummy_products.sql
+      file: test-data/v0.1-changelog.sql
       relativeToChangelogFile: true
