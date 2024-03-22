@@ -1,0 +1,4 @@
+databaseChangeLog:
+  - include:
+      file: test-data/dummy_products.sql
+      relativeToChangelogFile: true
