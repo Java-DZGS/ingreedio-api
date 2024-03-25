@@ -5,11 +5,4 @@ public class Report {
     private Long reviewId;
     private Long userId;
     private String content;
-
-    public Report(Long id, Long reviewId, Long userId, String content) {
-        this.id = id;
-        this.reviewId = reviewId;
-        this.userId = userId;
-        this.content = content;
-    }
 }

@@ -67,3 +67,7 @@ CREATE TABLE products_categories
     FOREIGN KEY (product_id) REFERENCES products (id),
     FOREIGN KEY (category_id) REFERENCES categories (id)
 );
+
+--changeset gitqueenzofia:add-unique-constraint-ingredients
+ALTER TABLE ingredients
+ADD CONSTRAINT ingredients_unique_name UNIQUE (name);

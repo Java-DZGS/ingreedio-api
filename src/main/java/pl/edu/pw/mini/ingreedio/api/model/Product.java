@@ -6,9 +6,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Table(name = "products")
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 @Entity
 public class Product {
@@ -31,27 +35,5 @@ public class Product {
     private String longDescription;
     @Column
     private Integer volume;
-
-    public Product(String name,
-                   String smallImageUrl,
-                   String largeImageUrl,
-                   String provider,
-                   String brand,
-                   String shortDescription,
-                   String longDescription,
-                   Integer volume) {
-        this.name = name;
-        this.smallImageUrl = smallImageUrl;
-        this.largeImageUrl = largeImageUrl;
-        this.provider = provider;
-        this.brand = brand;
-        this.shortDescription = shortDescription;
-        this.longDescription = longDescription;
-        this.volume = volume;
-    }
-
-    public Product() {
-
-    }
 
 }
