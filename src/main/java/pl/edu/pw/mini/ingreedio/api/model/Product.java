@@ -8,7 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
 
-@Table(name="products")
+@Table(name = "products")
 @Data
 @Entity
 public class Product {
@@ -49,7 +49,8 @@ public class Product {
         this.longDescription = longDescription;
         this.volume = volume;
     }
-    public Product(){
+
+    public Product() {
 
     }
 
