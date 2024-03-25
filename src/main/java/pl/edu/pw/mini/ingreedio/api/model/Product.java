@@ -1,20 +1,19 @@
 package pl.edu.pw.mini.ingreedio.api.model;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Data;
 
-import java.util.List;
-
-@Entity
 @Table(name="products")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@ToString
+@Data
+@Entity
 public class Product {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @Column
     private String name;
@@ -32,4 +31,26 @@ public class Product {
     private String longDescription;
     @Column
     private Integer volume;
+
+    public Product(String name,
+                   String smallImageUrl,
+                   String largeImageUrl,
+                   String provider,
+                   String brand,
+                   String shortDescription,
+                   String longDescription,
+                   Integer volume) {
+        this.name = name;
+        this.smallImageUrl = smallImageUrl;
+        this.largeImageUrl = largeImageUrl;
+        this.provider = provider;
+        this.brand = brand;
+        this.shortDescription = shortDescription;
+        this.longDescription = longDescription;
+        this.volume = volume;
+    }
+    public Product(){
+
+    }
+
 }
