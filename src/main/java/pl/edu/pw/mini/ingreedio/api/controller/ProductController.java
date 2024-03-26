@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import pl.edu.pw.mini.ingreedio.api.model.Product;
 import pl.edu.pw.mini.ingreedio.api.service.ProductService;
@@ -40,6 +41,7 @@ public class ProductController {
     }
     
     @PostMapping
+    @ResponseBody
     public ResponseEntity<Product> addProduct(@RequestBody Product product) {
         Product savedProduct = productService.addProduct(product);
         return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);

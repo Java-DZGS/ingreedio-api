@@ -1,73 +1,39 @@
 package pl.edu.pw.mini.ingreedio.api.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import java.util.List;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Table(name = "products")
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
 @Entity
 public class Product {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    @Column
     private String name;
-    private String url;
+    @Column
+    private String smallImageUrl;
+    @Column
+    private String largeImageUrl;
+    @Column
     private String provider;
+    @Column
     private String brand;
+    @Column
     private String shortDescription;
+    @Column
     private String longDescription;
-    private Double volume;
+    @Column
+    private Integer volume;
 
-    public Product(String name,
-                   String url,
-                   String provider,
-                   String brand,
-                   String shortDescription,
-                   String longDescription,
-                   Double volume) {
-        this.name = name;
-        this.url = url;
-        this.provider = provider;
-        this.brand = brand;
-        this.shortDescription = shortDescription;
-        this.longDescription = longDescription;
-        this.volume = volume;
-    }
-  
-    public Product() {
-
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public String getProvider() {
-        return provider;
-    }
-
-    public String getBrand() {
-        return brand;
-    }
-
-    public String getShortDescription() {
-        return shortDescription;
-    }
-
-    public String getLongDescription() {
-        return longDescription;
-    }
-
-    public Double getVolume() {
-        return volume;
-    }
 }

@@ -25,13 +25,13 @@ public class UserController {
     }
     
     @GetMapping
-    public ResponseEntity<List<User>> getAllProducts() {
+    public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = userService.getAllUsers();
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<User> getProductById(@PathVariable Integer id) {
+    public ResponseEntity<User> getUsersById(@PathVariable Integer id) {
         User user = userService.getUserById(id);
         if (user != null) {
             return new ResponseEntity<>(user, HttpStatus.OK);
@@ -41,7 +41,7 @@ public class UserController {
     }
     
     @PostMapping
-    public ResponseEntity<User> addProduct(@RequestBody User user) {
+    public ResponseEntity<User> addUser(@RequestBody User user) {
         User savedUser = userService.addUser(user);
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }
