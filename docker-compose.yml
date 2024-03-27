@@ -20,7 +20,7 @@ services:
     image: 'postgres:13.1-alpine'
     container_name: postgres
     ports:
-      - '5432:5432'
+      - '5431:5432'
     environment:
       - POSTGRES_USER=compose-postgres
       - POSTGRES_PASSWORD=compose-postgres
