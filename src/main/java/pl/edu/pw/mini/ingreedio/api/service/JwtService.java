@@ -4,21 +4,18 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
-
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-
 import javax.crypto.SecretKey;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
 
 @Component
 public class JwtService {
     public static final String SECRET =
-            "SW5HcmVlZElPIFphbGljemVuaWUgUHJ6ZWRtaW90dSBJbsW8eW5pZXJpYSBPcHJvZ3JhbW93YW5pYSAy";
+        "SW5HcmVlZElPIFphbGljemVuaWUgUHJ6ZWRtaW90dSBJbsW8eW5pZXJpYSBPcHJvZ3JhbW93YW5pYSAy";
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -53,12 +50,12 @@ public class JwtService {
 
     private String createToken(Map<String, Object> claims, String username) {
         return Jwts.builder()
-                .claims(claims)
-                .subject(username)
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 1))
-                .signWith(getSignKey(), Jwts.SIG.HS256)
-                .compact();
+            .claims(claims)
+            .subject(username)
+            .issuedAt(new Date(System.currentTimeMillis()))
+            .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 1))
+            .signWith(getSignKey(), Jwts.SIG.HS256)
+            .compact();
     }
 
     private SecretKey getSignKey() {
