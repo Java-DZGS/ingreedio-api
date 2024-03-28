@@ -1,7 +1,7 @@
 package pl.edu.pw.mini.ingreedio.api.model;
 
 public class ProductCategories {
-    private Integer id;
-    private Integer productId;
+    private Long id;
+    private Long productId;
     private Category category;
 }
