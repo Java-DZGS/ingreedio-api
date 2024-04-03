@@ -71,3 +71,25 @@ CREATE TABLE products_categories
 --changeset gitqueenzofia:add-unique-constraint-ingredients
 ALTER TABLE ingredients
 ADD CONSTRAINT ingredients_unique_name UNIQUE (name);
+
+--changeset kubazuch:add-auth-info
+CREATE TABLE auth_info
+(
+    id       BIGSERIAL PRIMARY KEY,
+    user_id  BIGSERIAL NOT NULL UNIQUE,
+    username VARCHAR(128) NOT NULL UNIQUE,
+    password VARCHAR(128) NOT NULL
+);
+
+--changeset kubazuch:user-remove-credentials
+ALTER TABLE users DROP COLUMN user_name;
+ALTER TABLE users DROP COLUMN password;
+
+--changeset kubazuch:refresh-token
+CREATE TABLE refresh_token
+(
+    id              BIGSERIAL PRIMARY KEY,
+    token           VARCHAR(128) NOT NULL,
+    expiration_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    auth_id         BIGSERIAL NOT NULL
+);

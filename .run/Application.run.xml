@@ -4,8 +4,8 @@
     <target name="app" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="pl.edu.pw.mini.ingreedio.api.Application" />
     <method v="2">
-      <option name="Make" enabled="true" />
       <option name="RunConfigurationTask" enabled="false" run_configuration_name="Postgres" run_configuration_type="docker-deploy" />
+      <option name="Make" enabled="true" />
     </method>
   </configuration>
 </component>
