@@ -1,5 +1,8 @@
 package pl.edu.pw.mini.ingreedio.api.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,6 +20,8 @@ import pl.edu.pw.mini.ingreedio.api.service.ProductService;
 
 @RestController
 @RequestMapping("/api/products")
+@SecurityRequirement(name = "Bearer Authentication")
+@Tag(name = "Products" /*, description = "..."*/)
 public class ProductController {
     private final ProductService productService;
 
@@ -24,13 +29,16 @@ public class ProductController {
     public ProductController(ProductService productService) {
         this.productService = productService;
     }
-    
+
+    @Operation(summary = "Get all products", description = "Get all products")
     @GetMapping
     public ResponseEntity<List<ProductDto>> getAllProducts() {
         List<ProductDto> products = productService.getAllProducts();
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
-    
+
+    @Operation(summary = "Get info of a specific product",
+        description = "Get info of a specific product")
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable Long id) {
         Product product = productService.getProductById(id);
@@ -40,7 +48,9 @@ public class ProductController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-    
+
+    @Operation(summary = "Add a product to the database",
+        description = "Add a product to the database")
     @PostMapping
     @ResponseBody
     public ResponseEntity<Product> addProduct(@RequestBody Product product) {
