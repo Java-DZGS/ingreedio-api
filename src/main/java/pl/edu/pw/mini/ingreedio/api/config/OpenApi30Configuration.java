@@ -14,6 +14,6 @@ import org.springframework.context.annotation.Configuration;
         scheme = "bearer"
 )
 @OpenAPIDefinition(
-        info = @Info(title = "InGreed.io", version = "v0.2")
+        info = @Info(title = "InGreed.io", version = "v0.2.1")
 )
 public class OpenApi30Configuration {}
