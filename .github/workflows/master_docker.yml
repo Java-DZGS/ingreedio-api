@@ -3,7 +3,9 @@ name: Build and Prepare Docker Image
 on:
   push:
     branches:
-      - develop
+      - master
+    tags:
+      - v*
 
 env:
   REGISTRY: ghcr.io
@@ -17,10 +19,6 @@ jobs:
     - uses: actions/checkout@v2
       # Checkout your repository content into GitHub Actions runner
 
-    # - name: Docker Compose
-    #   run: docker compose build
-    #   # Builds the Docker image
-
     - name: Log in to registry
       run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
 
@@ -30,7 +28,7 @@ jobs:
         registry: ${{ env.REGISTRY }}
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
-        
+
     - name: Extract metadata (tags, labels) for Docker
       id: meta
       uses: docker/metadata-action@v5.5.1
@@ -44,22 +42,3 @@ jobs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-
-    # - name: Save Docker image
-    #   run: docker save ingreedio-api-app -o api-image.tar
-    #   # Saves the Docker image as a tarball
-
-    # - name: Upload Docker image as an artifact
-    #   uses: actions/upload-artifact@v3
-    #   with:
-    #     name: api-docker-image
-    #     path: api-image.tar
-    #     retention-days: 7
-    # - uses: "marvinpinto/action-automatic-releases@latest"
-    #   with:
-    #     repo_token: "${{ secrets.GITHUB_TOKEN }}"
-    #     automatic_release_tag: "latest"
-    #     prerelease: true
-    #     title: "Automatic build"
-    #     files: |
-    #       api-image.tar
