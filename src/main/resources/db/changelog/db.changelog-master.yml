@@ -1,0 +1,4 @@
+databaseChangeLog:
+  - include:
+      file: test-data/v0.1-changelog.sql
+      relativeToChangelogFile: true
