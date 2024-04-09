@@ -38,8 +38,7 @@ dependencies {
 
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'com.h2database:h2:2.2.224'
-    testImplementation 'de.flapdoodle.embed:de.flapdoodle.embed.mongo:4.12.6'
+    testImplementation 'org.testcontainers:testcontainers'
 }
 
 tasks.named('test') {

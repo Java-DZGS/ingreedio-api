@@ -13,7 +13,7 @@ import pl.edu.pw.mini.ingreedio.api.model.TestDoc;
 import pl.edu.pw.mini.ingreedio.api.model.User;
 
 @SpringBootTest
-public class MultistoreTest {
+public class MultistoreTest extends IntegrationTest {
     @Autowired
     ApplicationContext context;
 

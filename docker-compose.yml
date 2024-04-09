@@ -11,7 +11,7 @@ services:
     depends_on:
       - postgres
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/compose-postgres
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ingreedio
       - SPRING_DATASOURCE_USERNAME=compose-postgres
       - SPRING_DATASOURCE_PASSWORD=compose-postgres
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
@@ -27,13 +27,14 @@ services:
     environment:
       - POSTGRES_USER=compose-postgres
       - POSTGRES_PASSWORD=compose-postgres
+      - POSTGRES_DB=ingreedio
 
   mongo:
     image: 'mongo'
     container_name: mongo
     restart: always
     ports:
-      - '27018:27017'
+      - '27016:27017'
     environment:
       MONGO_INITDB_ROOT_USERNAME: compose-mongo
       MONGO_INITDB_ROOT_PASSWORD: compose-mongo
