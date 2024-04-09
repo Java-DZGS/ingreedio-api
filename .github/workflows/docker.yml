@@ -3,7 +3,7 @@ name: Build and Prepare Docker Image
 on:
   push:
     branches:
-      - 'develop'
+      - 'develop' 
     tags:
       - 'v*'
 
