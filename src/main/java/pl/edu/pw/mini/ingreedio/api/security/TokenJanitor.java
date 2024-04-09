@@ -14,6 +14,6 @@ public class TokenJanitor {
     @Scheduled(cron = "0 0 * * * *")
     public void clearOldTokens() {
         refreshTokenRepository.deleteAll(
-            refreshTokenRepository.findAllExpiredTokens(Instant.now()));
+            refreshTokenRepository.findAllByExpirationDateBefore(Instant.now()));
     }
 }
