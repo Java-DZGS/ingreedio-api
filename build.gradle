@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'pl.edu.pw.mini.ingreedio'
-version = 'v0.1.1'
+version = 'v0.2.1'
 
 java {
     sourceCompatibility = '21'

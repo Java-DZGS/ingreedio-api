@@ -24,4 +24,4 @@ jobs:
           merge_back_from_main: false
           version: ${{ inputs.version }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.KUZU_PAT }}
