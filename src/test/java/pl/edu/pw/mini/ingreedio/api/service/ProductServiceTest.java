@@ -4,15 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.lenient;
+
 import java.util.List;
 import java.util.Optional;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-
 import org.mockito.junit.jupiter.MockitoExtension;
 import pl.edu.pw.mini.ingreedio.api.dto.FullProductDto;
 import pl.edu.pw.mini.ingreedio.api.dto.ProductDto;
@@ -54,11 +53,16 @@ public class ProductServiceTest {
                 product.getIngredients()
             );
         });
-        productService = new ProductService(productRepository, productDtoMapper, fullProductDtoMapper, sequenceGenerator);
+        productService = new ProductService(
+            productRepository,
+            productDtoMapper,
+            fullProductDtoMapper,
+            sequenceGenerator
+        );
     }
 
     @Test
-    public void givenProductObject_whenSaveProduct_thenReturnProductObject(){
+    public void givenProductObject_whenSaveProduct_thenReturnProductObject() {
         // Given
         Product product = new Product();
         product.setName("testProduct");
@@ -72,7 +76,7 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void givenProductsList_whenGetAllProducts_thenReturnProductsList(){
+    public void givenProductsList_whenGetAllProducts_thenReturnProductsList() {
 
         // Given
         Product product1 = new Product();
@@ -82,7 +86,7 @@ public class ProductServiceTest {
         Product product3 = new Product();
         product1.setName("testProduct3");
 
-        given(productRepository.findAll()).willReturn(List.of(product1,product2,product3));
+        given(productRepository.findAll()).willReturn(List.of(product1, product2, product3));
 
         // When
         List<ProductDto> productsList = productService.getAllProducts();
@@ -93,7 +97,7 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void givenProductId_whenGetProductById_thenReturnFullProductDtoObject(){
+    public void givenProductId_whenGetProductById_thenReturnFullProductDtoObject() {
         // Given
         Product product = new Product();
         product.setId(1L);
