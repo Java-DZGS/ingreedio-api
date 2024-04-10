@@ -14,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.util.ReflectionTestUtils;
-import pl.edu.pw.mini.ingreedio.api.service.JwtService;
 
 @ExtendWith(MockitoExtension.class)
 public class JwtServiceTest {

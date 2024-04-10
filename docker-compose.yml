@@ -6,16 +6,20 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - '8080:8080'
     container_name: app
     depends_on:
       - postgres
+      - mongo
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/compose-postgres
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ingreedio
       - SPRING_DATASOURCE_USERNAME=compose-postgres
       - SPRING_DATASOURCE_PASSWORD=compose-postgres
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-          
+      - SPRING_DATA_MONGODB_HOST=mongo
+      - SPRING_DATA_MONGODB_USERNAME=compose-mongo
+      - SPRING_DATA_MONGODB_PASSWORD=compose-mongo
+
   postgres:
     image: 'postgres:13.1-alpine'
     container_name: postgres
@@ -24,3 +28,28 @@ services:
     environment:
       - POSTGRES_USER=compose-postgres
       - POSTGRES_PASSWORD=compose-postgres
+      - POSTGRES_DB=ingreedio
+
+  mongo:
+    image: 'mongo'
+    container_name: mongo
+    restart: always
+    ports:
+      - '27016:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: compose-mongo
+      MONGO_INITDB_ROOT_PASSWORD: compose-mongo
+
+  mongo-express:
+    image: 'mongo-express'
+    container_name: mongo-express
+    restart: always
+    ports:
+      - '8081:8081'
+    depends_on:
+      - mongo
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: compose-mongo
+      ME_CONFIG_MONGODB_ADMINPASSWORD: compose-mongo
+      ME_CONFIG_MONGODB_URL: mongodb://compose-mongo:compose-mongo@mongo:27017/
+      ME_CONFIG_BASICAUTH: false

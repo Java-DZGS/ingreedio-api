@@ -13,6 +13,5 @@ import pl.edu.pw.mini.ingreedio.api.model.RefreshToken;
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
     Optional<RefreshToken> findByToken(String token);
 
-    @Query("select rt from RefreshToken rt where rt.expirationDate <= :expirationDate")
-    List<RefreshToken> findAllExpiredTokens(@Param("expirationDate") Instant expiration);
+    List<RefreshToken> findAllByExpirationDateBefore(Instant expiration);
 }
