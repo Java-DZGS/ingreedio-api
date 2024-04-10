@@ -1,39 +1,39 @@
 package pl.edu.pw.mini.ingreedio.api.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-@Table(name = "products")
+@Document(collection = "products")
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Entity
 public class Product {
+    @Transient
+    public static final String SEQUENCE_NAME = "products_sequence";
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column
+    @Field
     private String name;
-    @Column
+    @Field
     private String smallImageUrl;
-    @Column
+    @Field
     private String largeImageUrl;
-    @Column
+    @Field
     private String provider;
-    @Column
+    @Field
     private String brand;
-    @Column
+    @Field
     private String shortDescription;
-    @Column
+    @Field
     private String longDescription;
-    @Column
+    @Field
     private Integer volume;
-
+    @Field
+    private List<String> ingredients;
 }

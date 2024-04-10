@@ -1,6 +1,7 @@
 package pl.edu.pw.mini.ingreedio.api.dto;
 
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 @Builder
 public record ProductDto(
