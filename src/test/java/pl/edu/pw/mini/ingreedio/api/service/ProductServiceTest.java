@@ -42,9 +42,9 @@ public class ProductServiceTest extends IntegrationTest {
         Product product1 = new Product();
         product1.setName("testProduct1");
         Product product2 = new Product();
-        product1.setName("testProduct2");
+        product2.setName("testProduct2");
         Product product3 = new Product();
-        product1.setName("testProduct3");
+        product3.setName("testProduct3");
 
         productService.addProduct(product1);
         productService.addProduct(product2);
