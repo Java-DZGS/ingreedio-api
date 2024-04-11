@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import pl.edu.pw.mini.ingreedio.api.dto.FullProductDto;
 import pl.edu.pw.mini.ingreedio.api.dto.ProductDto;
 import pl.edu.pw.mini.ingreedio.api.model.Product;
 import pl.edu.pw.mini.ingreedio.api.service.ProductService;
@@ -40,8 +41,8 @@ public class ProductController {
     @Operation(summary = "Get info of a specific product",
         description = "Get info of a specific product")
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
-        Product product = productService.getProductById(id);
+    public ResponseEntity<FullProductDto> getProductById(@PathVariable Long id) {
+        FullProductDto product = productService.getProductById(id);
         if (product != null) {
             return new ResponseEntity<>(product, HttpStatus.OK);
         } else {
