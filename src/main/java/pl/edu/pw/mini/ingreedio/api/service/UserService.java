@@ -3,9 +3,7 @@ package pl.edu.pw.mini.ingreedio.api.service;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import pl.edu.pw.mini.ingreedio.api.model.Product;
 import pl.edu.pw.mini.ingreedio.api.model.User;
-import pl.edu.pw.mini.ingreedio.api.repository.ProductRepository;
 import pl.edu.pw.mini.ingreedio.api.repository.UserRepository;
 
 @Service
