@@ -9,12 +9,12 @@ import pl.edu.pw.mini.ingreedio.api.model.Product;
 public class ProductDtoMapper implements Function<Product, ProductDto> {
     @Override
     public ProductDto apply(Product product) {
-        return new ProductDto(
-                product.getId(),
-                product.getName(),
-                product.getSmallImageUrl(),
-                product.getProvider(),
-                product.getShortDescription()
-        );
+        return ProductDto.builder()
+            .id(product.getId())
+            .name(product.getName())
+            .smallImageUrl(product.getSmallImageUrl())
+            .provider(product.getProvider())
+            .shortDescription(product.getShortDescription())
+            .build();
     }
 }
