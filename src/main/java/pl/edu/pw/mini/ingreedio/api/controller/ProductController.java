@@ -21,7 +21,7 @@ import pl.edu.pw.mini.ingreedio.api.service.ProductService;
 
 @RestController
 @RequestMapping("/api/products")
-@SecurityRequirement(name = "Bearer Authentication")
+//@SecurityRequirement(name = "Bearer Authentication")
 @Tag(name = "Products" /*, description = "..."*/)
 public class ProductController {
     private final ProductService productService;
@@ -51,7 +51,8 @@ public class ProductController {
     }
 
     @Operation(summary = "Add a product to the database",
-        description = "Add a product to the database")
+        description = "Add a product to the database",
+        security = { @SecurityRequirement(name = "Bearer Authentication") })
     @PostMapping
     @ResponseBody
     public ResponseEntity<Product> addProduct(@RequestBody Product product) {
