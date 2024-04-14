@@ -57,12 +57,13 @@ public class ProductController {
 
     @Operation(summary = "Filter products")
     @GetMapping("/filter")
-    public ResponseEntity<List<FullProductDto>> filterProducts(@RequestParam(required = false) String name,
-                                                               @RequestParam(required = false) String provider,
-                                                               @RequestParam(required = false) String brand,
-                                                               @RequestParam(required = false) Integer volumeFrom,
-                                                               @RequestParam(required = false) Integer volumeTo,
-                                                               @RequestParam(required = false) String ingredient) {
+    public ResponseEntity<List<FullProductDto>> filterProducts(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String provider,
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) Integer volumeFrom,
+            @RequestParam(required = false) Integer volumeTo,
+            @RequestParam(required = false) String ingredient) {
         List<FullProductDto> products = productService.filterProducts(
                 name,
                 provider,

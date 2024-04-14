@@ -32,7 +32,7 @@ public class ProductService {
     }
 
     public FullProductDto getProductById(Long id) {
-        return productRepository.findById(id).map(fullProductDtoMapper::apply).orElse(null);
+        return productRepository.findById(id).map(fullProductDtoMapper).orElse(null);
     }
 
     public Product addProduct(Product product) {
@@ -51,38 +51,47 @@ public class ProductService {
 
         Set<FullProductDto> result = new HashSet<>();
 
-        if (name != null)
+        if (name != null) {
             fetchedInitialData = fetchData(result,
                     productRepository.findByNameContaining(name),
                     false);
+        }
 
-        if (provider != null)
+        if (provider != null) {
             fetchedInitialData = fetchData(result,
                     productRepository.findByProvider(provider),
                     fetchedInitialData);
+        }
 
-        if (brand != null)
+        if (brand != null) {
             fetchedInitialData = fetchData(result,
                     productRepository.findByBrand(brand),
                     fetchedInitialData);
+        }
 
-        if (volumeFrom != null || volumeTo != null)
+        if (volumeFrom != null || volumeTo != null) {
             fetchedInitialData = fetchData(result,
                     productRepository.findByVolumeBetween(volumeFrom, volumeTo),
                     fetchedInitialData);
+        }
 
-        if (ingredient != null)
+        if (ingredient != null) {
             fetchedInitialData = fetchData(result,
                     productRepository.findByIngredientsContaining(ingredient),
                     fetchedInitialData);
+        }
 
-        if (!fetchedInitialData)
+        if (!fetchedInitialData) {
             return productRepository.findAll().stream().map(fullProductDtoMapper).toList();
+        }
 
         return result.stream().toList();
     }
 
-    private boolean fetchData(Set<FullProductDto> set, Stream<Product> data, boolean fetchedInitialData) {
+    private boolean fetchData(
+            Set<FullProductDto> set,
+            Stream<Product> data,
+            boolean fetchedInitialData) {
         var mappedData = data.map(fullProductDtoMapper).collect(Collectors.toSet());
 
         if (fetchedInitialData) {
