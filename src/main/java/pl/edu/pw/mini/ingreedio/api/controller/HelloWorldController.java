@@ -6,8 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/")
-@SecurityRequirement(name = "Bearer Authentication")
+@RequestMapping("/")
 public class HelloWorldController {
     @GetMapping
     public String greeting() {
