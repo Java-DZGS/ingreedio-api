@@ -13,6 +13,7 @@ import pl.edu.pw.mini.ingreedio.api.model.Product;
 import pl.edu.pw.mini.ingreedio.api.service.ProductService;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/products")
@@ -58,18 +59,18 @@ public class ProductController {
     @Operation(summary = "Filter products")
     @GetMapping("/filter")
     public ResponseEntity<List<FullProductDto>> filterProducts(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String provider,
-            @RequestParam(required = false) String brand,
-            @RequestParam(required = false) Integer volumeFrom,
-            @RequestParam(required = false) Integer volumeTo,
-            @RequestParam(required = false) String ingredient) {
+            @RequestParam Optional<String> name,
+            @RequestParam Optional<String> provider,
+            @RequestParam Optional<String> brand,
+            @RequestParam Optional<Integer> volumeFrom,
+            @RequestParam Optional<Integer> volumeTo,
+            @RequestParam(required = false) String[] ingredients) {
         List<FullProductDto> products = productService.filterProducts(
                 name,
                 provider,
                 brand,
                 volumeFrom, volumeTo,
-                ingredient
+                ingredients
         );
 
         return new ResponseEntity<>(products, HttpStatus.OK);
