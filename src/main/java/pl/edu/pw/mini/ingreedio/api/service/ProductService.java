@@ -1,6 +1,7 @@
 package pl.edu.pw.mini.ingreedio.api.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,8 +29,8 @@ public class ProductService {
             .map(productDtoMapper).collect(Collectors.toList());
     }
 
-    public FullProductDto getProductById(Long id) {
-        return productRepository.findById(id).map(fullProductDtoMapper).orElse(null);
+    public Optional<FullProductDto> getProductById(Long id) {
+        return productRepository.findById(id).map(fullProductDtoMapper);
     }
 
     public Product addProduct(Product product) {
@@ -37,7 +38,7 @@ public class ProductService {
         return productRepository.save(product);
     }
 
-    public List<FullProductDto> filterProducts(ProductFilterCriteria criteria) {
-        return productRepository.filterProducts(criteria);
+    public List<ProductDto> getProductsMatching(ProductFilterCriteria criteria) {
+        return productRepository.getProductsMatching(criteria);
     }
 }
