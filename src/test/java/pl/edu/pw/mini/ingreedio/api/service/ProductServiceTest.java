@@ -65,6 +65,8 @@ public class ProductServiceTest extends IntegrationTest {
     @Test
     @Order(4)
     public void givenNoCriteria_whenFilter_thenReturnAllProducts() {
+        // Given
+        
         // When
         List<FullProductDto> res =
             productService.filterProducts(ProductFilterCriteria.builder().build());
