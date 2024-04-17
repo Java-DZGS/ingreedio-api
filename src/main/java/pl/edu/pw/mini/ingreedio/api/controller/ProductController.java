@@ -24,7 +24,6 @@ import pl.edu.pw.mini.ingreedio.api.service.ProductService;
 
 @RestController
 @RequestMapping("/api/products")
-//@SecurityRequirement(name = "Bearer Authentication")
 @Tag(name = "Products" /*, description = "..."*/)
 public class ProductController {
     private final ProductService productService;
