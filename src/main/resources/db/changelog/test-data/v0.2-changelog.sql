@@ -41,3 +41,7 @@ CREATE TABLE users_roles
     user_id BIGINT NOT NULL REFERENCES users(id),
     role_id BIGINT NOT NULL REFERENCES roles(id)
 );
+
+--changeset migoox:remove-level-column-from-roles_permissions
+ALTER TABLE roles_permissions
+DROP COLUMN level;
