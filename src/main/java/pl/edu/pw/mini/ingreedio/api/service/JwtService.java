@@ -9,11 +9,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import javax.crypto.SecretKey;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import pl.edu.pw.mini.ingreedio.api.dto.JwtTokenClaimsDto;
 
 @Service
+@RequiredArgsConstructor
 public class JwtService {
     @Value("${security.access-token-lifetime}")
     private long accessTokenLifetime;
@@ -47,9 +50,11 @@ public class JwtService {
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
-    public String generateToken(String username) {
+    public String generateToken(JwtTokenClaimsDto jwtTokenClaimsDto) {
         Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, username);
+        claims.put("roles", jwtTokenClaimsDto.roles());
+        claims.put("permissions", jwtTokenClaimsDto.permissions());
+        return createToken(claims, jwtTokenClaimsDto.username());
     }
 
     private String createToken(Map<String, Object> claims, String username) {

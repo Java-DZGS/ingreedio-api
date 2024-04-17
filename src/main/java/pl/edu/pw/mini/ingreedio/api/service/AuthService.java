@@ -1,5 +1,7 @@
 package pl.edu.pw.mini.ingreedio.api.service;
 
+import java.util.HashMap;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -9,8 +11,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import pl.edu.pw.mini.ingreedio.api.dto.AuthRequestDto;
 import pl.edu.pw.mini.ingreedio.api.dto.JwtResponseDto;
+import pl.edu.pw.mini.ingreedio.api.dto.JwtTokenClaimsDto;
 import pl.edu.pw.mini.ingreedio.api.dto.RefreshTokenRequestDto;
 import pl.edu.pw.mini.ingreedio.api.dto.RegisterRequestDto;
+import pl.edu.pw.mini.ingreedio.api.mapper.AuthInfoMapper;
 import pl.edu.pw.mini.ingreedio.api.model.AuthInfo;
 import pl.edu.pw.mini.ingreedio.api.model.RefreshToken;
 import pl.edu.pw.mini.ingreedio.api.model.User;
@@ -22,6 +26,8 @@ import pl.edu.pw.mini.ingreedio.api.repository.UserRepository;
 public class AuthService {
     private final AuthRepository authRepository;
     private final UserRepository userRepository;
+
+    private final AuthInfoMapper authInfoMapper;
 
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
@@ -43,7 +49,7 @@ public class AuthService {
         userRepository.save(user);
         authRepository.save(authInfo);
 
-        String jwtToken = jwtService.generateToken(request.username());
+        String jwtToken = jwtService.generateToken(authInfoMapper.toTokenClaims(authInfo));
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(request.username());
         return JwtResponseDto.builder()
             .accessToken(jwtToken)
@@ -57,7 +63,7 @@ public class AuthService {
             .map(token -> {
                 AuthInfo authInfo = token.getAuthInfo();
 
-                String jwtToken = jwtService.generateToken(authInfo.getUsername());
+                String jwtToken = jwtService.generateToken(authInfoMapper.toTokenClaims(authInfo));
                 RefreshToken refreshToken = refreshTokenService.refreshToken(token);
                 return JwtResponseDto.builder()
                     .accessToken(jwtToken)
@@ -76,7 +82,7 @@ public class AuthService {
         );
 
         if (authentication.isAuthenticated()) {
-            String jwtToken = jwtService.generateToken(request.username());
+            String jwtToken = jwtService.generateToken(getJwtTokenClaims(request.username()));
             RefreshToken refreshToken = refreshTokenService.createRefreshToken(request.username());
             return JwtResponseDto.builder()
                 .accessToken(jwtToken)
@@ -85,5 +91,13 @@ public class AuthService {
         } else {
             throw new UsernameNotFoundException("User '" + request.username() + "' not found!");
         }
+    }
+
+    private JwtTokenClaimsDto getJwtTokenClaims(String username) throws UsernameNotFoundException {
+        AuthInfo authInfo = authRepository.findByUsername(username)
+            .orElseThrow(() ->
+                new UsernameNotFoundException("User '" + username + "' not found!"));
+
+        return authInfoMapper.toTokenClaims(authInfo);
     }
 }
