@@ -2,6 +2,7 @@ package pl.edu.pw.mini.ingreedio.api.model;
 
 import java.util.List;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -12,6 +13,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @Document(collection = "products")
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Data
 public class Product {
     @Transient
