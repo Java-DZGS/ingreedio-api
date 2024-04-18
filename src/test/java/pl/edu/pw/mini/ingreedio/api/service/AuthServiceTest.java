@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -19,8 +20,8 @@ import pl.edu.pw.mini.ingreedio.api.dto.AuthRequestDto;
 import pl.edu.pw.mini.ingreedio.api.dto.JwtResponseDto;
 import pl.edu.pw.mini.ingreedio.api.dto.RefreshTokenRequestDto;
 import pl.edu.pw.mini.ingreedio.api.dto.RegisterRequestDto;
+import pl.edu.pw.mini.ingreedio.api.model.Role;
 import pl.edu.pw.mini.ingreedio.api.model.User;
-import pl.edu.pw.mini.ingreedio.api.repository.RoleRepository;
 
 @SpringBootTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -31,12 +32,6 @@ public class AuthServiceTest extends IntegrationTest {
 
     @Autowired
     private SecurityService securityService;
-
-    @Autowired
-    private JwtService jwtService;
-
-    @Autowired
-    private RoleRepository roleRepository;
 
     @Test
     @Order(1)
@@ -64,17 +59,18 @@ public class AuthServiceTest extends IntegrationTest {
 
     @Test
     @Order(3)
-    public void givenValidRegistrationRequest_whenRegister_thenNewUserRolesAreDefault() {
+    public void givenValidRegistrationRequest_whenRegister_thenNewUserHasDefaultRoles() {
         // Given
-        RegisterRequestDto request = new RegisterRequestDto("us", "Us", "us@as.pl", "pass");
+        Set<String> newUserRoles = authService.getAuthInfoByUsername("us").getRoles()
+            .stream().map(Role::getName).collect(Collectors.toSet());
+        Set<String> defaultRoles = securityService.getDefaultUserRoles()
+            .stream().map(Role::getName).collect(Collectors.toSet());
 
         // When
-        authService.register(request);
-        boolean equal = authService.getAuthInfoByUsername("us").getRoles().equals(
-            securityService.getDefaultUserRoles());
+        boolean valid = newUserRoles.equals(defaultRoles);
 
         // Then
-        assertTrue(equal);
+        assertTrue(valid);
     }
 
     @Test

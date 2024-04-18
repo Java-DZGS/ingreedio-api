@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import pl.edu.pw.mini.ingreedio.api.service.JwtClaimsService;
 import pl.edu.pw.mini.ingreedio.api.service.JwtService;
 import pl.edu.pw.mini.ingreedio.api.service.SecurityService;
 
@@ -23,6 +24,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final SecurityService securityService;
+    private final JwtClaimsService jwtClaimsService;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -48,7 +50,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            JwtUserClaims claims = securityService.getJwtUserClaimsByUsername(username);
+            JwtUserClaims claims = jwtClaimsService.getJwtUserClaimsByUsername(username);
             UserDetails userDetails = securityService.loadUserByUsername(username);
             if (jwtService.isTokenValid(jwt, claims)) {
                 UsernamePasswordAuthenticationToken authToken =
