@@ -3,11 +3,10 @@ package pl.edu.pw.mini.ingreedio.api.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
 
 import io.jsonwebtoken.Claims;
 import java.util.Date;
-import java.util.HashSet;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,7 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.util.ReflectionTestUtils;
-import pl.edu.pw.mini.ingreedio.api.security.JwtTokenUserClaims;
+import pl.edu.pw.mini.ingreedio.api.security.JwtUserClaims;
 
 @ExtendWith(MockitoExtension.class)
 public class JwtServiceTest {
@@ -36,12 +35,28 @@ public class JwtServiceTest {
     @Test
     void givenUsername_whenGeneratingToken_thenTokenShouldBeGenerated() {
         // Given
-        JwtTokenUserClaims jwtTokenUserClaimsDto = JwtTokenUserClaims.builder()
+        JwtUserClaims jwtUserClaimsDto = JwtUserClaims.builder()
             .username("testUser")
             .build();
 
         // When
-        String token = jwtService.generateToken(jwtTokenUserClaimsDto);
+        String token = jwtService.generateToken(jwtUserClaimsDto);
+
+        // Then
+        assertNotNull(token);
+    }
+
+    @Test
+    void givenUsernameRolesPermissions_whenGeneratingToken_thenTokenShouldBeGenerated() {
+        // Given
+        JwtUserClaims jwtUserClaimsDto = JwtUserClaims.builder()
+            .username("testUser")
+            .roles(Set.of("MODERATOR", "USER"))
+            .permissions(Set.of("CAN_REMOVE_OPINION"))
+            .build();
+
+        // When
+        String token = jwtService.generateToken(jwtUserClaimsDto);
 
         // Then
         assertNotNull(token);
@@ -50,11 +65,11 @@ public class JwtServiceTest {
     @Test
     void givenValidToken_whenExtractingUsername_thenUsernameShouldBeReturned() {
         // Given
-        JwtTokenUserClaims jwtTokenUserClaimsDto = JwtTokenUserClaims.builder()
+        JwtUserClaims jwtUserClaimsDto = JwtUserClaims.builder()
             .username("testUser")
             .build();
 
-        String token = jwtService.generateToken(jwtTokenUserClaimsDto);
+        String token = jwtService.generateToken(jwtUserClaimsDto);
 
         // When
         String username = jwtService.extractUsername(token);
@@ -66,11 +81,11 @@ public class JwtServiceTest {
     @Test
     void givenValidToken_whenExtractingExpiration_thenExpirationDateShouldBeReturned() {
         // Given
-        JwtTokenUserClaims jwtTokenUserClaimsDto = JwtTokenUserClaims.builder()
+        JwtUserClaims jwtUserClaimsDto = JwtUserClaims.builder()
             .username("testUser")
             .build();
 
-        String token = jwtService.generateToken(jwtTokenUserClaimsDto);
+        String token = jwtService.generateToken(jwtUserClaimsDto);
 
         // When
         Date expiration = jwtService.extractExpiration(token);
@@ -82,11 +97,11 @@ public class JwtServiceTest {
     @Test
     void givenValidToken_whenExtractingClaim_thenClaimShouldBeReturned() {
         // Given
-        JwtTokenUserClaims jwtTokenUserClaimsDto = JwtTokenUserClaims.builder()
+        JwtUserClaims jwtUserClaimsDto = JwtUserClaims.builder()
             .username("testUser")
             .build();
 
-        String token = jwtService.generateToken(jwtTokenUserClaimsDto);
+        String token = jwtService.generateToken(jwtUserClaimsDto);
 
         // When
         String subject = jwtService.extractClaim(token, Claims::getSubject);
@@ -96,19 +111,57 @@ public class JwtServiceTest {
     }
 
     @Test
-    void givenValidTokenAndMatchingUserDetails_whenValidatingToken_thenTokenShouldBeValid() {
+    void givenValidTokenMatchingUsernameAndRolesAndPermissions_whenValidatingToken_thenTokenShouldBeValid() {
         // Given
-        JwtTokenUserClaims jwtTokenUserClaimsDto = JwtTokenUserClaims.builder()
+        JwtUserClaims jwtUserClaimsDto = JwtUserClaims.builder()
             .username("testUser")
+            .roles(Set.of("MODERATOR", "USER"))
+            .permissions(Set.of("CAN_REMOVE_OPINION"))
             .build();
 
-        String token = jwtService.generateToken(jwtTokenUserClaimsDto);
-        when(userDetails.getUsername()).thenReturn("testUser");
+        String token = jwtService.generateToken(jwtUserClaimsDto);
 
         // When
-        boolean valid = jwtService.isTokenValid(token, userDetails);
+        boolean valid = jwtService.isTokenValid(token, jwtUserClaimsDto);
 
         // Then
         assertTrue(valid);
     }
+
+    @Test
+    void givenValidToken_whenExtractingRolesClaim_thenClaimShouldBeReturned() {
+        // Given
+        JwtUserClaims jwtUserClaimsDto = JwtUserClaims.builder()
+            .username("testUser")
+            .roles(Set.of("MODERATOR", "USER"))
+            .permissions(Set.of("CAN_REMOVE_OPINION"))
+            .build();
+
+        String token = jwtService.generateToken(jwtUserClaimsDto);
+
+        // When
+        Set<String> roles = jwtService.extractRoles(token);
+
+        // Then
+        assertEquals(jwtUserClaimsDto.roles(), roles);
+    }
+
+    @Test
+    void givenValidToken_whenExtractingPermissionClaim_thenClaimShouldBeReturned() {
+        // Given
+        JwtUserClaims jwtUserClaimsDto = JwtUserClaims.builder()
+            .username("testUser")
+            .roles(Set.of("MODERATOR", "USER"))
+            .permissions(Set.of("CAN_REMOVE_OPINION"))
+            .build();
+
+        String token = jwtService.generateToken(jwtUserClaimsDto);
+
+        // When
+        Set<String> permissions = jwtService.extractPermissions(token);
+
+        // Then
+        assertEquals(jwtUserClaimsDto.permissions(), permissions);
+    }
+
 }

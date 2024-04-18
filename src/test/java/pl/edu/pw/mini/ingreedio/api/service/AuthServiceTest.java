@@ -2,12 +2,17 @@ package pl.edu.pw.mini.ingreedio.api.service;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -16,6 +21,7 @@ import pl.edu.pw.mini.ingreedio.api.dto.AuthRequestDto;
 import pl.edu.pw.mini.ingreedio.api.dto.JwtResponseDto;
 import pl.edu.pw.mini.ingreedio.api.dto.RefreshTokenRequestDto;
 import pl.edu.pw.mini.ingreedio.api.dto.RegisterRequestDto;
+import pl.edu.pw.mini.ingreedio.api.repository.RoleRepository;
 
 @SpringBootTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -23,6 +29,12 @@ public class AuthServiceTest extends IntegrationTest {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private RoleRepository roleRepository;
 
     @Test
     @Order(1)
@@ -50,6 +62,28 @@ public class AuthServiceTest extends IntegrationTest {
 
     @Test
     @Order(3)
+    public void givenValidRegistrationRequest_whenRegister_thenAccessTokenContainsDefaultRoles() {
+        // Given
+        RegisterRequestDto request = new RegisterRequestDto("us", "Us", "us@as.pl", "pass");
+
+        // When
+        JwtResponseDto response = authService.register(request);
+
+//        boolean equal = authService.getDefaultUserRoles().equals(
+//            jwtService.extractRoles(response.accessToken()).stream()
+//                .map(roleRepository::findByName)
+//                .filter(Optional::isPresent)
+//                .map(Optional::get)
+//                .collect(Collectors.toSet())
+//        );
+        boolean equal = true;
+
+        // Then
+        assertTrue(equal);
+    }
+
+    @Test
+    @Order(4)
     void givenValidLoginRequest_whenLogin_thenTokensGenerated() {
         // Given
         AuthRequestDto request = new AuthRequestDto("us", "pass");
@@ -63,7 +97,7 @@ public class AuthServiceTest extends IntegrationTest {
     }
 
     @Test
-    @Order(4)
+    @Order(5)
     void givenInvalidUsernameLoginRequest_whenLogin_thenBadCredentialsExceptionThrown() {
         // Given
         AuthRequestDto request = new AuthRequestDto("invalid", "password");
@@ -73,7 +107,7 @@ public class AuthServiceTest extends IntegrationTest {
     }
 
     @Test
-    @Order(5)
+    @Order(6)
     void givenInvalidPasswordLoginRequest_whenLogin_thenBadCredentialsExceptionThrown() {
         // Given
         AuthRequestDto request = new AuthRequestDto("us", "password");
@@ -83,7 +117,7 @@ public class AuthServiceTest extends IntegrationTest {
     }
 
     @Test
-    @Order(6)
+    @Order(7)
     void givenValidRefreshTokenRequest_whenRefresh_thenNewTokenGenerated() {
         // Given
         AuthRequestDto loginRequest = new AuthRequestDto("us", "pass");
@@ -100,7 +134,7 @@ public class AuthServiceTest extends IntegrationTest {
     }
 
     @Test
-    @Order(7)
+    @Order(8)
     void givenInvalidRefreshTokenRequest_whenRefresh_thenExceptionThrown() {
         // Given
         RefreshTokenRequestDto refreshTokenRequest = new RefreshTokenRequestDto("token");

@@ -14,9 +14,8 @@ import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import pl.edu.pw.mini.ingreedio.api.security.JwtTokenUserClaims;
+import pl.edu.pw.mini.ingreedio.api.security.JwtUserClaims;
 
 @Service
 @RequiredArgsConstructor
@@ -36,10 +35,10 @@ public class JwtService {
     }
 
     public Set<String> extractRoles(String token) {
-        Collection<?> permissions =
-            extractClaim(token, claims -> claims.get("permissions", Collection.class));
+        Collection<?> roles =
+            extractClaim(token, claims -> claims.get("roles", Collection.class));
 
-        return permissions.stream()
+        return roles.stream()
                           .map(Object::toString)
                           .collect(Collectors.toSet());
     }
@@ -66,16 +65,22 @@ public class JwtService {
         return extractExpiration(token).before(new Date());
     }
 
-    public boolean isTokenValid(String token, UserDetails userDetails) {
+    public boolean isTokenValid(String token, JwtUserClaims expectedJwtUserClaims) {
         final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        final Set<String> roles = extractRoles(token);
+        final Set<String> permissions = extractPermissions(token);
+
+        return (username.equals(expectedJwtUserClaims.username())
+            && roles.equals(expectedJwtUserClaims.roles())
+            && permissions.equals(expectedJwtUserClaims.permissions())
+            && !isTokenExpired(token));
     }
 
-    public String generateToken(JwtTokenUserClaims jwtTokenUserClaimsDto) {
+    public String generateToken(JwtUserClaims jwtUserClaimsDto) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("roles", jwtTokenUserClaimsDto.roles());
-        claims.put("permissions", jwtTokenUserClaimsDto.permissions());
-        return createToken(claims, jwtTokenUserClaimsDto.username());
+        claims.put("roles", jwtUserClaimsDto.roles());
+        claims.put("permissions", jwtUserClaimsDto.permissions());
+        return createToken(claims, jwtUserClaimsDto.username());
     }
 
     private String createToken(Map<String, Object> claims, String username) {

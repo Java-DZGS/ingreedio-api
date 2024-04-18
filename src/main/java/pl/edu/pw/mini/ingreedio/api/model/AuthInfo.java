@@ -58,11 +58,25 @@ public class AuthInfo implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.stream()
+        // Authorities allow using `hasAuthority` function,
+        // for example: if user has CAN_ACCESS_SETTINGS authority,
+        // than `hasAuthority("CAN_ACCESS_SETTINGS")` will authorize the user.
+        Set<GrantedAuthority> userPermissions = roles.stream()
             .map(Role::getPermissions)
             .flatMap(Set::stream)
             .map(permission -> new SimpleGrantedAuthority(permission.getName()))
             .collect(Collectors.toSet());
+
+        // Authorities prefixed with ROLE_ allow using `hasRole` function, for example:
+        // if user has ROLE_USER authority, than `hasRole("USER")` will authorize the user.
+        // `hasRole("USER")` is equivalent of calling `hasAuthority("ROLE_USER")`
+        Set<GrantedAuthority> authorities = roles.stream()
+            .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+            .collect(Collectors.toSet());
+
+        authorities.addAll(userPermissions);
+
+        return authorities;
     }
 
     @Override

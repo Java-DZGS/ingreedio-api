@@ -45,3 +45,7 @@ CREATE TABLE users_roles
 --changeset migoox:remove-level-column-from-roles_permissions
 ALTER TABLE roles_permissions
 DROP COLUMN level;
+
+--changeset migoox:add-roles
+INSERT INTO roles (name) VALUES ('USER');
+INSERT INTO roles (name) VALUES ('MODERATOR');
