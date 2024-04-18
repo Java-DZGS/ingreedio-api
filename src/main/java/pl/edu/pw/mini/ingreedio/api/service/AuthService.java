@@ -28,6 +28,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenService refreshTokenService;
+    private final JwtClaimsService jwtClaimsService;
     private final SecurityService securityService;
 
     public User register(RegisterRequestDto request) {
@@ -55,8 +56,8 @@ public class AuthService {
             .map(token -> {
                 AuthInfo authInfo = token.getAuthInfo();
 
-                String jwtToken = jwtService.generateToken(securityService
-                    .getJwtTokenUserClaimsByAuthInfo(authInfo));
+                String jwtToken = jwtService.generateToken(jwtClaimsService
+                    .getJwtUserClaimsByAuthInfo(authInfo));
                 RefreshToken refreshToken = refreshTokenService.refreshToken(token);
                 return JwtResponseDto.builder()
                     .accessToken(jwtToken)
@@ -75,8 +76,8 @@ public class AuthService {
         );
 
         if (authentication.isAuthenticated()) {
-            String jwtToken = jwtService.generateToken(securityService
-                .getJwtTokenUserClaimsByUsername(request.username()));
+            String jwtToken = jwtService.generateToken(jwtClaimsService
+                .getJwtUserClaimsByUsername(request.username()));
             RefreshToken refreshToken = refreshTokenService.createRefreshToken(request.username());
             return JwtResponseDto.builder()
                 .accessToken(jwtToken)

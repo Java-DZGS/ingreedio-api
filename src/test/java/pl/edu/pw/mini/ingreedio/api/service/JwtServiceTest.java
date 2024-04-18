@@ -10,18 +10,13 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.util.ReflectionTestUtils;
 import pl.edu.pw.mini.ingreedio.api.security.JwtUserClaims;
 
 @ExtendWith(MockitoExtension.class)
 public class JwtServiceTest {
     JwtService jwtService;
-
-    @Mock
-    UserDetails userDetails;
 
     @BeforeEach
     void setUp() {
@@ -163,5 +158,4 @@ public class JwtServiceTest {
         // Then
         assertEquals(jwtUserClaimsDto.permissions(), permissions);
     }
-
 }
