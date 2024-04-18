@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import pl.edu.pw.mini.ingreedio.api.dto.JwtTokenClaimsDto;
+import pl.edu.pw.mini.ingreedio.api.security.JwtTokenUserClaims;
 
 @Service
 @RequiredArgsConstructor
@@ -50,11 +50,11 @@ public class JwtService {
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
-    public String generateToken(JwtTokenClaimsDto jwtTokenClaimsDto) {
+    public String generateToken(JwtTokenUserClaims jwtTokenUserClaimsDto) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("roles", jwtTokenClaimsDto.roles());
-        claims.put("permissions", jwtTokenClaimsDto.permissions());
-        return createToken(claims, jwtTokenClaimsDto.username());
+        claims.put("roles", jwtTokenUserClaimsDto.roles());
+        claims.put("permissions", jwtTokenUserClaimsDto.permissions());
+        return createToken(claims, jwtTokenUserClaimsDto.username());
     }
 
     private String createToken(Map<String, Object> claims, String username) {

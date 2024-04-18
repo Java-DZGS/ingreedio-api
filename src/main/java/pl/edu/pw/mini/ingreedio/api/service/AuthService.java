@@ -1,7 +1,5 @@
 package pl.edu.pw.mini.ingreedio.api.service;
 
-import java.util.HashMap;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -11,7 +9,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import pl.edu.pw.mini.ingreedio.api.dto.AuthRequestDto;
 import pl.edu.pw.mini.ingreedio.api.dto.JwtResponseDto;
-import pl.edu.pw.mini.ingreedio.api.dto.JwtTokenClaimsDto;
 import pl.edu.pw.mini.ingreedio.api.dto.RefreshTokenRequestDto;
 import pl.edu.pw.mini.ingreedio.api.dto.RegisterRequestDto;
 import pl.edu.pw.mini.ingreedio.api.mapper.AuthInfoMapper;
@@ -20,6 +17,7 @@ import pl.edu.pw.mini.ingreedio.api.model.RefreshToken;
 import pl.edu.pw.mini.ingreedio.api.model.User;
 import pl.edu.pw.mini.ingreedio.api.repository.AuthRepository;
 import pl.edu.pw.mini.ingreedio.api.repository.UserRepository;
+import pl.edu.pw.mini.ingreedio.api.security.JwtTokenUserClaims;
 
 @Service
 @RequiredArgsConstructor
@@ -82,7 +80,7 @@ public class AuthService {
         );
 
         if (authentication.isAuthenticated()) {
-            String jwtToken = jwtService.generateToken(getJwtTokenClaims(request.username()));
+            String jwtToken = jwtService.generateToken(getJwtTokenUserClaims(request.username()));
             RefreshToken refreshToken = refreshTokenService.createRefreshToken(request.username());
             return JwtResponseDto.builder()
                 .accessToken(jwtToken)
@@ -93,7 +91,8 @@ public class AuthService {
         }
     }
 
-    private JwtTokenClaimsDto getJwtTokenClaims(String username) throws UsernameNotFoundException {
+    public JwtTokenUserClaims getJwtTokenUserClaims(String username)
+        throws UsernameNotFoundException {
         AuthInfo authInfo = authRepository.findByUsername(username)
             .orElseThrow(() ->
                 new UsernameNotFoundException("User '" + username + "' not found!"));
