@@ -250,7 +250,7 @@ public class ProductServiceTest extends IntegrationTest {
             Product.builder().name("obrazek").brand("karfur").provider("żapka").volume(15)
                 .build());
         productService.addProduct(
-            Product.builder().name("szampą").brand("żapka").provider("karfur").volume(200)
+            Product.builder().name("obrazek").brand("karfur").provider("żapka").volume(12)
                 .build());
         productService.addProduct(
             Product.builder().name("szamka").brand("grycan").provider("żapka").volume(13).build());
@@ -274,6 +274,9 @@ public class ProductServiceTest extends IntegrationTest {
         productService.addProduct(
             Product.builder().name("pasta do zębów").brand("akuafresz").provider("romsan")
                 .volume(12).build());
+        productService.addProduct(
+            Product.builder().name("pasta do zębów").brand("karfur").provider("żapka").volume(12)
+                .build());
         productService.addProduct(
             Product.builder().name("pasta do butów").brand("kiwi").provider("romsan").volume(12)
                 .build());
@@ -362,6 +365,18 @@ public class ProductServiceTest extends IntegrationTest {
                     longDescription.contains(term.toLowerCase()) ||
                     shortDescription.contains(term.toLowerCase())).isTrue();
             }
+=======
+            ProductFilterCriteria.builder().brand("karfur").provider("żapka").build());
+
+        // Then
+        assertThat(karfurZapkaProducts.size()).isEqualTo(3);
+
+        for (ProductDto productDto : karfurZapkaProducts) {
+            Optional<FullProductDto> product = productService.getProductById(productDto.id());
+
+            assertThat(product).isPresent();
+            assertThat(product.get().provider()).isEqualTo("żapka");
+            assertThat(product.get().brand()).isEqualTo("karfur");
         }
     }
 }
