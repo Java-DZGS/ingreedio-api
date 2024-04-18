@@ -32,6 +32,7 @@ public class ProductController {
     @Operation(summary = "Get matching products", description = "Get matching products")
     @GetMapping
     public ResponseEntity<List<ProductDto>> getProducts(
+        @RequestParam Optional<String> name,
         @RequestParam Optional<String> provider,
         @RequestParam Optional<String> brand,
         @RequestParam Optional<Integer> volumeFrom,
@@ -39,6 +40,7 @@ public class ProductController {
         @RequestParam Optional<String[]> ingredients) {
         List<ProductDto> products = productService.getProductsMatching(
             ProductFilterCriteria.builder()
+                .name(name.orElse(null))
                 .provider(provider.orElse(null))
                 .brand(brand.orElse(null))
                 .volumeFrom(volumeFrom.orElse(null))
