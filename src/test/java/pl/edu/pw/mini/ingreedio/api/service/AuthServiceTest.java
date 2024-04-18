@@ -64,7 +64,7 @@ public class AuthServiceTest extends IntegrationTest {
 
     @Test
     @Order(3)
-    public void givenValidRegistrationRequest_whenRegister_thenAccessTokenContainsDefaultRoles() {
+    public void givenValidRegistrationRequest_whenRegister_thenNewUserRolesAreDefault() {
         // Given
         RegisterRequestDto request = new RegisterRequestDto("us", "Us", "us@as.pl", "pass");
 
