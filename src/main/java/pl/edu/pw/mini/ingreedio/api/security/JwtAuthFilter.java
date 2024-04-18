@@ -11,19 +11,19 @@ import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import pl.edu.pw.mini.ingreedio.api.service.JwtClaimsService;
 import pl.edu.pw.mini.ingreedio.api.service.JwtService;
-import pl.edu.pw.mini.ingreedio.api.service.SecurityService;
 
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final SecurityService securityService;
+    private final UserDetailsService userDetailsService;
     private final JwtClaimsService jwtClaimsService;
 
     @Override
@@ -51,7 +51,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             JwtUserClaims claims = jwtClaimsService.getJwtUserClaimsByUsername(username);
-            UserDetails userDetails = securityService.loadUserByUsername(username);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             if (jwtService.isTokenValid(jwt, claims)) {
                 UsernamePasswordAuthenticationToken authToken =
                     new UsernamePasswordAuthenticationToken(userDetails, null,

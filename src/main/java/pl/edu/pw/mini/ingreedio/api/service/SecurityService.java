@@ -7,20 +7,14 @@ import javax.management.relation.RoleNotFoundException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import pl.edu.pw.mini.ingreedio.api.mapper.AuthInfoMapper;
-import pl.edu.pw.mini.ingreedio.api.model.AuthInfo;
 import pl.edu.pw.mini.ingreedio.api.model.Role;
-import pl.edu.pw.mini.ingreedio.api.repository.AuthRepository;
 import pl.edu.pw.mini.ingreedio.api.repository.RoleRepository;
 
 @Service
 @RequiredArgsConstructor
-public class SecurityService implements UserDetailsService {
+public class SecurityService {
     private final RoleRepository roleRepository;
-    private final AuthRepository authRepository;
 
     @Value("${security.default-user-roles}")
     @Getter
@@ -39,20 +33,12 @@ public class SecurityService implements UserDetailsService {
 
         for (var roleName : rolesNames) {
             var role = roleRepository.findByName(roleName);
-            if (!role.isPresent()) {
+            if (role.isEmpty()) {
                 throw new RoleNotFoundException("Role '" + roleName + "' not found!");
             }
             result.add(role.get());
         }
 
         return result;
-    }
-
-    @Override
-    public AuthInfo loadUserByUsername(String username) throws UsernameNotFoundException {
-        return authRepository.findByUsername(username)
-             .orElseThrow(
-                 () -> new UsernameNotFoundException("Could not find user '" + username + "'.")
-             );
     }
 }

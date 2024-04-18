@@ -103,7 +103,7 @@ public class JwtServiceTest {
     }
 
     @Test
-    void givenValidTokenMatchingUsernameAndRolesAndPermissions_whenValidatingToken_thenTokenShouldBeValid() {
+    void givenValidToken_whenValidatingToken_thenTokenShouldBeValid() {
         // Given
         JwtUserClaims jwtUserClaimsDto = JwtUserClaims.builder()
             .username("testUser")
