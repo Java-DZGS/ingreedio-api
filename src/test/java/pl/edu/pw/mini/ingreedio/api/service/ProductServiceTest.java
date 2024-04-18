@@ -139,7 +139,7 @@ public class ProductServiceTest extends IntegrationTest {
                 .build());
 
         // When
-        List<ProductDto> daglasProducts = productService.getProductsMatching(
+        List<ProductDto> pastaProducts = productService.getProductsMatching(
             ProductFilterCriteria.builder().name("pasta do zębów").provider("romsan").build());
 
         // Then
