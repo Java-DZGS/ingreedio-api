@@ -1,6 +1,7 @@
 package pl.edu.pw.mini.ingreedio.api.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.util.AssertionErrors.assertTrue;
 
 import java.util.Arrays;
 import java.util.List;
@@ -190,7 +191,7 @@ public class ProductServiceTest extends IntegrationTest {
             ProductFilterCriteria.builder().volumeFrom(4).build()
         );
         List<ProductDto> betweenProducts = productService.getProductsMatching(
-            ProductFilterCriteria.builder().volumeTo(6).volumeFrom(4).build()
+            ProductFilterCriteria.builder().volumeTo(6).volumeFrom(3).build()
         );
 
         // Then
@@ -201,7 +202,6 @@ public class ProductServiceTest extends IntegrationTest {
             assertThat(product).isPresent();
             assertThat(product.get().volume()).isLessThanOrEqualTo(6);
         }
-
         assertThat(greaterProducts.size()).isEqualTo(4);
         for (ProductDto productDto : greaterProducts) {
             Optional<FullProductDto> product = productService.getProductById(productDto.id());
@@ -215,7 +215,7 @@ public class ProductServiceTest extends IntegrationTest {
 
             assertThat(product).isPresent();
             assertThat(product.get().volume()).isLessThanOrEqualTo(6);
-            assertThat(product.get().volume()).isGreaterThanOrEqualTo(4);
+            assertThat(product.get().volume()).isGreaterThanOrEqualTo(3);
         }
     }
 
@@ -299,6 +299,69 @@ public class ProductServiceTest extends IntegrationTest {
             assertThat(product.get().brand()).isEqualTo("karfur");
             assertThat(product.get().volume()).isBetween(12, 14);
             assertThat(product.get().ingredients()).contains("metanol");
+        }
+    }
+
+    @Test
+    @Order(10)
+    public void givenNameCriteria_whenFilter_thenReturnCorrectProducts() {
+        // Given
+        productService.addProduct(Product.builder()
+            .name("Matte Blush")
+            .brand("Maybelline")
+            .shortDescription("Matte blush for a natural finish.")
+            .longDescription("Controls shine and blurs pores for a natural, matte finish.")
+            .build());
+        productService.addProduct(Product.builder()
+            .name("Pressed Powder")
+            .brand("Rimmel London")
+            .shortDescription("Pressed powder for smooth skin.")
+            .longDescription("Helps minimize the appearance of pores and leaves a smooth, matte finish.")
+            .build());
+        productService.addProduct(Product.builder()
+            .name("Amazonian Clay 12-Hour Blush")
+            .brand("Tarte")
+            .shortDescription("Long-lasting blush with Amazonian clay.")
+            .longDescription("Infused with Amazonian clay for 12 hours of fade-free wear.")
+            .build());
+        productService.addProduct(Product.builder()
+            .name("Stay Matte Pressed Powder")
+            .brand("Rimmel London")
+            .shortDescription("Matte pressed powder for a smooth finish.")
+            .longDescription("Helps minimize the appearance of pores and leaves a smooth, matte finish.")
+            .build());
+        productService.addProduct(Product.builder()
+            .name("Stay Matte Powder")
+            .brand("Lovely")
+            .shortDescription("Matte powder for smooth skin.")
+            .longDescription("Helps minimize the appearance of pores and leaves a smooth, matte finish.")
+            .build());
+        String searchTerm = "Matte Powder Rimmel";
+
+        // When
+        List<ProductDto> liquidProducts = productService.getProductsMatching(
+            ProductFilterCriteria.builder().name(searchTerm).build());
+
+        // Then
+        assertThat(liquidProducts.size()).isEqualTo(2);
+
+        for (ProductDto productDto : liquidProducts) {
+            Optional<FullProductDto> product = productService.getProductById(productDto.id());
+
+            assertThat(product).isPresent();
+
+            String brand = product.get().brand().toLowerCase();
+            String name = product.get().name().toLowerCase();
+            String longDescription = product.get().longDescription().toLowerCase();
+            String shortDescription = productDto.shortDescription().toLowerCase();
+
+            String[] searchTermsArray = searchTerm.split("\\s+");
+            for (String term : searchTermsArray) {
+                assertThat(brand.contains(term.toLowerCase()) ||
+                    name.contains(term.toLowerCase()) ||
+                    longDescription.contains(term.toLowerCase()) ||
+                    shortDescription.contains(term.toLowerCase())).isTrue();
+            }
         }
     }
 }

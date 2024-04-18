@@ -23,7 +23,18 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
         Query query = new Query();
 
         if (criteria.getName() != null) {
-            query.addCriteria(Criteria.where("name").is(criteria.getName()));
+            String[] keywords = criteria.getName().split("\\s+");
+            Criteria[] andCriteria = new Criteria[keywords.length];
+
+            for (int i = 0; i < keywords.length; i++) {
+                andCriteria[i] = new Criteria().orOperator(
+                    Criteria.where("name").regex(".*" + keywords[i] + ".*", "i"),
+                    Criteria.where("brand").regex(".*" + keywords[i] + ".*", "i"),
+                    Criteria.where("shortDescription").regex(".*" + keywords[i] + ".*", "i"),
+                    Criteria.where("longDescription").regex(".*" + keywords[i] + ".*", "i")
+                );
+            }
+            query.addCriteria(new Criteria().andOperator(andCriteria));
         }
         if (criteria.getProvider() != null) {
             query.addCriteria(Criteria.where("provider").is(criteria.getProvider()));
@@ -43,7 +54,7 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
         }
         if (criteria.getIngredients() != null) {
             query.addCriteria(
-                Criteria.where("ingredients").all((Object) criteria.getIngredients()));
+                Criteria.where("ingredients").all((Object[]) criteria.getIngredients()));
         }
 
         return mongoTemplate.find(query, Product.class).stream().map(productDtoMapper).toList();
