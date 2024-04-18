@@ -1,7 +1,6 @@
 package pl.edu.pw.mini.ingreedio.api.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.util.AssertionErrors.assertTrue;
 
 import java.util.Arrays;
 import java.util.List;
@@ -187,12 +186,6 @@ public class ProductServiceTest extends IntegrationTest {
         List<ProductDto> lessProducts = productService.getProductsMatching(
             ProductFilterCriteria.builder().volumeTo(6).build()
         );
-        List<ProductDto> greaterProducts = productService.getProductsMatching(
-            ProductFilterCriteria.builder().volumeFrom(4).build()
-        );
-        List<ProductDto> betweenProducts = productService.getProductsMatching(
-            ProductFilterCriteria.builder().volumeTo(6).volumeFrom(3).build()
-        );
 
         // Then
         assertThat(lessProducts.size()).isEqualTo(4);
@@ -202,6 +195,19 @@ public class ProductServiceTest extends IntegrationTest {
             assertThat(product).isPresent();
             assertThat(product.get().volume()).isLessThanOrEqualTo(6);
         }
+    }
+
+    @Test
+    @Order(9)
+    public void givenVolumeFromCriteria_whenFilter_thenReturnCorrectProducts() {
+        // Given
+
+        // When
+        List<ProductDto> greaterProducts = productService.getProductsMatching(
+            ProductFilterCriteria.builder().volumeFrom(4).build()
+        );
+
+        // Then
         assertThat(greaterProducts.size()).isEqualTo(4);
         for (ProductDto productDto : greaterProducts) {
             Optional<FullProductDto> product = productService.getProductById(productDto.id());
@@ -209,6 +215,19 @@ public class ProductServiceTest extends IntegrationTest {
             assertThat(product).isPresent();
             assertThat(product.get().volume()).isGreaterThanOrEqualTo(4);
         }
+    }
+
+    @Test
+    @Order(10)
+    public void givenVolumeBetweenCriteria_whenFilter_thenReturnCorrectProducts() {
+        // Given
+
+        // When
+        List<ProductDto> betweenProducts = productService.getProductsMatching(
+            ProductFilterCriteria.builder().volumeTo(6).volumeFrom(3).build()
+        );
+
+        // Then
         assertThat(betweenProducts.size()).isEqualTo(4);
         for (ProductDto productDto : betweenProducts) {
             Optional<FullProductDto> product = productService.getProductById(productDto.id());
@@ -220,7 +239,7 @@ public class ProductServiceTest extends IntegrationTest {
     }
 
     @Test
-    @Order(9)
+    @Order(11)
     public void givenMultiCriteria_whenFilter_thenReturnCorrectProducts() {
         // Given
 
@@ -303,7 +322,7 @@ public class ProductServiceTest extends IntegrationTest {
     }
 
     @Test
-    @Order(10)
+    @Order(12)
     public void givenNameCriteria_whenFilter_thenReturnCorrectProducts() {
         // Given
         productService.addProduct(Product.builder()
@@ -316,7 +335,8 @@ public class ProductServiceTest extends IntegrationTest {
             .name("Pressed Powder")
             .brand("Rimmel London")
             .shortDescription("Pressed powder for smooth skin.")
-            .longDescription("Helps minimize the appearance of pores and leaves a smooth, matte finish.")
+            .longDescription(
+                "Helps minimize the appearance of pores and leaves a smooth, matte finish.")
             .build());
         productService.addProduct(Product.builder()
             .name("Amazonian Clay 12-Hour Blush")
@@ -328,13 +348,15 @@ public class ProductServiceTest extends IntegrationTest {
             .name("Stay Matte Pressed Powder")
             .brand("Rimmel London")
             .shortDescription("Matte pressed powder for a smooth finish.")
-            .longDescription("Helps minimize the appearance of pores and leaves a smooth, matte finish.")
+            .longDescription(
+                "Helps minimize the appearance of pores and leaves a smooth, matte finish.")
             .build());
         productService.addProduct(Product.builder()
             .name("Stay Matte Powder")
             .brand("Lovely")
             .shortDescription("Matte powder for smooth skin.")
-            .longDescription("Helps minimize the appearance of pores and leaves a smooth, matte finish.")
+            .longDescription(
+                "Helps minimize the appearance of pores and leaves a smooth, matte finish.")
             .build());
         String searchTerm = "Matte Powder Rimmel";
 
@@ -357,10 +379,10 @@ public class ProductServiceTest extends IntegrationTest {
 
             String[] searchTermsArray = searchTerm.split("\\s+");
             for (String term : searchTermsArray) {
-                assertThat(brand.contains(term.toLowerCase()) ||
-                    name.contains(term.toLowerCase()) ||
-                    longDescription.contains(term.toLowerCase()) ||
-                    shortDescription.contains(term.toLowerCase())).isTrue();
+                assertThat(brand.contains(term.toLowerCase())
+                    || name.contains(term.toLowerCase())
+                    || longDescription.contains(term.toLowerCase())
+                    || shortDescription.contains(term.toLowerCase())).isTrue();
             }
         }
     }
