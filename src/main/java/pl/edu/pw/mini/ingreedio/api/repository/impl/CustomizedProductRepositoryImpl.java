@@ -22,9 +22,6 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
     public List<ProductDto> getProductsMatching(ProductFilterCriteria criteria) {
         Query query = new Query();
 
-        if (criteria.getName() != null) {
-            query.addCriteria(Criteria.where("name").is(criteria.getName()));
-        }
         if (criteria.getProvider() != null) {
             query.addCriteria(Criteria.where("provider").is(criteria.getProvider()));
         }

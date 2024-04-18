@@ -3,6 +3,7 @@ package pl.edu.pw.mini.ingreedio.api.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -80,20 +81,20 @@ public class ProductServiceTest extends IntegrationTest {
     @Order(5)
     public void givenCriteria_whenFilter_thenReturnCorrectProducts() {
         // Given
-        productService.addProduct(Product.builder().name("daglas").build());
-        productService.addProduct(Product.builder().name("daglas").build());
         productService.addProduct(Product.builder().provider("daglas").build());
-        productService.addProduct(Product.builder().name("daglas & co.").build());
+        productService.addProduct(Product.builder().provider("daglas").build());
+        productService.addProduct(Product.builder().name("daglas").build());
+        productService.addProduct(Product.builder().provider("daglas & co.").build());
 
         // When
         List<ProductDto> daglasProducts = productService.getProductsMatching(
-            ProductFilterCriteria.builder().name("daglas").build());
+            ProductFilterCriteria.builder().provider("daglas").build());
 
         // Then
         assertThat(daglasProducts.size()).isEqualTo(2);
 
         for (ProductDto productDto : daglasProducts) {
-            assertThat(productDto.name()).isEqualTo("daglas");
+            assertThat(productDto.provider()).isEqualTo("daglas");
         }
     }
 
@@ -102,7 +103,7 @@ public class ProductServiceTest extends IntegrationTest {
     public void givenMultiCriteria_whenFilter_thenReturnCorrectProducts() {
         // Given
         productService.addProduct(
-            Product.builder().name("szampą").brand("karfur").provider("karfur").volume(200)
+            Product.builder().name("szampą").brand("żapka").provider("karfur").volume(200)
                 .build());
         productService.addProduct(
             Product.builder().name("marchew").brand("ogródek").provider("rosman").volume(1)
@@ -112,7 +113,7 @@ public class ProductServiceTest extends IntegrationTest {
         productService.addProduct(
             Product.builder().name("szamka").brand("grycan").provider("żapka").volume(13).build());
         productService.addProduct(
-            Product.builder().name("obrazek").brand("reksio").provider("karfur").volume(12)
+            Product.builder().name("obrazek").brand("karfur").provider("żapka").volume(12)
                 .build());
         productService.addProduct(
             Product.builder().name("baton").brand("sniker").provider("żapka").volume(12).build());
@@ -132,22 +133,25 @@ public class ProductServiceTest extends IntegrationTest {
             Product.builder().name("pasta do zębów").brand("akuafresz").provider("romsan")
                 .volume(12).build());
         productService.addProduct(
-            Product.builder().name("pasta do zębów").brand("karfur").provider("karfur").volume(12)
+            Product.builder().name("pasta do zębów").brand("karfur").provider("żapka").volume(12)
                 .build());
         productService.addProduct(
             Product.builder().name("pasta do butów").brand("kiwi").provider("romsan").volume(12)
                 .build());
 
         // When
-        List<ProductDto> pastaProducts = productService.getProductsMatching(
-            ProductFilterCriteria.builder().name("pasta do zębów").provider("romsan").build());
+        List<ProductDto> karfurZapkaProducts = productService.getProductsMatching(
+            ProductFilterCriteria.builder().brand("karfur").provider("żapka").build());
 
         // Then
-        assertThat(pastaProducts.size()).isEqualTo(4);
+        assertThat(karfurZapkaProducts.size()).isEqualTo(3);
 
-        for (ProductDto productDto : pastaProducts) {
-            assertThat(productDto.provider()).isEqualTo("romsan");
-            assertThat(productDto.name()).contains("pasta");
+        for (ProductDto productDto : karfurZapkaProducts) {
+            Optional<FullProductDto> product = productService.getProductById(productDto.id());
+
+            assertThat(product).isPresent();
+            assertThat(product.get().provider()).isEqualTo("żapka");
+            assertThat(product.get().brand()).isEqualTo("karfur");
         }
     }
 }
