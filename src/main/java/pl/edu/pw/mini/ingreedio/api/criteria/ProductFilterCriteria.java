@@ -6,6 +6,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class ProductFilterCriteria {
+    private String name;
     private String provider;
     private String brand;
     private Integer volumeFrom;
