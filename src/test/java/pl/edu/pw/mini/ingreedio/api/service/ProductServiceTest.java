@@ -54,7 +54,7 @@ public class ProductServiceTest extends IntegrationTest {
     @Order(3)
     public void givenProductId_whenGetProductById_thenReturnFullProductDtoObject() {
         // When
-        FullProductDto fullProductDto = productService.getProductById(1L);
+        FullProductDto fullProductDto = productService.getProductById(1L).orElseThrow();
 
         // Then
         assertThat(fullProductDto).isNotNull();
@@ -66,10 +66,10 @@ public class ProductServiceTest extends IntegrationTest {
     @Order(4)
     public void givenNoCriteria_whenFilter_thenReturnAllProducts() {
         // Given
-        
+
         // When
-        List<FullProductDto> res =
-            productService.filterProducts(ProductFilterCriteria.builder().build());
+        List<ProductDto> res =
+            productService.getProductsMatching(ProductFilterCriteria.builder().build());
 
         // Then
         assertThat(res).isNotNull();
@@ -80,19 +80,20 @@ public class ProductServiceTest extends IntegrationTest {
     @Order(5)
     public void givenCriteria_whenFilter_thenReturnCorrectProducts() {
         // Given
-        productService.addProduct(Product.builder().brand("daglas").build());
-        productService.addProduct(Product.builder().brand("daglas").build());
+        productService.addProduct(Product.builder().name("daglas").build());
+        productService.addProduct(Product.builder().name("daglas").build());
         productService.addProduct(Product.builder().provider("daglas").build());
-        productService.addProduct(Product.builder().brand("daglas & co.").build());
+        productService.addProduct(Product.builder().name("daglas & co.").build());
 
         // When
-        List<FullProductDto> daglasProducts =
-            productService.filterProducts(ProductFilterCriteria.builder().brand("daglas").build());
+        List<ProductDto> daglasProducts = productService.getProductsMatching(
+            ProductFilterCriteria.builder().name("daglas").build());
 
         // Then
         assertThat(daglasProducts.size()).isEqualTo(2);
-        for (FullProductDto productDto : daglasProducts) {
-            assertThat(productDto.brand()).isEqualTo("daglas");
+
+        for (ProductDto productDto : daglasProducts) {
+            assertThat(productDto.name()).isEqualTo("daglas");
         }
     }
 
@@ -138,12 +139,14 @@ public class ProductServiceTest extends IntegrationTest {
                 .build());
 
         // When
-        List<FullProductDto> daglasProducts = productService.filterProducts(
-            ProductFilterCriteria.builder().name("pasta").provider("romsan").build());
+        List<ProductDto> pastaProducts = productService.getProductsMatching(
+            ProductFilterCriteria.builder().name("pasta do zębów").provider("romsan").build());
 
         // Then
-        for (FullProductDto productDto : daglasProducts) {
-            assertThat(productDto.brand()).isEqualTo("rosman");
+        assertThat(pastaProducts.size()).isEqualTo(4);
+
+        for (ProductDto productDto : pastaProducts) {
+            assertThat(productDto.provider()).isEqualTo("romsan");
             assertThat(productDto.name()).contains("pasta");
         }
     }

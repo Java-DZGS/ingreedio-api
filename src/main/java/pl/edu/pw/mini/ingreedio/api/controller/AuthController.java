@@ -1,7 +1,6 @@
 package pl.edu.pw.mini.ingreedio.api.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 import pl.edu.pw.mini.ingreedio.api.dto.AuthRequestDto;
 import pl.edu.pw.mini.ingreedio.api.dto.JwtResponseDto;
 import pl.edu.pw.mini.ingreedio.api.dto.RefreshTokenRequestDto;
-import pl.edu.pw.mini.ingreedio.api.dto.RegisterRequestDto;
 import pl.edu.pw.mini.ingreedio.api.service.AuthService;
 
 @RestController
@@ -38,16 +36,6 @@ public class AuthController {
             return ResponseEntity.ok(service.refresh(request));
         } catch (RuntimeException ex) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
-    }
-
-    @PostMapping("/register")
-    public ResponseEntity<JwtResponseDto> registerAndGetToken(
-        @RequestBody RegisterRequestDto request) {
-        try {
-            return ResponseEntity.ok(service.register(request));
-        } catch (DataIntegrityViolationException ex) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
     }
 }

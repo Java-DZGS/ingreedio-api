@@ -1,5 +1,6 @@
 package pl.edu.pw.mini.ingreedio.api.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -16,6 +17,7 @@ import pl.edu.pw.mini.ingreedio.api.dto.AuthRequestDto;
 import pl.edu.pw.mini.ingreedio.api.dto.JwtResponseDto;
 import pl.edu.pw.mini.ingreedio.api.dto.RefreshTokenRequestDto;
 import pl.edu.pw.mini.ingreedio.api.dto.RegisterRequestDto;
+import pl.edu.pw.mini.ingreedio.api.model.User;
 
 @SpringBootTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -31,11 +33,11 @@ public class AuthServiceTest extends IntegrationTest {
         RegisterRequestDto request = new RegisterRequestDto("us", "Us", "us@as.pl", "pass");
 
         // When
-        JwtResponseDto response = authService.register(request);
+        User response = authService.register(request);
 
         // Then
-        assertNotNull(response.accessToken());
-        assertNotNull(response.refreshToken());
+        assertEquals("Us", response.getDisplayName());
+        assertEquals("us@as.pl", response.getEmail());
     }
 
     @Test
