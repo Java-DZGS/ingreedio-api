@@ -143,7 +143,7 @@ public class ProductServiceTest extends IntegrationTest {
             ProductFilterCriteria.builder().name("pasta do zębów").provider("romsan").build());
 
         // Then
-        assertThat(daglasProducts.size()).isEqualTo(4);
+        assertThat(pastaProducts.size()).isEqualTo(4);
 
         for (ProductDto productDto : daglasProducts) {
             assertThat(productDto.provider()).isEqualTo("romsan");
