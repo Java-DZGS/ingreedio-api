@@ -145,7 +145,7 @@ public class ProductServiceTest extends IntegrationTest {
         // Then
         assertThat(pastaProducts.size()).isEqualTo(4);
 
-        for (ProductDto productDto : daglasProducts) {
+        for (ProductDto productDto : pastaProducts) {
             assertThat(productDto.provider()).isEqualTo("romsan");
             assertThat(productDto.name()).contains("pasta");
         }
