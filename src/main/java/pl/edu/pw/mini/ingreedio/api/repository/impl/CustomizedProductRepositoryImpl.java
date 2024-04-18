@@ -31,10 +31,14 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
         if (criteria.getBrand() != null) {
             query.addCriteria(Criteria.where("brand").is(criteria.getBrand()));
         }
-        if (criteria.getVolumeFrom() != null) {
+        if (criteria.getVolumeFrom() != null && criteria.getVolumeTo() != null) {
+            query.addCriteria(
+                Criteria.where("volume")
+                    .gte(criteria.getVolumeFrom())
+                    .lte(criteria.getVolumeTo()));
+        } else if (criteria.getVolumeFrom() != null) {
             query.addCriteria(Criteria.where("volume").gte(criteria.getVolumeFrom()));
-        }
-        if (criteria.getVolumeTo() != null) {
+        } else if (criteria.getVolumeTo() != null) {
             query.addCriteria(Criteria.where("volume").lte(criteria.getVolumeTo()));
         }
         if (criteria.getIngredients() != null) {
