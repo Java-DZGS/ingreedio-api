@@ -21,6 +21,7 @@ import pl.edu.pw.mini.ingreedio.api.dto.AuthRequestDto;
 import pl.edu.pw.mini.ingreedio.api.dto.JwtResponseDto;
 import pl.edu.pw.mini.ingreedio.api.dto.RefreshTokenRequestDto;
 import pl.edu.pw.mini.ingreedio.api.dto.RegisterRequestDto;
+import pl.edu.pw.mini.ingreedio.api.model.Role;
 import pl.edu.pw.mini.ingreedio.api.repository.RoleRepository;
 
 @SpringBootTest
@@ -29,6 +30,9 @@ public class AuthServiceTest extends IntegrationTest {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private SecurityService securityService;
 
     @Autowired
     private JwtService jwtService;
@@ -68,15 +72,8 @@ public class AuthServiceTest extends IntegrationTest {
 
         // When
         JwtResponseDto response = authService.register(request);
-
-//        boolean equal = authService.getDefaultUserRoles().equals(
-//            jwtService.extractRoles(response.accessToken()).stream()
-//                .map(roleRepository::findByName)
-//                .filter(Optional::isPresent)
-//                .map(Optional::get)
-//                .collect(Collectors.toSet())
-//        );
-        boolean equal = true;
+        Set<String> accessTokenRolesNames = jwtService.extractRoles(response.accessToken());
+        boolean equal = securityService.getDefaultUserRolesNames().equals(accessTokenRolesNames);
 
         // Then
         assertTrue(equal);

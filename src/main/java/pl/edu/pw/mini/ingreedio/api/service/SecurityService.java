@@ -1,9 +1,12 @@
 package pl.edu.pw.mini.ingreedio.api.service;
 
+import jakarta.annotation.PostConstruct;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.management.relation.RoleNotFoundException;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -24,14 +27,29 @@ public class SecurityService implements UserDetailsService {
     private final AuthInfoMapper authInfoMapper;
 
     @Value("${security.default-user-roles}")
+    @Getter
     private Set<String> defaultUserRolesNames;
 
-    public Set<Role> getDefaultUserRoles() {
-        return defaultUserRolesNames.stream()
-            .map(roleRepository::findByName)
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .collect(Collectors.toSet());
+    @Getter
+    private Set<Role> defaultUserRoles;
+
+    @PostConstruct
+    private void initDefaultUserRoles() throws RoleNotFoundException {
+        defaultUserRoles = getRolesByRolesNames(defaultUserRolesNames);
+    }
+
+    public Set<Role> getRolesByRolesNames(Set<String> rolesNames) throws RoleNotFoundException {
+        HashSet<Role> result = new HashSet<>();
+
+        for (var roleName : rolesNames) {
+            var role = roleRepository.findByName(roleName);
+            if (!role.isPresent()) {
+                throw new RoleNotFoundException("Role '" + roleName + "' not found!");
+            }
+            result.add(role.get());
+        }
+
+        return result;
     }
 
     public JwtUserClaims getJwtTokenUserClaimsByUsername(String username)
