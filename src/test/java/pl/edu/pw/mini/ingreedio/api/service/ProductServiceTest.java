@@ -10,6 +10,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import pl.edu.pw.mini.ingreedio.api.IntegrationTest;
+import pl.edu.pw.mini.ingreedio.api.criteria.ProductFilterCriteria;
 import pl.edu.pw.mini.ingreedio.api.dto.FullProductDto;
 import pl.edu.pw.mini.ingreedio.api.dto.ProductDto;
 import pl.edu.pw.mini.ingreedio.api.model.Product;
@@ -24,8 +25,7 @@ public class ProductServiceTest extends IntegrationTest {
     @Order(1)
     public void givenProductObject_whenSaveProduct_thenReturnProductObject() {
         // Given
-        Product product = new Product();
-        product.setName("testProduct");
+        Product product = Product.builder().name("testProduct").build();
 
         // When
         Product savedProduct = productService.addProduct(product);
@@ -37,18 +37,10 @@ public class ProductServiceTest extends IntegrationTest {
     @Test
     @Order(2)
     public void givenProductsList_whenGetAllProducts_thenReturnProductsList() {
-
         // Given
-        Product product1 = new Product();
-        product1.setName("testProduct1");
-        Product product2 = new Product();
-        product2.setName("testProduct2");
-        Product product3 = new Product();
-        product3.setName("testProduct3");
-
-        productService.addProduct(product1);
-        productService.addProduct(product2);
-        productService.addProduct(product3);
+        productService.addProduct(Product.builder().name("testProduct1").build());
+        productService.addProduct(Product.builder().name("testProduct2").build());
+        productService.addProduct(Product.builder().name("testProduct3").build());
 
         // When
         List<ProductDto> productsList = productService.getAllProducts();
@@ -62,11 +54,100 @@ public class ProductServiceTest extends IntegrationTest {
     @Order(3)
     public void givenProductId_whenGetProductById_thenReturnFullProductDtoObject() {
         // When
-        FullProductDto fullProductDto = productService.getProductById(1L);
+        FullProductDto fullProductDto = productService.getProductById(1L).orElseThrow();
 
         // Then
         assertThat(fullProductDto).isNotNull();
         assertThat(fullProductDto.id()).isEqualTo(1L);
         assertThat(fullProductDto.name()).isEqualTo("testProduct");
+    }
+
+    @Test
+    @Order(4)
+    public void givenNoCriteria_whenFilter_thenReturnAllProducts() {
+        // Given
+
+        // When
+        List<ProductDto> res =
+            productService.getProductsMatching(ProductFilterCriteria.builder().build());
+
+        // Then
+        assertThat(res).isNotNull();
+        assertThat(res.size()).isEqualTo(4);
+    }
+
+    @Test
+    @Order(5)
+    public void givenCriteria_whenFilter_thenReturnCorrectProducts() {
+        // Given
+        productService.addProduct(Product.builder().name("daglas").build());
+        productService.addProduct(Product.builder().name("daglas").build());
+        productService.addProduct(Product.builder().provider("daglas").build());
+        productService.addProduct(Product.builder().name("daglas & co.").build());
+
+        // When
+        List<ProductDto> daglasProducts = productService.getProductsMatching(
+            ProductFilterCriteria.builder().name("daglas").build());
+
+        // Then
+        assertThat(daglasProducts.size()).isEqualTo(2);
+
+        for (ProductDto productDto : daglasProducts) {
+            assertThat(productDto.name()).isEqualTo("daglas");
+        }
+    }
+
+    @Test
+    @Order(6)
+    public void givenMultiCriteria_whenFilter_thenReturnCorrectProducts() {
+        // Given
+        productService.addProduct(
+            Product.builder().name("szampą").brand("karfur").provider("karfur").volume(200)
+                .build());
+        productService.addProduct(
+            Product.builder().name("marchew").brand("ogródek").provider("rosman").volume(1)
+                .build());
+        productService.addProduct(
+            Product.builder().name("poper").brand("karfur").provider("żapka").volume(12).build());
+        productService.addProduct(
+            Product.builder().name("szamka").brand("grycan").provider("żapka").volume(13).build());
+        productService.addProduct(
+            Product.builder().name("obrazek").brand("reksio").provider("karfur").volume(12)
+                .build());
+        productService.addProduct(
+            Product.builder().name("baton").brand("sniker").provider("żapka").volume(12).build());
+        productService.addProduct(
+            Product.builder().name("pianka do golenia").brand("golibroda").provider("romsan")
+                .volume(12).build());
+        productService.addProduct(
+            Product.builder().name("pasta do zębów").brand("kolgat").provider("romsan").volume(12)
+                .build());
+        productService.addProduct(
+            Product.builder().name("pasta do zębów").brand("sęsodę").provider("romsan").volume(12)
+                .build());
+        productService.addProduct(
+            Product.builder().name("pasta do zębów").brand("elmech").provider("romsan").volume(12)
+                .build());
+        productService.addProduct(
+            Product.builder().name("pasta do zębów").brand("akuafresz").provider("romsan")
+                .volume(12).build());
+        productService.addProduct(
+            Product.builder().name("pasta do zębów").brand("karfur").provider("karfur").volume(12)
+                .build());
+        productService.addProduct(
+            Product.builder().name("pasta do butów").brand("kiwi").provider("romsan").volume(12)
+                .build());
+
+        // When
+        List<ProductDto> pastaProducts = productService.getProductsMatching(
+            ProductFilterCriteria.builder().name("pasta do zębów").provider("romsan").build());
+
+        // Then
+        assertThat(pastaProducts.size()).isEqualTo(4);
+
+        for (ProductDto productDto : pastaProducts) {
+            assertThat(productDto.provider()).isEqualTo("romsan");
+            assertThat(productDto.name()).contains("pasta");
+        }
     }
 }

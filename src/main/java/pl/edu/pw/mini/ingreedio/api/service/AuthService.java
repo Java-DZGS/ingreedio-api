@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -11,7 +12,6 @@ import pl.edu.pw.mini.ingreedio.api.dto.AuthRequestDto;
 import pl.edu.pw.mini.ingreedio.api.dto.JwtResponseDto;
 import pl.edu.pw.mini.ingreedio.api.dto.RefreshTokenRequestDto;
 import pl.edu.pw.mini.ingreedio.api.dto.RegisterRequestDto;
-import pl.edu.pw.mini.ingreedio.api.mapper.AuthInfoMapper;
 import pl.edu.pw.mini.ingreedio.api.model.AuthInfo;
 import pl.edu.pw.mini.ingreedio.api.model.RefreshToken;
 import pl.edu.pw.mini.ingreedio.api.model.User;
@@ -24,16 +24,13 @@ public class AuthService {
     private final AuthRepository authRepository;
     private final UserRepository userRepository;
 
-    private final AuthInfoMapper authInfoMapper;
-
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenService refreshTokenService;
-
     private final SecurityService securityService;
 
-    public JwtResponseDto register(RegisterRequestDto request) {
+    public User register(RegisterRequestDto request) {
         User user = User.builder()
             .displayName(request.displayName())
             .email(request.email())
@@ -42,21 +39,14 @@ public class AuthService {
         AuthInfo authInfo = AuthInfo.builder()
             .username(request.username())
             .password(passwordEncoder.encode(request.password()))
-            .roles(securityService.getDefaultUserRoles())
             .user(user)
+            .roles(securityService.getDefaultUserRoles())
             .build();
 
         userRepository.save(user);
         authRepository.save(authInfo);
 
-        String jwtToken = jwtService.generateToken(
-            securityService.getJwtTokenUserClaimsByAuthInfo(authInfo));
-
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(request.username());
-        return JwtResponseDto.builder()
-            .accessToken(jwtToken)
-            .refreshToken(refreshToken.getToken())
-            .build();
+        return user;
     }
 
     public JwtResponseDto refresh(RefreshTokenRequestDto request) {
@@ -65,9 +55,8 @@ public class AuthService {
             .map(token -> {
                 AuthInfo authInfo = token.getAuthInfo();
 
-                String jwtToken = jwtService.generateToken(
-                    securityService.getJwtTokenUserClaimsByAuthInfo(authInfo));
-
+                String jwtToken = jwtService.generateToken(securityService
+                    .getJwtTokenUserClaimsByAuthInfo(authInfo));
                 RefreshToken refreshToken = refreshTokenService.refreshToken(token);
                 return JwtResponseDto.builder()
                     .accessToken(jwtToken)
@@ -86,8 +75,8 @@ public class AuthService {
         );
 
         if (authentication.isAuthenticated()) {
-            String jwtToken = jwtService.generateToken(
-                securityService.getJwtTokenUserClaimsByUsername(request.username()));
+            String jwtToken = jwtService.generateToken(securityService
+                .getJwtTokenUserClaimsByUsername(request.username()));
             RefreshToken refreshToken = refreshTokenService.createRefreshToken(request.username());
             return JwtResponseDto.builder()
                 .accessToken(jwtToken)
@@ -98,4 +87,17 @@ public class AuthService {
         }
     }
 
+    public String getCurrentUsername() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            return authentication.getName();
+        }
+
+        return null;
+    }
+
+    public AuthInfo getAuthInfoByUsername(String username) throws UsernameNotFoundException {
+        return authRepository.findByUsername(username)
+            .orElseThrow(() -> new UsernameNotFoundException("User '" + username + "' not found!"));
+    }
 }

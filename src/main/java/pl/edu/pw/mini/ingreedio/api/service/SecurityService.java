@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import pl.edu.pw.mini.ingreedio.api.mapper.AuthInfoMapper;
 import pl.edu.pw.mini.ingreedio.api.model.AuthInfo;
 import pl.edu.pw.mini.ingreedio.api.model.Role;
+import pl.edu.pw.mini.ingreedio.api.model.User;
 import pl.edu.pw.mini.ingreedio.api.repository.AuthRepository;
 import pl.edu.pw.mini.ingreedio.api.repository.RoleRepository;
 import pl.edu.pw.mini.ingreedio.api.security.JwtUserClaims;

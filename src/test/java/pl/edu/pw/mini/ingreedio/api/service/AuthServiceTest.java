@@ -1,18 +1,16 @@
 package pl.edu.pw.mini.ingreedio.api.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -21,7 +19,7 @@ import pl.edu.pw.mini.ingreedio.api.dto.AuthRequestDto;
 import pl.edu.pw.mini.ingreedio.api.dto.JwtResponseDto;
 import pl.edu.pw.mini.ingreedio.api.dto.RefreshTokenRequestDto;
 import pl.edu.pw.mini.ingreedio.api.dto.RegisterRequestDto;
-import pl.edu.pw.mini.ingreedio.api.model.Role;
+import pl.edu.pw.mini.ingreedio.api.model.User;
 import pl.edu.pw.mini.ingreedio.api.repository.RoleRepository;
 
 @SpringBootTest
@@ -47,11 +45,11 @@ public class AuthServiceTest extends IntegrationTest {
         RegisterRequestDto request = new RegisterRequestDto("us", "Us", "us@as.pl", "pass");
 
         // When
-        JwtResponseDto response = authService.register(request);
+        User response = authService.register(request);
 
         // Then
-        assertNotNull(response.accessToken());
-        assertNotNull(response.refreshToken());
+        assertEquals("Us", response.getDisplayName());
+        assertEquals("us@as.pl", response.getEmail());
     }
 
     @Test
@@ -71,9 +69,9 @@ public class AuthServiceTest extends IntegrationTest {
         RegisterRequestDto request = new RegisterRequestDto("us", "Us", "us@as.pl", "pass");
 
         // When
-        JwtResponseDto response = authService.register(request);
-        Set<String> accessTokenRolesNames = jwtService.extractRoles(response.accessToken());
-        boolean equal = securityService.getDefaultUserRolesNames().equals(accessTokenRolesNames);
+        authService.register(request);
+        boolean equal = authService.getAuthInfoByUsername("us").getRoles().equals(
+            securityService.getDefaultUserRoles());
 
         // Then
         assertTrue(equal);
