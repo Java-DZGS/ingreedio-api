@@ -47,5 +47,15 @@ ALTER TABLE roles_permissions
 DROP COLUMN level;
 
 --changeset migoox:add-roles
-INSERT INTO roles (name) VALUES ('USER');
-INSERT INTO roles (name) VALUES ('MODERATOR');
+INSERT INTO roles (id, name) VALUES (1, 'USER');
+INSERT INTO roles (id, name) VALUES (2, 'MODERATOR');
+
+--changeset migoox:add-permissions-v1
+INSERT INTO permissions(id, name, description) VALUES (1, 'REMOVE_USER_OPINION', 'Allows removing user opinions');
+INSERT INTO permissions(id, name, description) VALUES (2, 'REMOVE_PRODUCT', 'Allows removing products');
+INSERT INTO permissions(id, name, description) VALUES (3, 'ADD_PRODUCT', 'Allows adding new products');
+INSERT INTO permissions(id, name, description) VALUES (4, 'REPORT_USER_OPINION', 'Allows reporting user opinions');
+INSERT INTO roles_permissions(role_id, permission_id) VALUES (2, 1);
+INSERT INTO roles_permissions(role_id, permission_id) VALUES (2, 2);
+INSERT INTO roles_permissions(role_id, permission_id) VALUES (2, 3);
+INSERT INTO roles_permissions(role_id, permission_id) VALUES (1, 4);
