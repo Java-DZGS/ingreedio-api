@@ -22,8 +22,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<JwtResponseDto> authenticateAndGetToken(
         @RequestBody AuthRequestDto request) {
-        try {
-            return ResponseEntity.ok(service.login(request));
+        try { return ResponseEntity.ok(service.login(request));
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
