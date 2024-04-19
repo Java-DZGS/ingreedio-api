@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import pl.edu.pw.mini.ingreedio.api.model.AuthInfo;
+import pl.edu.pw.mini.ingreedio.api.model.Permission;
 import pl.edu.pw.mini.ingreedio.api.model.Role;
 import pl.edu.pw.mini.ingreedio.api.repository.AuthRepository;
 import pl.edu.pw.mini.ingreedio.api.repository.RoleRepository;
@@ -54,5 +55,17 @@ public class RoleService {
     public Role getRoleByName(String roleName) throws RoleNotFoundException {
         return roleRepository.findByName(roleName).orElseThrow(
             () -> new RoleNotFoundException("User '" + roleName + "' not found!"));
+    }
+
+    public Role createRoleWithName(String roleName) {
+        Role role = Role.builder().name(roleName).build();
+        roleRepository.save(role);
+
+        return role;
+    }
+
+    public void addPermissionToRole(Role role, Permission permission) {
+        role.getPermissions().add(permission);
+        roleRepository.save(role);
     }
 }

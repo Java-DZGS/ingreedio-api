@@ -17,6 +17,7 @@ public class RoleServiceTest extends IntegrationTest {
     @Autowired
     private RoleService roleService;
 
+
     @Test
     public void givenUser_whenGrantingRole_thenRoleIsGranted() throws RoleNotFoundException {
         // Given
