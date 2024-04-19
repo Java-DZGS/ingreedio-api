@@ -13,7 +13,7 @@ import pl.edu.pw.mini.ingreedio.api.repository.RoleRepository;
 
 @Service
 @RequiredArgsConstructor
-public class SecurityService {
+public class RolesService {
     private final RoleRepository roleRepository;
 
     @Value("${security.default-user-roles}")

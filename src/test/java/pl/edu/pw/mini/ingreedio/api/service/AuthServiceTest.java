@@ -31,7 +31,7 @@ public class AuthServiceTest extends IntegrationTest {
     private AuthService authService;
 
     @Autowired
-    private SecurityService securityService;
+    private RolesService rolesService;
 
     @Test
     @Order(1)
@@ -63,7 +63,7 @@ public class AuthServiceTest extends IntegrationTest {
         // Given
         Set<String> newUserRoles = authService.getAuthInfoByUsername("us").getRoles()
             .stream().map(Role::getName).collect(Collectors.toSet());
-        Set<String> defaultRoles = securityService.getDefaultUserRoles()
+        Set<String> defaultRoles = rolesService.getDefaultUserRoles()
             .stream().map(Role::getName).collect(Collectors.toSet());
 
         // When

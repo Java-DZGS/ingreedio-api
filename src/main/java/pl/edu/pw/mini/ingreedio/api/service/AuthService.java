@@ -29,7 +29,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenService refreshTokenService;
     private final JwtClaimsService jwtClaimsService;
-    private final SecurityService securityService;
+    private final RolesService rolesService;
 
     public User register(RegisterRequestDto request) {
         User user = User.builder()
@@ -41,7 +41,7 @@ public class AuthService {
             .username(request.username())
             .password(passwordEncoder.encode(request.password()))
             .user(user)
-            .roles(securityService.getDefaultUserRoles())
+            .roles(rolesService.getDefaultUserRoles())
             .build();
 
         userRepository.save(user);
