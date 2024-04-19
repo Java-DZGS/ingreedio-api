@@ -25,19 +25,18 @@ public class RoleServiceTest extends IntegrationTest {
     @Autowired
     private RoleRepository roleRepository;
 
-
     @Test
     public void givenUser_whenGrantingRole_thenRoleIsGranted() {
         // Given
         RegisterRequestDto request =
-            new RegisterRequestDto("us", "Us", "us@as.pl", "pass");
+            new RegisterRequestDto("user", "Username", "username@as.pl", "pass");
         authService.register(request);
-        AuthInfo authInfo = authService.getAuthInfoByUsername("us");
+        AuthInfo authInfo = authService.getAuthInfoByUsername("user");
         Role newUserRole = assertRoleExist("TEST");
 
         // When
         roleService.grantRole(authInfo, newUserRole);
-        boolean valid = authService.getAuthInfoByUsername("us").getRoles().stream()
+        boolean valid = authService.getAuthInfoByUsername("user").getRoles().stream()
             .anyMatch(role -> role.getName().equals("TEST"));
 
         // Then
