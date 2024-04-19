@@ -1,5 +1,6 @@
 package pl.edu.pw.mini.ingreedio.api.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -11,14 +12,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.BadCredentialsException;
+import pl.edu.pw.mini.ingreedio.api.IntegrationTest;
 import pl.edu.pw.mini.ingreedio.api.dto.AuthRequestDto;
 import pl.edu.pw.mini.ingreedio.api.dto.JwtResponseDto;
 import pl.edu.pw.mini.ingreedio.api.dto.RefreshTokenRequestDto;
 import pl.edu.pw.mini.ingreedio.api.dto.RegisterRequestDto;
+import pl.edu.pw.mini.ingreedio.api.model.User;
 
 @SpringBootTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class AuthServiceTest {
+public class AuthServiceTest extends IntegrationTest {
 
     @Autowired
     private AuthService authService;
@@ -30,11 +33,11 @@ public class AuthServiceTest {
         RegisterRequestDto request = new RegisterRequestDto("us", "Us", "us@as.pl", "pass");
 
         // When
-        JwtResponseDto response = authService.register(request);
+        User response = authService.register(request);
 
         // Then
-        assertNotNull(response.accessToken());
-        assertNotNull(response.refreshToken());
+        assertEquals("Us", response.getDisplayName());
+        assertEquals("us@as.pl", response.getEmail());
     }
 
     @Test

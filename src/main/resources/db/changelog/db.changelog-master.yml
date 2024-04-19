@@ -2,3 +2,9 @@ databaseChangeLog:
   - include:
       file: test-data/v0.1-changelog.sql
       relativeToChangelogFile: true
+  - include:
+      file: test-data/v0.2-changelog.sql
+      relativeToChangelogFile: true
+  - include:
+      file: test-data/v0.2-data-import-changelog.sql
+      relativeToChangelogFile: true

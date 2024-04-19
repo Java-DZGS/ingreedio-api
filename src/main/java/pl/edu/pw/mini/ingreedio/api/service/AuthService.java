@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,14 +29,14 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenService refreshTokenService;
 
-    public JwtResponseDto register(RegisterRequestDto request) {
+    public User register(RegisterRequestDto request) {
         User user = User.builder()
             .displayName(request.displayName())
             .email(request.email())
             .build();
 
         AuthInfo authInfo = AuthInfo.builder()
-            .username(request.userName())
+            .username(request.username())
             .password(passwordEncoder.encode(request.password()))
             .user(user)
             .build();
@@ -43,12 +44,7 @@ public class AuthService {
         userRepository.save(user);
         authRepository.save(authInfo);
 
-        String jwtToken = jwtService.generateToken(request.userName());
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(request.userName());
-        return JwtResponseDto.builder()
-            .accessToken(jwtToken)
-            .refreshToken(refreshToken.getToken())
-            .build();
+        return user;
     }
 
     public JwtResponseDto refresh(RefreshTokenRequestDto request) {
@@ -70,20 +66,29 @@ public class AuthService {
     public JwtResponseDto login(AuthRequestDto request) {
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
-                request.userName(),
+                request.username(),
                 request.password()
             )
         );
 
         if (authentication.isAuthenticated()) {
-            String jwtToken = jwtService.generateToken(request.userName());
-            RefreshToken refreshToken = refreshTokenService.createRefreshToken(request.userName());
+            String jwtToken = jwtService.generateToken(request.username());
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(request.username());
             return JwtResponseDto.builder()
                 .accessToken(jwtToken)
                 .refreshToken(refreshToken.getToken())
                 .build();
         } else {
-            throw new UsernameNotFoundException("User '" + request.userName() + "' not found!");
+            throw new UsernameNotFoundException("User '" + request.username() + "' not found!");
         }
+    }
+
+    public String getCurrentUsername() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            return authentication.getName();
+        }
+
+        return null;
     }
 }
