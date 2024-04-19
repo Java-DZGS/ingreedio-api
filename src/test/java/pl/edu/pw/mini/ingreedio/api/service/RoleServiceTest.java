@@ -1,15 +1,14 @@
 package pl.edu.pw.mini.ingreedio.api.service;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import javax.management.relation.RoleNotFoundException;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import pl.edu.pw.mini.ingreedio.api.IntegrationTest;
 import pl.edu.pw.mini.ingreedio.api.dto.RegisterRequestDto;
 import pl.edu.pw.mini.ingreedio.api.model.AuthInfo;
 import pl.edu.pw.mini.ingreedio.api.model.Role;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RoleServiceTest extends IntegrationTest {
     @Autowired
