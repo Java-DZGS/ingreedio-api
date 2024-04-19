@@ -8,13 +8,16 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import pl.edu.pw.mini.ingreedio.api.model.AuthInfo;
 import pl.edu.pw.mini.ingreedio.api.model.Role;
+import pl.edu.pw.mini.ingreedio.api.repository.AuthRepository;
 import pl.edu.pw.mini.ingreedio.api.repository.RoleRepository;
 
 @Service
 @RequiredArgsConstructor
-public class RolesService {
+public class RoleService {
     private final RoleRepository roleRepository;
+    private final AuthRepository authRepository;
 
     @Value("${security.default-user-roles}")
     @Getter
@@ -40,5 +43,16 @@ public class RolesService {
         }
 
         return result;
+    }
+
+    public void grantRole(AuthInfo userAuthInfo, Role role) {
+        userAuthInfo.getRoles().add(role);
+
+        authRepository.save(userAuthInfo);
+    }
+    
+    public Role getRoleByName(String roleName) throws RoleNotFoundException {
+        return roleRepository.findByName(roleName).orElseThrow(
+            () -> new RoleNotFoundException("User '" + roleName + "' not found!"));
     }
 }
