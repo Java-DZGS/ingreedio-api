@@ -47,15 +47,18 @@ ALTER TABLE roles_permissions
 DROP COLUMN level;
 
 --changeset migoox:add-roles
-INSERT INTO roles (id, name) VALUES (1, 'USER');
-INSERT INTO roles (id, name) VALUES (2, 'MODERATOR');
+INSERT INTO roles (name) VALUES ('USER'), ('MODERATOR');
 
 --changeset migoox:add-permissions-v1
-INSERT INTO permissions(id, name, description) VALUES (1, 'REMOVE_USER_OPINION', 'Allows removing user opinions');
-INSERT INTO permissions(id, name, description) VALUES (2, 'REMOVE_PRODUCT', 'Allows removing products');
-INSERT INTO permissions(id, name, description) VALUES (3, 'ADD_PRODUCT', 'Allows adding new products');
-INSERT INTO permissions(id, name, description) VALUES (4, 'REPORT_USER_OPINION', 'Allows reporting user opinions');
-INSERT INTO roles_permissions(role_id, permission_id) VALUES (2, 1);
-INSERT INTO roles_permissions(role_id, permission_id) VALUES (2, 2);
-INSERT INTO roles_permissions(role_id, permission_id) VALUES (2, 3);
-INSERT INTO roles_permissions(role_id, permission_id) VALUES (1, 4);
+INSERT INTO permissions (name, description)
+VALUES ('REMOVE_USER_OPINION', 'Allows removing user opinions'),
+       ('REMOVE_PRODUCT', 'Allows removing products'),
+       ('ADD_PRODUCT', 'Allows adding new products'),
+       ('REPORT_USER_OPINION', 'Allows reporting user opinions');
+
+INSERT INTO roles_permissions (role_id, permission_id)
+SELECT r.id, p.id
+FROM roles r
+CROSS JOIN permissions p
+WHERE (r.name = 'MODERATOR' AND p.name IN ('REMOVE_USER_OPINION', 'REMOVE_PRODUCT', 'ADD_PRODUCT'))
+   OR (r.name = 'USER' AND p.name = 'REPORT_USER_OPINION');
