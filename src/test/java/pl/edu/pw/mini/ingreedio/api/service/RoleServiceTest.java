@@ -27,7 +27,6 @@ public class RoleServiceTest extends IntegrationTest {
 
 
     @Test
-    @Transactional
     public void givenUser_whenGrantingRole_thenRoleIsGranted() {
         // Given
         RegisterRequestDto request =
