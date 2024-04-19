@@ -9,6 +9,7 @@ import pl.edu.pw.mini.ingreedio.api.IntegrationTest;
 import pl.edu.pw.mini.ingreedio.api.dto.RegisterRequestDto;
 import pl.edu.pw.mini.ingreedio.api.model.AuthInfo;
 import pl.edu.pw.mini.ingreedio.api.model.Role;
+import pl.edu.pw.mini.ingreedio.api.repository.RoleRepository;
 
 public class RoleServiceTest extends IntegrationTest {
     @Autowired
@@ -18,6 +19,10 @@ public class RoleServiceTest extends IntegrationTest {
     private RoleService roleService;
 
 
+    @Autowired
+    private RoleRepository roleRepository;
+
+
     @Test
     public void givenUser_whenGrantingRole_thenRoleIsGranted() throws RoleNotFoundException {
         // Given
@@ -25,14 +30,19 @@ public class RoleServiceTest extends IntegrationTest {
             new RegisterRequestDto("us", "Us", "us@as.pl", "pass");
         authService.register(request);
         AuthInfo authInfo = authService.getAuthInfoByUsername("us");
-        Role newRole = roleService.getRoleByName("MODERATOR");
+        Role newUserRole = assertRoleExist("MODERATOR");
 
         // When
-        roleService.grantRole(authInfo, newRole);
+        roleService.grantRole(authInfo, newUserRole);
         boolean valid = authService.getAuthInfoByUsername("us").getRoles().stream()
             .anyMatch(role -> role.getName().equals("MODERATOR"));
 
         // Then
         assertTrue(valid);
+    }
+
+    private Role assertRoleExist(String roleName) {
+        return roleRepository.findByName(roleName)
+            .orElseGet(() -> roleService.createRoleWithName(roleName));
     }
 }
