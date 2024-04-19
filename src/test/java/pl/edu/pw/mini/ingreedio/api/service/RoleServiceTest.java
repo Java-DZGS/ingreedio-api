@@ -5,12 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import javax.management.relation.RoleNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import pl.edu.pw.mini.ingreedio.api.IntegrationTest;
 import pl.edu.pw.mini.ingreedio.api.dto.RegisterRequestDto;
 import pl.edu.pw.mini.ingreedio.api.model.AuthInfo;
 import pl.edu.pw.mini.ingreedio.api.model.Role;
 import pl.edu.pw.mini.ingreedio.api.repository.RoleRepository;
 
+@SpringBootTest
 public class RoleServiceTest extends IntegrationTest {
     @Autowired
     private AuthService authService;
