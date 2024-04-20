@@ -27,7 +27,8 @@ public class RoleServiceTest extends IntegrationTest {
     @Test
     public void givenUser_whenGrantingRole_thenRoleIsGranted() {
         // Given
-        RegisterRequestDto request = new RegisterRequestDto("test_user", "TestUser", "test_user@as.pl", "pass");
+        RegisterRequestDto request = new RegisterRequestDto(
+            "test_user", "TestUser", "test_user@as.pl", "pass");
         authService.register(request);
         AuthInfo authInfo = authService.getAuthInfoByUsername("test_user");
         Role newUserRole = assertRoleExist("TEST");
