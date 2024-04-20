@@ -35,10 +35,10 @@ CREATE TABLE roles_permissions
 );
 
 --changeset migoox:create-user_roles-table
-CREATE TABLE users_roles
+CREATE TABLE auth_infos_roles
 (
     id      BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL REFERENCES users(id),
+    user_id BIGINT NOT NULL REFERENCES auth_info(id),
     role_id BIGINT NOT NULL REFERENCES roles(id)
 );
 

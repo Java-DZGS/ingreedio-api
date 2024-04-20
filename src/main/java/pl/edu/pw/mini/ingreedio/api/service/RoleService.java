@@ -47,7 +47,9 @@ public class RoleService {
     }
 
     public void grantRole(AuthInfo userAuthInfo, Role role) {
-        userAuthInfo.getRoles().add(role);
+        Set<Role> roles = userAuthInfo.getRoles();
+        roles.add(role);
+        userAuthInfo.setRoles(roles);
 
         authRepository.save(userAuthInfo);
     }
