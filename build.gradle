@@ -2,11 +2,10 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.2.3'
     id 'io.spring.dependency-management' version '1.1.4'
-    id 'checkstyle'
 }
 
 group = 'pl.edu.pw.mini.ingreedio'
-version = 'v0.2.1'
+version = 'v0.3'
 
 java {
     sourceCompatibility = '21'
