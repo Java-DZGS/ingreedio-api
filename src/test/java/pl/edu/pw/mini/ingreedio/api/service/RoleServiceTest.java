@@ -2,6 +2,7 @@ package pl.edu.pw.mini.ingreedio.api.service;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,15 +27,14 @@ public class RoleServiceTest extends IntegrationTest {
     @Test
     public void givenUser_whenGrantingRole_thenRoleIsGranted() {
         // Given
-        RegisterRequestDto request =
-            new RegisterRequestDto("user", "Username", "username@as.pl", "pass");
+        RegisterRequestDto request = new RegisterRequestDto("test_user", "TestUser", "test_user@as.pl", "pass");
         authService.register(request);
-        AuthInfo authInfo = authService.getAuthInfoByUsername("user");
+        AuthInfo authInfo = authService.getAuthInfoByUsername("test_user");
         Role newUserRole = assertRoleExist("TEST");
 
         // When
         roleService.grantRole(authInfo, newUserRole);
-        boolean valid = authService.getAuthInfoByUsername("user").getRoles().stream()
+        boolean valid = authService.getAuthInfoByUsername("test_user").getRoles().stream()
             .anyMatch(role -> role.getName().equals("TEST"));
 
         // Then

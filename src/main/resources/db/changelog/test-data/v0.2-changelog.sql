@@ -38,7 +38,7 @@ CREATE TABLE roles_permissions
 CREATE TABLE auth_infos_roles
 (
     id      BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL REFERENCES auth_info(id),
+    auth_info_id BIGINT NOT NULL REFERENCES auth_info(id),
     role_id BIGINT NOT NULL REFERENCES roles(id)
 );
 
@@ -56,9 +56,10 @@ VALUES ('REMOVE_USER_OPINION', 'Allows removing user opinions'),
        ('ADD_PRODUCT', 'Allows adding new products'),
        ('REPORT_USER_OPINION', 'Allows reporting user opinions');
 
-INSERT INTO roles_permissions (role_id, permission_id)
+INSERT INTO roles_permissions
+    (role_id, permission_id)
 SELECT r.id, p.id
 FROM roles r
-CROSS JOIN permissions p
+    CROSS JOIN permissions p
 WHERE (r.name = 'MODERATOR' AND p.name IN ('REMOVE_USER_OPINION', 'REMOVE_PRODUCT', 'ADD_PRODUCT'))
    OR (r.name = 'USER' AND p.name = 'REPORT_USER_OPINION');
