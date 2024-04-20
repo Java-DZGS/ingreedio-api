@@ -20,6 +20,7 @@ import pl.edu.pw.mini.ingreedio.api.model.Product;
 @SpringBootTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ProductServiceTest extends IntegrationTest {
+
     @Autowired
     private ProductService productService;
 

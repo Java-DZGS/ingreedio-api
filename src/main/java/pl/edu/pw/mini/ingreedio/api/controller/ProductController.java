@@ -8,6 +8,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -63,6 +64,7 @@ public class ProductController {
     @Operation(summary = "Add a product to the database",
         description = "Add a product to the database",
         security = {@SecurityRequirement(name = "Bearer Authentication")})
+    @PreAuthorize("hasAuthority('ADD_PRODUCT')")
     @PostMapping
     @ResponseBody
     public ResponseEntity<Product> addProduct(@RequestBody Product product) {

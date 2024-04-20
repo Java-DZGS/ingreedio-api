@@ -28,6 +28,8 @@ public class AuthService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenService refreshTokenService;
+    private final JwtClaimsService jwtClaimsService;
+    private final RoleService roleService;
 
     public User register(RegisterRequestDto request) {
         User user = User.builder()
@@ -39,6 +41,7 @@ public class AuthService {
             .username(request.username())
             .password(passwordEncoder.encode(request.password()))
             .user(user)
+            .roles(roleService.getDefaultUserRoles())
             .build();
 
         userRepository.save(user);
@@ -53,7 +56,8 @@ public class AuthService {
             .map(token -> {
                 AuthInfo authInfo = token.getAuthInfo();
 
-                String jwtToken = jwtService.generateToken(authInfo.getUsername());
+                String jwtToken = jwtService.generateToken(jwtClaimsService
+                    .getJwtUserClaimsByAuthInfo(authInfo));
                 RefreshToken refreshToken = refreshTokenService.refreshToken(token);
                 return JwtResponseDto.builder()
                     .accessToken(jwtToken)
@@ -72,7 +76,8 @@ public class AuthService {
         );
 
         if (authentication.isAuthenticated()) {
-            String jwtToken = jwtService.generateToken(request.username());
+            String jwtToken = jwtService.generateToken(jwtClaimsService
+                .getJwtUserClaimsByUsername(request.username()));
             RefreshToken refreshToken = refreshTokenService.createRefreshToken(request.username());
             return JwtResponseDto.builder()
                 .accessToken(jwtToken)
@@ -90,5 +95,10 @@ public class AuthService {
         }
 
         return null;
+    }
+
+    public AuthInfo getAuthInfoByUsername(String username) throws UsernameNotFoundException {
+        return authRepository.findByUsername(username)
+            .orElseThrow(() -> new UsernameNotFoundException("User '" + username + "' not found!"));
     }
 }
