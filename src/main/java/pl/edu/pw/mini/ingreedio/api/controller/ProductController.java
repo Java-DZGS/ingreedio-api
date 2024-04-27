@@ -36,7 +36,7 @@ import pl.edu.pw.mini.ingreedio.api.service.ProductService;
 public class ProductController {
     private final ProductService productService;
     private final ProductDtoMapper productDtoMapper;
-    private final int pageSize = 2;
+    private final int pageSize = 10;
 
     @Operation(summary = "Get matching products", description = "Get matching products")
     @GetMapping
