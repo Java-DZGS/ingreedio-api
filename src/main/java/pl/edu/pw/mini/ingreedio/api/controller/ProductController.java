@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -40,7 +41,6 @@ public class ProductController {
         description = "Get matching products",
         security = {@SecurityRequirement(name = "Bearer Authentication")})
     @GetMapping
-
     public ResponseEntity<ProductListResponseDto> getProducts(
         int pageNumber,
         @RequestParam Optional<String> name,
