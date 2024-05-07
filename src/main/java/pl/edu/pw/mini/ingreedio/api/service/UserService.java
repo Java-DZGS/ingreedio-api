@@ -31,17 +31,18 @@ public class UserService {
 
     public boolean likeProduct(Integer userId, Long productId) {
         Optional<User> userOptional = userRepository.findById(userId);
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            Set<Long> likedProducts = user.getLikedProducts();
-            if (!likedProducts.contains(productId)) {
-                likedProducts.add(productId);
-                user.setLikedProducts(likedProducts);
-                userRepository.save(user);
-            }
-            return true;
+        if (userOptional.isEmpty()) {
+            return false;
         }
-        return false;
+        
+        User user = userOptional.get();
+        Set<Long> likedProducts = user.getLikedProducts();
+        if (!likedProducts.contains(productId)) {
+            likedProducts.add(productId);
+            user.setLikedProducts(likedProducts);
+            userRepository.save(user);
+        }
+        return true;
     }
 
     public boolean unlikeProduct(Integer userId, Long productId) {
