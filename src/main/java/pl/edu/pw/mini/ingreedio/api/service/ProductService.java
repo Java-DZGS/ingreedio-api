@@ -138,28 +138,30 @@ public class ProductService {
     public boolean unlikeProduct(Long productId) {
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            Long userId = user.getId();
-
-            Optional<Product> productOptional = productRepository.findById(productId);
-            if (productOptional.isPresent()) {
-                Product product = productOptional.get();
-                List<Long> likedBy = product.getLikedBy();
-
-                if (likedBy == null) {
-                    return true;
-                }
-
-                if (likedBy.contains(userId)) {
-                    likedBy.remove(userId);
-                    product.setLikedBy(likedBy);
-                    productRepository.save(product);
-                    userService.unlikeProduct(userId.intValue(), productId);
-                }
-                return true;
-            }
+        if (userOptional.isEmpty()) {
+            return false;
         }
-        return false;
+
+        Long userId = userOptional.get().getId();
+
+        Optional<Product> productOptional = productRepository.findById(productId);
+        if (productOptional.isEmpty()) {
+            return false;
+        }
+
+        Product product = productOptional.get();
+        List<Long> likedBy = product.getLikedBy();
+
+        if (likedBy == null) {
+            return true;
+        }
+
+        if (likedBy.contains(userId)) {
+            likedBy.remove(userId);
+            product.setLikedBy(likedBy);
+            productRepository.save(product);
+            userService.unlikeProduct(userId.intValue(), productId);
+        }
+        return true;
     }
 }
