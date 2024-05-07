@@ -108,29 +108,31 @@ public class ProductService {
     public boolean likeProduct(Long productId) {
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            Long userId = user.getId();
-
-            Optional<Product> productOptional = productRepository.findById(productId);
-            if (productOptional.isPresent()) {
-                Product product = productOptional.get();
-                List<Long> likedBy = product.getLikedBy();
-
-                if (likedBy == null) {
-                    likedBy = new ArrayList<>();
-                }
-
-                if (!likedBy.contains(userId)) {
-                    likedBy.add(userId);
-                    product.setLikedBy(likedBy);
-                    productRepository.save(product);
-                    userService.likeProduct(userId.intValue(), productId);
-                }
-                return true;
-            }
+        if (userOptional.isEmpty()) {
+            return false;
         }
-        return false;
+
+        Long userId = userOptional.get().getId();
+
+        Optional<Product> productOptional = productRepository.findById(productId);
+        if (productOptional.isEmpty()) {
+            return false;
+        }
+
+        Product product = productOptional.get();
+        List<Long> likedBy = product.getLikedBy();
+
+        if (likedBy == null) {
+            likedBy = new ArrayList<>();
+        }
+
+        if (!likedBy.contains(userId)) {
+            likedBy.add(userId);
+            product.setLikedBy(likedBy);
+            productRepository.save(product);
+            userService.likeProduct(userId.intValue(), productId);
+        }
+        return true;
     }
 
     public boolean unlikeProduct(Long productId) {
