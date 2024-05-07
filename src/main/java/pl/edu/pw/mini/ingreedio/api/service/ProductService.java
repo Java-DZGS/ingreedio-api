@@ -73,36 +73,34 @@ public class ProductService {
     public Page<ProductDto> getProductsMatching(ProductFilterCriteria criteria, Pageable pageable) {
         Page<Product> productsPage = productRepository.getProductsMatching(criteria, pageable);
 
-        String u = authService.getCurrentUsername();
-
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
 
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            Long userId = user.getId();
-
-            List<ProductDto> productDtos = productsPage.getContent().stream()
-                .map(product -> {
-                    Boolean isLiked = product.getLikedBy() != null
-                        ? product.getLikedBy().contains(userId) : null;
-                    return ProductDto.builder()
-                        .id(product.getId())
-                        .name(product.getName())
-                        .smallImageUrl(product.getSmallImageUrl())
-                        .provider(product.getProvider())
-                        .shortDescription(product.getShortDescription())
-                        .isLiked(isLiked)
-                        .build();
-                })
-                .collect(Collectors.toList());
-
-            return new PageImpl<>(productDtos,
-                productsPage.getPageable(),
-                productsPage.getTotalElements());
+        if (userOptional.isEmpty()) {
+            return productsPage.map(productDtoMapper);
         }
+        
+        User user = userOptional.get();
+        Long userId = user.getId();
 
-        return productsPage.map(productDtoMapper);
+        List<ProductDto> productDtos = productsPage.getContent().stream()
+            .map(product -> {
+                Boolean isLiked = product.getLikedBy() != null
+                    ? product.getLikedBy().contains(userId) : null;
+                return ProductDto.builder()
+                    .id(product.getId())
+                    .name(product.getName())
+                    .smallImageUrl(product.getSmallImageUrl())
+                    .provider(product.getProvider())
+                    .shortDescription(product.getShortDescription())
+                    .isLiked(isLiked)
+                    .build();
+            })
+            .collect(Collectors.toList());
+
+        return new PageImpl<>(productDtos,
+            productsPage.getPageable(),
+            productsPage.getTotalElements());
     }
 
     public boolean likeProduct(Long productId) {
