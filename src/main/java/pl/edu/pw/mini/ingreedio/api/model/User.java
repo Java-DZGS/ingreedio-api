@@ -43,5 +43,5 @@ public class User {
         joinColumns = @JoinColumn(name = "user_id")
     )
     @Column(name = "product_id")
-    private Set<Long> likedProducts = new HashSet<>();;
+    private Set<Long> likedProducts = new HashSet<>();
 }
