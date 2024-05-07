@@ -50,7 +50,7 @@ public class ProductController {
         @RequestParam Optional<String[]> ingredients) {
         PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
 
-        Page<Product> page = productService.getProductsMatching(
+        Page<ProductDto> page = productService.getProductsMatching(
             ProductFilterCriteria.builder()
                 .name(name.orElse(null))
                 .provider(provider.orElse(null))
@@ -62,12 +62,10 @@ public class ProductController {
             pageRequest
         );
 
-        List<ProductDto> products = page.getContent().stream()
-            .map(productDtoMapper)
-            .collect(Collectors.toList());
         int totalPages = page.getTotalPages();
 
-        ProductListResponseDto responseDto = new ProductListResponseDto(products, totalPages);
+        ProductListResponseDto responseDto = new ProductListResponseDto(page.getContent(),
+            totalPages);
 
         return ResponseEntity.ok(responseDto);
     }
@@ -91,4 +89,17 @@ public class ProductController {
         return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
     }
 
+    @Operation(summary = "",
+        description = "",
+        security = {@SecurityRequirement(name = "Bearer Authentication")})
+    @PostMapping("/{id}/likes")
+    @ResponseBody
+    public ResponseEntity<Void> likeProduct(@PathVariable Long id) {
+        boolean likeSucceeded = productService.likeProduct(id);
+        if (likeSucceeded) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }
