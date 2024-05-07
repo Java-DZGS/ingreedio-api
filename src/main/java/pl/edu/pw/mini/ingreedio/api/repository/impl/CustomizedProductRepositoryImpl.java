@@ -2,13 +2,14 @@ package pl.edu.pw.mini.ingreedio.api.repository.impl;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 import pl.edu.pw.mini.ingreedio.api.criteria.ProductFilterCriteria;
-import pl.edu.pw.mini.ingreedio.api.dto.ProductDto;
-import pl.edu.pw.mini.ingreedio.api.mapper.ProductDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.model.Product;
 import pl.edu.pw.mini.ingreedio.api.repository.CustomizedProductRepository;
 
@@ -16,10 +17,9 @@ import pl.edu.pw.mini.ingreedio.api.repository.CustomizedProductRepository;
 @Repository
 public class CustomizedProductRepositoryImpl implements CustomizedProductRepository {
     private final MongoTemplate mongoTemplate;
-    private final ProductDtoMapper productDtoMapper;
 
     @Override
-    public List<ProductDto> getProductsMatching(ProductFilterCriteria criteria) {
+    public Page<Product> getProductsMatching(ProductFilterCriteria criteria, Pageable pageable) {
         Query query = new Query();
 
         if (criteria.getName() != null) {
@@ -57,6 +57,12 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
                 Criteria.where("ingredients").all((Object[]) criteria.getIngredients()));
         }
 
-        return mongoTemplate.find(query, Product.class).stream().map(productDtoMapper).toList();
+        long totalCount = mongoTemplate.count(query, Product.class);
+        query.with(pageable);
+        List<Product> products = mongoTemplate.find(query, Product.class);
+
+        return new PageImpl<>(products,
+            pageable,
+            totalCount);
     }
 }

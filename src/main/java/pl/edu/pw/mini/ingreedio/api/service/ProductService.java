@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import pl.edu.pw.mini.ingreedio.api.criteria.ProductFilterCriteria;
 import pl.edu.pw.mini.ingreedio.api.dto.FullProductDto;
@@ -38,7 +40,8 @@ public class ProductService {
         return productRepository.save(product);
     }
 
-    public List<ProductDto> getProductsMatching(ProductFilterCriteria criteria) {
-        return productRepository.getProductsMatching(criteria);
+    public Page<Product> getProductsMatching(ProductFilterCriteria criteria,
+                                                Pageable pageable) {
+        return productRepository.getProductsMatching(criteria, pageable);
     }
 }
