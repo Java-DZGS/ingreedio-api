@@ -32,8 +32,8 @@ jobs:
           
       - name: Pull lastes Backend image
         run: |-
-           docker pull ${{ env.REGISTRY }}/java-dzgs/${{ env.IMAGE_NAME }}:develop
-           docker tag ${{ env.REGISTRY }}/java-dzgs/${{ env.IMAGE_NAME }}:develop ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/docker-dev/ingreedio-api
+           docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:develop
+           docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:develop ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/docker-dev/ingreedio-api
         
       - name: Google Auth
         id: auth
