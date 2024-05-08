@@ -1,0 +1,27 @@
+on:
+  workflow_dispatch:
+
+name: Build and Deploy to Cloud Run
+
+env:
+  PROJECT_ID: able-balm-421213
+  GAR_LOCATION: YOUR_GAR_LOCATION
+  SERVICE: YOUR_SERVICE_NAME
+  REGION: YOUR_SERVICE_REGION
+
+jobs:
+  deploy:
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        
+      - name: Google Auth
+        id: auth
+        uses: 'google-github-actions/auth@v0'
+        with:
+          project_id: '${{ env.PROJECT_ID }}'
+          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}' # e.g. - projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider
