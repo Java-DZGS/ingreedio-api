@@ -12,7 +12,7 @@ public class ProductsCriteria {
     private Set<String> ingredientsToIncludeNames;
     private Set<String> ingredientsToExcludeNames;
     private Integer minRating;
-    private String phrase;
+    private Set<String> phraseKeywords;
     private List<ProductsSortingCriteria> sortingCriteria;
     private Boolean liked;
 }

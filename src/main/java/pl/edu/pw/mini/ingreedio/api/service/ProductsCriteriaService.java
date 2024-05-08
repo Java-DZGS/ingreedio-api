@@ -1,5 +1,6 @@
 package pl.edu.pw.mini.ingreedio.api.service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -41,7 +42,13 @@ public class ProductsCriteriaService {
             });
 
         minRating.ifPresent(builder::minRating);
-        phrase.ifPresent(builder::phrase);
+
+        phrase.ifPresent(phraseString ->
+            builder.phraseKeywords(Arrays.stream(
+                phraseString.replaceAll("%20+", " ")
+                    .trim()
+                    .split(" "))
+                .collect(Collectors.toSet())));
         liked.ifPresent(builder::liked);
 
         sortBy.ifPresent(sortingSignatures -> {

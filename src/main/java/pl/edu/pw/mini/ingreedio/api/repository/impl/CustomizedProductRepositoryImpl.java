@@ -40,20 +40,17 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
             : new Criteria();
 
         Criteria phraseFilteringCriteria = new Criteria();
-        if (productsCriteria.getPhrase() != null) {
-            List<String> phraseKeywords = Arrays.asList(productsCriteria
-                .getPhrase()
-                .replaceAll("%20+", " ")
-                .trim()
-                .split(" "));
-
+        if (productsCriteria.getPhraseKeywords() != null) {
             phraseFilteringCriteria = new Criteria().orOperator(
                 Criteria.where("name")
-                    .regex("\\b" + String.join("\\b|\\b", phraseKeywords) + "\\b", "i"),
+                    .regex("\\b" + String.join("\\b|\\b",
+                        productsCriteria.getPhraseKeywords()) + "\\b", "i"),
                 Criteria.where("brand")
-                    .regex("\\b" + String.join("\\b|\\b", phraseKeywords) + "\\b", "i"),
+                    .regex("\\b" + String.join("\\b|\\b",
+                        productsCriteria.getPhraseKeywords()) + "\\b", "i"),
                 Criteria.where("shortDescription")
-                    .regex("\\b" + String.join("\\b|\\b", phraseKeywords) + "\\b", "i")
+                    .regex("\\b" + String.join("\\b|\\b",
+                        productsCriteria.getPhraseKeywords()) + "\\b", "i")
             );
         }
 
@@ -77,7 +74,8 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
             .toList());
 
         // Perform pagination
-        operations.add(Aggregation.skip((long) pageable.getPageSize() * pageable.getPageNumber()));
+        operations.add(Aggregation.skip(
+            (long) pageable.getPageSize() * pageable.getPageNumber()));
         operations.add(Aggregation.limit(pageable.getPageSize()));
 
         Aggregation productsAggregation = Aggregation
