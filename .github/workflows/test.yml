@@ -9,7 +9,7 @@ env:
   SERVICE: YOUR_SERVICE_NAME
   REGION: YOUR_SERVICE_REGION
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: java-dzgs/ingreedio-api
 
 jobs:
   deploy:
