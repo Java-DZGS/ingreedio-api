@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.springframework.security.test.context.support.WithMockUser;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -17,13 +15,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.test.context.support.WithMockUser;
 import pl.edu.pw.mini.ingreedio.api.IntegrationTest;
 import pl.edu.pw.mini.ingreedio.api.criteria.ProductFilterCriteria;
 import pl.edu.pw.mini.ingreedio.api.dto.FullProductDto;
 import pl.edu.pw.mini.ingreedio.api.dto.ProductDto;
 import pl.edu.pw.mini.ingreedio.api.mapper.ProductDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.model.Product;
-import pl.edu.pw.mini.ingreedio.api.model.Role;
 
 @SpringBootTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
