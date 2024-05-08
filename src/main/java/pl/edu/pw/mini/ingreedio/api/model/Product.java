@@ -36,7 +36,7 @@ public class Product {
     @Field
     private String longDescription;
     @Field
-    private Integer volume;
+    private String volume;
     @Field
     private List<String> ingredients;
     @Field
