@@ -1,15 +1,19 @@
 package pl.edu.pw.mini.ingreedio.api.repository.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
-import pl.edu.pw.mini.ingreedio.api.criteria.ProductFilterCriteria;
+import pl.edu.pw.mini.ingreedio.api.criteria.ProductsCriteria;
 import pl.edu.pw.mini.ingreedio.api.model.Product;
 import pl.edu.pw.mini.ingreedio.api.repository.CustomizedProductRepository;
 
@@ -19,50 +23,83 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
     private final MongoTemplate mongoTemplate;
 
     @Override
-    public Page<Product> getProductsMatching(ProductFilterCriteria criteria, Pageable pageable) {
-        Query query = new Query();
+    public Page<Product> getProductsMatchingCriteria(ProductsCriteria productsCriteria,
+                                                     Pageable pageable) {
+        // Stage 1: filter the products basing on the phrase, rating and ingredients
+        Criteria ingredientsFilteringCriteria = new Criteria().andOperator(
+            productsCriteria.getIngredientsToIncludeNames() != null
+                ? Criteria.where("ingredients").all(productsCriteria.getIngredientsToIncludeNames())
+                : new Criteria(),
+            productsCriteria.getIngredientsToExcludeNames() != null
+                ? Criteria.where("ingredients").all(productsCriteria.getIngredientsToExcludeNames())
+                : new Criteria()
+        );
 
-        if (criteria.getName() != null) {
-            String[] keywords = criteria.getName().split("\\s+");
-            Criteria[] andCriteria = new Criteria[keywords.length];
+        Criteria ratingFilteringCriteria = productsCriteria.getMinRating() == null
+            ? Criteria.where("rating").gte(productsCriteria.getMinRating())
+            : new Criteria();
 
-            for (int i = 0; i < keywords.length; i++) {
-                andCriteria[i] = new Criteria().orOperator(
-                    Criteria.where("name").regex(".*" + keywords[i] + ".*", "i"),
-                    Criteria.where("brand").regex(".*" + keywords[i] + ".*", "i"),
-                    Criteria.where("shortDescription").regex(".*" + keywords[i] + ".*", "i"),
-                    Criteria.where("longDescription").regex(".*" + keywords[i] + ".*", "i")
-                );
-            }
-            query.addCriteria(new Criteria().andOperator(andCriteria));
-        }
-        if (criteria.getProvider() != null) {
-            query.addCriteria(Criteria.where("provider").is(criteria.getProvider()));
-        }
-        if (criteria.getBrand() != null) {
-            query.addCriteria(Criteria.where("brand").is(criteria.getBrand()));
-        }
-        if (criteria.getVolumeFrom() != null && criteria.getVolumeTo() != null) {
-            query.addCriteria(
-                Criteria.where("volume")
-                    .gte(criteria.getVolumeFrom())
-                    .lte(criteria.getVolumeTo()));
-        } else if (criteria.getVolumeFrom() != null) {
-            query.addCriteria(Criteria.where("volume").gte(criteria.getVolumeFrom()));
-        } else if (criteria.getVolumeTo() != null) {
-            query.addCriteria(Criteria.where("volume").lte(criteria.getVolumeTo()));
-        }
-        if (criteria.getIngredients() != null) {
-            query.addCriteria(
-                Criteria.where("ingredients").all((Object[]) criteria.getIngredients()));
+        Criteria phraseFilteringCriteria = new Criteria();
+        if (productsCriteria.getPhrase() != null) {
+            List<String> phraseKeywords = Arrays.asList(productsCriteria
+                .getPhrase()
+                .replaceAll("%20+", " ")
+                .trim()
+                .split(" "));
+
+            phraseFilteringCriteria = new Criteria().orOperator(
+                Criteria.where("name")
+                    .regex("\\b" + String.join("\\b|\\b", phraseKeywords) + "\\b", "i"),
+                Criteria.where("brand")
+                    .regex("\\b" + String.join("\\b|\\b", phraseKeywords) + "\\b", "i"),
+                Criteria.where("shortDescription")
+                    .regex("\\b" + String.join("\\b|\\b", phraseKeywords) + "\\b", "i")
+            );
         }
 
-        long totalCount = mongoTemplate.count(query, Product.class);
-        query.with(pageable);
-        List<Product> products = mongoTemplate.find(query, Product.class);
+        AggregationOperation filteringOperation = Aggregation.match(new Criteria().andOperator(
+            ingredientsFilteringCriteria,
+            ratingFilteringCriteria,
+            phraseFilteringCriteria
+        ));
 
-        return new PageImpl<>(products,
+        // Stage 2: prepare match score for each product (if there is match score sort operation)
+        // TODO
+
+        // Stage 3: sort the resultant products, apply pagination and create the final aggregation
+        List<AggregationOperation> operations = new ArrayList<>();
+        operations.add(filteringOperation);
+
+        // Apply sorting to the aggregation
+        operations.addAll(productsCriteria.getSortingCriteria()
+            .stream()
+            .map(option -> Aggregation.sort(option.order(), option.byField()))
+            .toList());
+
+        // Perform pagination
+        operations.add(Aggregation.skip((long) pageable.getPageSize() * pageable.getPageNumber()));
+        operations.add(Aggregation.limit(pageable.getPageSize()));
+
+        Aggregation productsAggregation = Aggregation
+            .newAggregation(operations.toArray(new AggregationOperation[0]));
+
+        Aggregation totalProductsCountAggregation = Aggregation.newAggregation(
+            filteringOperation,
+            Aggregation.group().count().as("totalProductsCount")
+        );
+
+        List<Product> products = mongoTemplate.aggregate(productsAggregation,
+                "products", Product.class)
+            .getMappedResults();
+
+        Integer totalProductsCount =
+            (Integer) mongoTemplate.aggregate(totalProductsCountAggregation,
+                    "products", Map.class)
+                .getMappedResults().getFirst().get("totalProductsCount");
+
+        return new PageImpl<>(
+            products,
             pageable,
-            totalCount);
+            totalProductsCount == null ? 0 : totalProductsCount);
     }
 }
