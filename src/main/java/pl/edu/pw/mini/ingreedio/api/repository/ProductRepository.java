@@ -9,5 +9,4 @@ import pl.edu.pw.mini.ingreedio.api.model.Product;
 public interface ProductRepository
     extends MongoRepository<Product, Long>, CustomizedProductRepository {
     Optional<Product> findById(Long id);
-
 }
