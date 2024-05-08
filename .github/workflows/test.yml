@@ -23,8 +23,12 @@ jobs:
         id: auth
         uses: 'google-github-actions/auth@v2'
         with:
-          project_id: '${{ env.PROJECT_ID }}'
+          token_format: 'access_token'
           workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
+          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+
+      - name: Debug
+        run: echo ${{ steps.auth.outputs.access_token }}
           
       - name: Docker Auth
         id: docker-auth
