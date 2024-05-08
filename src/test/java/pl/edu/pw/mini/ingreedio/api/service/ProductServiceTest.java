@@ -28,8 +28,6 @@ public class ProductServiceTest extends IntegrationTest {
     @Autowired
     private ProductService productService;
 
-    @Autowired
-    private ProductDtoMapper productDtoMapper;
     private PageRequest pageRequest = PageRequest.of(0, 30);
 
     @Test
@@ -183,77 +181,6 @@ public class ProductServiceTest extends IntegrationTest {
     }
 
     @Test
-    @Order(8)
-    public void givenVolumeCriteria_whenFilter_thenReturnCorrectProducts() {
-        // Given
-        productService.addProduct(Product.builder().name("woda").brand("cisowiana")
-            .volume(3).build());
-        productService.addProduct(Product.builder().name("woda").brand("contigo")
-            .volume(4).build());
-        productService.addProduct(Product.builder().name("woda").brand("skarb życia muszyna")
-            .volume(5).build());
-        productService.addProduct(Product.builder().name("woda").brand("nałęczowiana")
-            .volume(6).build());
-        productService.addProduct(Product.builder().name("woda").brand("pepsi")
-            .volume(7).build());
-
-        // When
-        Page<ProductDto> lessPage = productService.getProductsMatching(
-            ProductFilterCriteria.builder().volumeTo(6).build(), pageRequest);
-        List<ProductDto> lessProducts = lessPage.getContent();
-
-        // Then
-        assertThat(lessProducts.size()).isEqualTo(4);
-        for (ProductDto productDto : lessProducts) {
-            Optional<FullProductDto> product = productService.getProductById(productDto.id());
-
-            assertThat(product).isPresent();
-            assertThat(product.get().volume()).isLessThanOrEqualTo(6);
-        }
-    }
-
-    @Test
-    @Order(9)
-    public void givenVolumeFromCriteria_whenFilter_thenReturnCorrectProducts() {
-        // Given
-
-        // When
-        Page<ProductDto> greaterPage = productService.getProductsMatching(
-            ProductFilterCriteria.builder().volumeFrom(4).build(), pageRequest);
-        List<ProductDto> greaterProducts = greaterPage.getContent();
-
-        // Then
-        assertThat(greaterProducts.size()).isEqualTo(4);
-        for (ProductDto productDto : greaterProducts) {
-            Optional<FullProductDto> product = productService.getProductById(productDto.id());
-
-            assertThat(product).isPresent();
-            assertThat(product.get().volume()).isGreaterThanOrEqualTo(4);
-        }
-    }
-
-    @Test
-    @Order(10)
-    public void givenVolumeBetweenCriteria_whenFilter_thenReturnCorrectProducts() {
-        // Given
-
-        // When
-        Page<ProductDto> betweenPage = productService.getProductsMatching(
-            ProductFilterCriteria.builder().volumeFrom(3).volumeTo(6).build(), pageRequest);
-        List<ProductDto> betweenProducts = betweenPage.getContent();
-
-        // Then
-        assertThat(betweenProducts.size()).isEqualTo(4);
-        for (ProductDto productDto : betweenProducts) {
-            Optional<FullProductDto> product = productService.getProductById(productDto.id());
-
-            assertThat(product).isPresent();
-            assertThat(product.get().volume()).isLessThanOrEqualTo(6);
-            assertThat(product.get().volume()).isGreaterThanOrEqualTo(3);
-        }
-    }
-
-    @Test
     @Order(11)
     public void givenMultiCriteria_whenFilter_thenReturnCorrectProducts() {
         // Given
@@ -264,7 +191,7 @@ public class ProductServiceTest extends IntegrationTest {
                 .name("pasta do zębów")
                 .brand("karfur")
                 .provider("żapka")
-                .volume(12)
+                .volume("12 ml")
                 .ingredients(Arrays.asList("polietylen", "guma guar", "metanol"))
                 .build());
         productService.addProduct(
@@ -272,52 +199,50 @@ public class ProductServiceTest extends IntegrationTest {
                 .name("poper")
                 .brand("karfur")
                 .provider("żapka")
-                .volume(14)
+                .volume("14 ml")
                 .ingredients(Arrays.asList("rak", "guma", "metanol"))
                 .build());
 
         // Red herrings
         productService.addProduct(
-            Product.builder().name("ziemniak").brand("karfur").provider("żapka").volume(13)
+            Product.builder().name("ziemniak").brand("karfur").provider("żapka")
                 .build());
         productService.addProduct(
-            Product.builder().name("obrazek").brand("karfur").provider("żapka").volume(15)
+            Product.builder().name("obrazek").brand("karfur").provider("żapka")
                 .build());
         productService.addProduct(
-            Product.builder().name("szampą").brand("żapka").provider("karfur").volume(200)
+            Product.builder().name("szampą").brand("żapka").provider("karfur")
                 .build());
         productService.addProduct(
-            Product.builder().name("szamka").brand("grycan").provider("żapka").volume(13).build());
+            Product.builder().name("szamka").brand("grycan").provider("żapka").build());
         productService.addProduct(
-            Product.builder().name("baton").brand("sniker").provider("żapka").volume(12).build());
+            Product.builder().name("baton").brand("sniker").provider("żapka").build());
         productService.addProduct(
-            Product.builder().name("marchew").brand("ogródek").provider("rosman").volume(1)
+            Product.builder().name("marchew").brand("ogródek").provider("rosman")
                 .build());
         productService.addProduct(
             Product.builder().name("pianka do golenia").brand("golibroda").provider("romsan")
-                .volume(12).build());
-        productService.addProduct(
-            Product.builder().name("pasta do zębów").brand("kolgat").provider("romsan").volume(12)
                 .build());
         productService.addProduct(
-            Product.builder().name("pasta do zębów").brand("sęsodę").provider("romsan").volume(12)
+            Product.builder().name("pasta do zębów").brand("kolgat").provider("romsan")
                 .build());
         productService.addProduct(
-            Product.builder().name("pasta do zębów").brand("elmech").provider("romsan").volume(12)
+            Product.builder().name("pasta do zębów").brand("sęsodę").provider("romsan")
+                .build());
+        productService.addProduct(
+            Product.builder().name("pasta do zębów").brand("elmech").provider("romsan")
                 .build());
         productService.addProduct(
             Product.builder().name("pasta do zębów").brand("akuafresz").provider("romsan")
-                .volume(12).build());
+                .build());
         productService.addProduct(
-            Product.builder().name("pasta do butów").brand("kiwi").provider("romsan").volume(12)
+            Product.builder().name("pasta do butów").brand("kiwi").provider("romsan")
                 .build());
 
         // When
         Page<ProductDto> kerfurZabkaPage = productService.getProductsMatching(
             ProductFilterCriteria.builder()
                 .brand("karfur")
-                .volumeFrom(12)
-                .volumeTo(14)
                 .provider("żapka")
                 .ingredients(new String[] {"metanol"})
                 .build(), pageRequest);
@@ -332,7 +257,6 @@ public class ProductServiceTest extends IntegrationTest {
             assertThat(product).isPresent();
             assertThat(product.get().provider()).isEqualTo("żapka");
             assertThat(product.get().brand()).isEqualTo("karfur");
-            assertThat(product.get().volume()).isBetween(12, 14);
             assertThat(product.get().ingredients()).contains("metanol");
         }
     }

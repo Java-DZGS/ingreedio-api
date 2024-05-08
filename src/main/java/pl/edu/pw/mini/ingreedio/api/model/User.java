@@ -60,5 +60,6 @@ public class User {
         joinColumns = @JoinColumn(name = "user_id")
     )
     @Column(name = "product_id")
+    @Builder.Default
     private Set<Long> likedProducts = new HashSet<>();
 }
