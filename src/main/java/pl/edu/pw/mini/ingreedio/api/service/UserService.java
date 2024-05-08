@@ -56,6 +56,7 @@ public class UserService {
         allergens.remove(ingredient);
         user.setAllergens(allergens);
         userRepository.save(user);
+    }
 
     public boolean likeProduct(Integer userId, Long productId) {
         Optional<User> userOptional = userRepository.findById(userId);
