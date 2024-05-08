@@ -37,6 +37,22 @@ public class User {
     @Column
     private String displayName;
 
+    @ManyToMany
+    @JoinTable(
+        name = "users_ingredients",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "ingredient_id"))
+    @Builder.Default
+    private Set<Ingredient> likedIngredients = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(
+        name = "users_allergens",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "ingredient_id"))
+    @Builder.Default
+    private Set<Ingredient> allergens = new HashSet<>();
+  
     @ElementCollection
     @CollectionTable(
         name = "users_products",
