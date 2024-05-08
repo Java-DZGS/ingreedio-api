@@ -41,6 +41,7 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
 
         Criteria phraseFilteringCriteria = new Criteria();
         if (productsCriteria.getPhraseKeywords() != null) {
+            var test = String.join("\\b|\\b", productsCriteria.getPhraseKeywords());
             phraseFilteringCriteria = new Criteria().orOperator(
                 Criteria.where("name")
                     .regex("\\b" + String.join("\\b|\\b",
@@ -68,10 +69,13 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
         operations.add(filteringOperation);
 
         // Apply sorting to the aggregation
-        operations.addAll(productsCriteria.getSortingCriteria()
-            .stream()
-            .map(option -> Aggregation.sort(option.order(), option.byField()))
-            .toList());
+        if (productsCriteria.getSortingCriteria() != null) {
+            operations.addAll(productsCriteria.getSortingCriteria()
+                .stream()
+                .map(option -> Aggregation.sort(option.order(), option.byField()))
+                .toList());
+        }
+
 
         // Perform pagination
         operations.add(Aggregation.skip(

@@ -78,13 +78,14 @@ public class ProductService {
         Page<Product> productsPage = productRepository
             .getProductsMatchingCriteria(criteria, pageable);
 
+        int total = productsPage.getTotalPages();
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
 
         if (userOptional.isEmpty()) {
             return new ProductListResponseDto(
                 productsPage.getContent().stream().map(productDtoMapper).toList(),
-                productsPage.getTotalPages() / pageSize);
+                productsPage.getTotalPages());
         }
         
         User user = userOptional.get();
@@ -106,7 +107,7 @@ public class ProductService {
             .collect(Collectors.toList());
 
         return new ProductListResponseDto(productDtos,
-            productsPage.getTotalPages() / pageSize);
+            productsPage.getTotalPages());
     }
 
     public boolean likeProduct(Long productId) {

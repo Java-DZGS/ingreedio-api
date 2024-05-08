@@ -1,5 +1,8 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Application" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+    <envs>
+      <env name="SPRING_DATA_MONGODB_URI" value="mongodb+srv://ingreedio:N6yzdvIk3nbjj7Bj@ingreedio-dzogs-dev.evid6hn.mongodb.net/?retryWrites=true&amp;w=majority&amp;appName=IngreedIO-DZOGS-dev" />
+    </envs>
     <module name="api.main" />
     <target name="app" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="pl.edu.pw.mini.ingreedio.api.Application" />
