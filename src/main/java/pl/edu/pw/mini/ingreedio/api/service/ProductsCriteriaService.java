@@ -22,6 +22,7 @@ public class ProductsCriteriaService {
                                                 Optional<List<String>> sortBy,
                                                 Optional<Boolean> liked) {
         var builder = ProductsCriteria.builder();
+        builder.hasMatchScoreSortCriteria(false);
 
         ingredientsToExclude.ifPresent(
             ingredients -> {
@@ -49,15 +50,25 @@ public class ProductsCriteriaService {
                     .trim()
                     .split(" "))
                 .collect(Collectors.toSet())));
+
         liked.ifPresent(builder::liked);
 
         sortBy.ifPresent(sortingSignatures -> {
-            builder.sortingCriteria(sortingSignatures.stream()
+            List<ProductsSortingCriteria> sortingCriteriaList =
+                sortingSignatures.stream()
                 .map(this::getProductsSortingCriteria)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .collect(Collectors.toList()));
+                .toList();
+
+            Optional<ProductsSortingCriteria> foundCriteria = sortingCriteriaList.stream()
+                .filter(criteria -> criteria.byField().equals("matchScore"))
+                .findAny();
+
+            builder.sortingCriteria(sortingCriteriaList);
+            builder.hasMatchScoreSortCriteria(foundCriteria.isPresent());
         });
+
 
         return builder.build();
     }
