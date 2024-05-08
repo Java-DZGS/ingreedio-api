@@ -3,6 +3,7 @@ package pl.edu.pw.mini.ingreedio.api.service;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import pl.edu.pw.mini.ingreedio.api.dto.IngredientDto;
@@ -21,6 +22,13 @@ public class IngredientService {
 
     public Optional<IngredientDto> getIngredientById(Long id) {
         return ingredientRepository.findById(id).map(ingredientDtoMapper);
+    }
+
+    public List<IngredientDto> getIngredients(String query) {
+        List<Ingredient> ingredients = ingredientRepository
+            .findByNameContainingIgnoreCase(query);
+        return ingredients.stream().map(ingredientDtoMapper)
+                .collect(Collectors.toList());
     }
 
     public List<IngredientDto> getLikedIngredients() {

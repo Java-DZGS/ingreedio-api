@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import pl.edu.pw.mini.ingreedio.api.dto.IngredientDto;
 import pl.edu.pw.mini.ingreedio.api.dto.ProductDto;
@@ -24,6 +25,21 @@ import pl.edu.pw.mini.ingreedio.api.service.IngredientService;
 @Tag(name = "Ingredients" /*, description = "..."*/)
 public class IngredientController {
     private final IngredientService ingredientService;
+
+    @Operation(summary = "Search ingredients",
+        description = "Search ingredients",
+        security = {@SecurityRequirement(name = "Bearer Authentication")})
+    @GetMapping
+    public ResponseEntity<List<IngredientDto>> getIngredients(
+        @RequestParam int count,
+        @RequestParam(required = false) String query) {
+        String name = query != null ? query : "";
+        List<IngredientDto> matchingIngredients = ingredientService.getIngredients(name);
+        if (matchingIngredients.size() > count) {
+            matchingIngredients = matchingIngredients.subList(0, count);
+        }
+        return ResponseEntity.ok(matchingIngredients);
+    }
 
     @Operation(summary = "Get liked ingredients",
         description = "Get liked ingredients",
