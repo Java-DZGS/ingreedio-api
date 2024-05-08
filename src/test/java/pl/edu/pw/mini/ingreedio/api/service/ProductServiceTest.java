@@ -5,16 +5,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import pl.edu.pw.mini.ingreedio.api.IntegrationTest;
 import pl.edu.pw.mini.ingreedio.api.criteria.ProductFilterCriteria;
 import pl.edu.pw.mini.ingreedio.api.dto.FullProductDto;
 import pl.edu.pw.mini.ingreedio.api.dto.ProductDto;
+import pl.edu.pw.mini.ingreedio.api.mapper.ProductDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.model.Product;
 
 @SpringBootTest
@@ -23,6 +27,10 @@ public class ProductServiceTest extends IntegrationTest {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private ProductDtoMapper productDtoMapper;
+    private PageRequest pageRequest = PageRequest.of(0, 30);
 
     @Test
     @Order(1)
@@ -71,8 +79,9 @@ public class ProductServiceTest extends IntegrationTest {
         // Given
 
         // When
-        List<ProductDto> res =
-            productService.getProductsMatching(ProductFilterCriteria.builder().build());
+        Page<ProductDto> page = productService.getProductsMatching(
+            ProductFilterCriteria.builder().build(), pageRequest);
+        List<ProductDto> res = page.getContent();
 
         // Then
         assertThat(res).isNotNull();
@@ -89,8 +98,9 @@ public class ProductServiceTest extends IntegrationTest {
         productService.addProduct(Product.builder().provider("daglas & co.").build());
 
         // When
-        List<ProductDto> daglasProducts = productService.getProductsMatching(
-            ProductFilterCriteria.builder().provider("daglas").build());
+        Page<ProductDto> page = productService.getProductsMatching(
+            ProductFilterCriteria.builder().provider("daglas").build(), pageRequest);
+        List<ProductDto> daglasProducts = page.getContent();
 
         // Then
         assertThat(daglasProducts.size()).isEqualTo(2);
@@ -110,8 +120,9 @@ public class ProductServiceTest extends IntegrationTest {
         productService.addProduct(Product.builder().provider("daglas & co.").build());
 
         // When
-        List<ProductDto> daglasProducts = productService.getProductsMatching(
-            ProductFilterCriteria.builder().brand("daglas").build());
+        Page<ProductDto> page = productService.getProductsMatching(
+            ProductFilterCriteria.builder().brand("daglas").build(), pageRequest);
+        List<ProductDto> daglasProducts = page.getContent();
 
         // Then
         assertThat(daglasProducts.size()).isEqualTo(2);
@@ -140,14 +151,17 @@ public class ProductServiceTest extends IntegrationTest {
             .ingredients(Arrays.asList("ziemniak", "burak")).build());
 
         // When
-        List<ProductDto> ziemniakBurakProducts = productService.getProductsMatching(
+        Page<ProductDto> ziemniakBurakPage = productService.getProductsMatching(
             ProductFilterCriteria.builder()
                 .ingredients(new String[] {"ziemniak", "burak"})
-                .build());
-        List<ProductDto> ziemniakProducts = productService.getProductsMatching(
+                .build(), pageRequest);
+        List<ProductDto> ziemniakBurakProducts = ziemniakBurakPage.getContent();
+
+        Page<ProductDto> ziemniakPage = productService.getProductsMatching(
             ProductFilterCriteria.builder()
                 .ingredients(new String[] {"ziemniak"})
-                .build());
+                .build(), pageRequest);
+        List<ProductDto> ziemniakProducts = ziemniakPage.getContent();
 
         // Then
         assertThat(ziemniakBurakProducts.size()).isEqualTo(2);
@@ -184,9 +198,9 @@ public class ProductServiceTest extends IntegrationTest {
             .volume(7).build());
 
         // When
-        List<ProductDto> lessProducts = productService.getProductsMatching(
-            ProductFilterCriteria.builder().volumeTo(6).build()
-        );
+        Page<ProductDto> lessPage = productService.getProductsMatching(
+            ProductFilterCriteria.builder().volumeTo(6).build(), pageRequest);
+        List<ProductDto> lessProducts = lessPage.getContent();
 
         // Then
         assertThat(lessProducts.size()).isEqualTo(4);
@@ -204,9 +218,9 @@ public class ProductServiceTest extends IntegrationTest {
         // Given
 
         // When
-        List<ProductDto> greaterProducts = productService.getProductsMatching(
-            ProductFilterCriteria.builder().volumeFrom(4).build()
-        );
+        Page<ProductDto> greaterPage = productService.getProductsMatching(
+            ProductFilterCriteria.builder().volumeFrom(4).build(), pageRequest);
+        List<ProductDto> greaterProducts = greaterPage.getContent();
 
         // Then
         assertThat(greaterProducts.size()).isEqualTo(4);
@@ -224,9 +238,9 @@ public class ProductServiceTest extends IntegrationTest {
         // Given
 
         // When
-        List<ProductDto> betweenProducts = productService.getProductsMatching(
-            ProductFilterCriteria.builder().volumeTo(6).volumeFrom(3).build()
-        );
+        Page<ProductDto> betweenPage = productService.getProductsMatching(
+            ProductFilterCriteria.builder().volumeFrom(3).volumeTo(6).build(), pageRequest);
+        List<ProductDto> betweenProducts = betweenPage.getContent();
 
         // Then
         assertThat(betweenProducts.size()).isEqualTo(4);
@@ -299,14 +313,15 @@ public class ProductServiceTest extends IntegrationTest {
                 .build());
 
         // When
-        List<ProductDto> karfurZapkaProducts = productService.getProductsMatching(
+        Page<ProductDto> kerfurZabkaPage = productService.getProductsMatching(
             ProductFilterCriteria.builder()
                 .brand("karfur")
                 .volumeFrom(12)
                 .volumeTo(14)
                 .provider("żapka")
                 .ingredients(new String[] {"metanol"})
-                .build());
+                .build(), pageRequest);
+        List<ProductDto> karfurZapkaProducts = kerfurZabkaPage.getContent();
 
         // Then
         assertThat(karfurZapkaProducts.size()).isEqualTo(2);
@@ -326,6 +341,8 @@ public class ProductServiceTest extends IntegrationTest {
     @Order(12)
     public void givenNameCriteria_whenFilter_thenReturnCorrectProducts() {
         // Given
+        ProductDtoMapper productDtoMapper = new ProductDtoMapper();
+        PageRequest pageRequest = PageRequest.of(0, 10);
         productService.addProduct(Product.builder()
             .name("Matte Blush")
             .brand("Maybelline")
@@ -362,8 +379,9 @@ public class ProductServiceTest extends IntegrationTest {
         String searchTerm = "Matte Powder Rimmel";
 
         // When
-        List<ProductDto> liquidProducts = productService.getProductsMatching(
-            ProductFilterCriteria.builder().name(searchTerm).build());
+        Page<ProductDto> page = productService.getProductsMatching(
+            ProductFilterCriteria.builder().name(searchTerm).build(), pageRequest);
+        List<ProductDto> liquidProducts = page.getContent();
 
         // Then
         assertThat(liquidProducts.size()).isEqualTo(2);

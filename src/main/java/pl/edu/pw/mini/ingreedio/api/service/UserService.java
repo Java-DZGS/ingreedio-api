@@ -1,5 +1,6 @@
 package pl.edu.pw.mini.ingreedio.api.service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -27,7 +28,6 @@ public class UserService {
         Optional<User> userOptional = userRepository.findById(id);
         return userOptional;
     }
-
 
     public Optional<User> getUserByUsername(String username) {
         return authRepository.findByUsername(username).map(AuthInfo::getUser);
@@ -59,5 +59,37 @@ public class UserService {
         allergens.remove(ingredient);
         user.setAllergens(allergens);
         userRepository.save(user);
+    }
+
+    public boolean likeProduct(Integer userId, Long productId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            return false;
+        }
+        
+        User user = userOptional.get();
+        Set<Long> likedProducts = user.getLikedProducts();
+        if (!likedProducts.contains(productId)) {
+            likedProducts.add(productId);
+            user.setLikedProducts(likedProducts);
+            userRepository.save(user);
+        }
+        return true;
+    }
+
+    public boolean unlikeProduct(Integer userId, Long productId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            return false;
+        }
+        
+        User user = userOptional.get();
+        Set<Long> likedProducts = user.getLikedProducts();
+        if (likedProducts.contains(productId)) {
+            likedProducts.remove(productId);
+            user.setLikedProducts(likedProducts);
+            userRepository.save(user);
+        }
+        return true;
     }
 }
