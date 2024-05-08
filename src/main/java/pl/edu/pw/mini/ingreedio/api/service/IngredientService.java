@@ -23,6 +23,10 @@ public class IngredientService {
         return ingredientRepository.findById(id).map(ingredientDtoMapper);
     }
 
+    public Ingredient addIngredient(Ingredient ingredient) {
+        return ingredientRepository.save(ingredient);
+    }
+
     public List<IngredientDto> getLikedIngredients() {
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());

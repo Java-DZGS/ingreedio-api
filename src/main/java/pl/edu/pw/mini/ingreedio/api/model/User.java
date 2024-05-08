@@ -2,6 +2,7 @@ package pl.edu.pw.mini.ingreedio.api.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -33,7 +34,7 @@ public class User {
     @Column
     private String displayName;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "users_ingredients",
         joinColumns = @JoinColumn(name = "user_id"),
@@ -41,7 +42,7 @@ public class User {
     @Builder.Default
     private Set<Ingredient> likedIngredients = new HashSet<>();
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "users_allergens",
         joinColumns = @JoinColumn(name = "user_id"),
