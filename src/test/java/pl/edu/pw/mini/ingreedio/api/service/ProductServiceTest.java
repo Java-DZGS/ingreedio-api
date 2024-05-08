@@ -1,11 +1,14 @@
 package pl.edu.pw.mini.ingreedio.api.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -20,6 +23,7 @@ import pl.edu.pw.mini.ingreedio.api.dto.FullProductDto;
 import pl.edu.pw.mini.ingreedio.api.dto.ProductDto;
 import pl.edu.pw.mini.ingreedio.api.mapper.ProductDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.model.Product;
+import pl.edu.pw.mini.ingreedio.api.model.Role;
 
 @SpringBootTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -404,5 +408,102 @@ public class ProductServiceTest extends IntegrationTest {
                     || shortDescription.contains(term.toLowerCase())).isTrue();
             }
         }
+    }
+
+    @Test
+    @WithMockUser(username = "user", password = "user", roles = {})
+    @Order(13)
+    public void givenProduct_whenLikeProduct_thenSuccess() {
+        // Given
+        Product product = Product.builder().name("likedProduct").build();
+        Product savedProduct = productService.addProduct(product);
+        Long id = savedProduct.getId();
+
+        // When
+        boolean result = productService.likeProduct(id);
+        Optional<FullProductDto> updatedProduct = productService.getProductById(id);
+
+        // Then
+        assertTrue(result);
+        assertTrue(updatedProduct.get().isLiked());
+    }
+
+    @Test
+    @WithMockUser(username = "user", password = "user", roles = {})
+    @Order(14)
+    public void givenProduct_whenLikeNonExistingProduct_thenFailure() {
+        // Given
+
+        // When
+        boolean result = productService.likeProduct(1000L);
+
+        // Then
+        assertFalse(result);
+    }
+
+    @Test
+    @WithMockUser(username = "user", password = "user", roles = {})
+    @Order(15)
+    public void givenProduct_whenUnLikeProduct_thenSuccess() {
+        // Given
+        Product product = Product.builder().name("likedProduct").build();
+        Product savedProduct = productService.addProduct(product);
+        Long id = savedProduct.getId();
+
+        // When
+        productService.likeProduct(id);
+        boolean result = productService.unlikeProduct(id);
+        Optional<FullProductDto> updatedProduct = productService.getProductById(id);
+
+        // Then
+        assertTrue(result);
+        assertFalse(updatedProduct.get().isLiked());
+    }
+
+    @Test
+    @WithMockUser(username = "user", password = "user", roles = {})
+    @Order(16)
+    public void givenProduct_whenUnLikeNonExistingProduct_thenFailure() {
+        // Given
+
+        // When
+        boolean result = productService.unlikeProduct(1000L);
+
+        // Then
+        assertFalse(result);
+    }
+
+    @Test
+    @WithMockUser(username = "user", password = "user", roles = {})
+    @Order(17)
+    public void givenProduct_whenLikeAndGetProductsList_thenProductsAreLiked() {
+        // Given
+
+        // When
+        productService.likeProduct(1L);
+        productService.likeProduct(2L);
+
+        Page<ProductDto> page = productService.getProductsMatching(
+            ProductFilterCriteria.builder().build(), pageRequest);
+        List<ProductDto> products = page.getContent();
+
+        // Then
+        assertThat(products.getFirst().isLiked()).isTrue();
+        assertThat(products.get(1).isLiked()).isTrue();
+        assertThat(products.get(2).isLiked()).isFalse();
+    }
+
+    @Test
+    @WithMockUser(username = "user", password = "user", roles = {})
+    @Order(17)
+    public void givenProduct_whenLikeAndGetProductDetails_thenProductIsLiked() {
+        // Given
+
+        // When
+        productService.likeProduct(4L);
+        Optional<FullProductDto> product = productService.getProductById(4L);
+
+        // Then
+        assertThat(product.get().isLiked()).isTrue();
     }
 }

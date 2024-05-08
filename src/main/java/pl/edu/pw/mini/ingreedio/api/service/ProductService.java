@@ -47,7 +47,7 @@ public class ProductService {
             if (productOptional.isPresent()) {
                 Product product = productOptional.get();
                 Boolean isLiked = product.getLikedBy() != null
-                    ? product.getLikedBy().contains(userId) : null;
+                    ? product.getLikedBy().contains(userId) : false;
                 return Optional.ofNullable(FullProductDto.builder()
                     .id(product.getId())
                     .name(product.getName())
@@ -86,7 +86,7 @@ public class ProductService {
         List<ProductDto> productDtos = productsPage.getContent().stream()
             .map(product -> {
                 Boolean isLiked = product.getLikedBy() != null
-                    ? product.getLikedBy().contains(userId) : null;
+                    ? product.getLikedBy().contains(userId) : false;
                 return ProductDto.builder()
                     .id(product.getId())
                     .name(product.getName())
