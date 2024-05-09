@@ -14,8 +14,7 @@ import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Repository;
-import pl.edu.pw.mini.ingreedio.api.criteria.ProductsCriteria;
-import pl.edu.pw.mini.ingreedio.api.dto.ProductListResponseDto;
+import pl.edu.pw.mini.ingreedio.api.criteria.ProductCriteria;
 import pl.edu.pw.mini.ingreedio.api.model.Product;
 import pl.edu.pw.mini.ingreedio.api.repository.CustomizedProductRepository;
 
@@ -25,13 +24,13 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
     private final MongoTemplate mongoTemplate;
 
     @Override
-    public Page<Product> getProductsMatchingCriteria(ProductsCriteria productsCriteria,
+    public Page<Product> getProductsMatchingCriteria(ProductCriteria productCriteria,
                                                      Pageable pageable) {
 
         String phraseKeywordsRegExp = "";
-        if (productsCriteria.getPhraseKeywords() != null) {
+        if (productCriteria.getPhraseKeywords() != null) {
             phraseKeywordsRegExp = "\\b"
-                + String.join("|\\b", productsCriteria.getPhraseKeywords());
+                + String.join("|\\b", productCriteria.getPhraseKeywords());
         }
 
         // Stage 1: Filter the products basing on
@@ -40,43 +39,43 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
         // Note: If a product contain ingredient to exclude and ingredient
         // to include then the product is excluded (exclude has priority over include)
         Criteria ingredientsFilteringCriteria = new Criteria().andOperator(
-            productsCriteria.getIngredientsNamesToInclude() != null
-                && !productsCriteria.getIngredientsNamesToInclude().isEmpty()
-                ? Criteria.where("ingredients").all(productsCriteria.getIngredientsNamesToInclude())
+            productCriteria.getIngredientsNamesToInclude() != null
+                && !productCriteria.getIngredientsNamesToInclude().isEmpty()
+                ? Criteria.where("ingredients").all(productCriteria.getIngredientsNamesToInclude())
                 : new Criteria(),
-            productsCriteria.getIngredientsNamesToExclude() != null
-                && !productsCriteria.getIngredientsNamesToExclude().isEmpty()
-                ? Criteria.where("ingredients").nin(productsCriteria.getIngredientsNamesToExclude())
+            productCriteria.getIngredientsNamesToExclude() != null
+                && !productCriteria.getIngredientsNamesToExclude().isEmpty()
+                ? Criteria.where("ingredients").nin(productCriteria.getIngredientsNamesToExclude())
                 : new Criteria()
         );
 
         Criteria brandsFilteringCriteria = new Criteria();
-        if (productsCriteria.getBrandsNamesToInclude() != null
-                && !productsCriteria.getBrandsNamesToInclude().isEmpty()) {
+        if (productCriteria.getBrandsNamesToInclude() != null
+                && !productCriteria.getBrandsNamesToInclude().isEmpty()) {
             brandsFilteringCriteria = Criteria.where("brand")
-                .in(productsCriteria.getBrandsNamesToInclude());
-        } else if (productsCriteria.getBrandsNamesToExclude() != null
-                && !productsCriteria.getBrandsNamesToExclude().isEmpty()) {
+                .in(productCriteria.getBrandsNamesToInclude());
+        } else if (productCriteria.getBrandsNamesToExclude() != null
+                && !productCriteria.getBrandsNamesToExclude().isEmpty()) {
             brandsFilteringCriteria = Criteria.where("brand")
-                .nin(productsCriteria.getBrandsNamesToExclude());
+                .nin(productCriteria.getBrandsNamesToExclude());
         }
 
-        Criteria providerFilteringCriteria = productsCriteria.getProvidersNames() != null
-            && !productsCriteria.getProvidersNames().isEmpty()
-            ? Criteria.where("provider").in(productsCriteria.getProvidersNames())
+        Criteria providerFilteringCriteria = productCriteria.getProvidersNames() != null
+            && !productCriteria.getProvidersNames().isEmpty()
+            ? Criteria.where("provider").in(productCriteria.getProvidersNames())
             : new Criteria();
 
-        Criteria categoriesFilteringCriteria = productsCriteria.getCategoriesNames() != null
-            && !productsCriteria.getCategoriesNames().isEmpty()
-            ? Criteria.where("categories").in(productsCriteria.getCategoriesNames())
+        Criteria categoriesFilteringCriteria = productCriteria.getCategoriesNames() != null
+            && !productCriteria.getCategoriesNames().isEmpty()
+            ? Criteria.where("categories").in(productCriteria.getCategoriesNames())
             : new Criteria();
 
-        Criteria ratingFilteringCriteria = productsCriteria.getMinRating() != null
-            ? Criteria.where("rating").gte(productsCriteria.getMinRating())
+        Criteria ratingFilteringCriteria = productCriteria.getMinRating() != null
+            ? Criteria.where("rating").gte(productCriteria.getMinRating())
             : new Criteria();
 
         Criteria phraseFilteringCriteria = new Criteria();
-        if (productsCriteria.getPhraseKeywords() != null) {
+        if (productCriteria.getPhraseKeywords() != null) {
             phraseFilteringCriteria = new Criteria().orOperator(
                 Criteria.where("name").regex(phraseKeywordsRegExp),
                 Criteria.where("brand").regex(phraseKeywordsRegExp),
@@ -99,9 +98,9 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
         finalQueryOperations.add(filteringOperation);
 
         // Stage 2: Prepare match score for each product (if there is match score sort operation)
-        if (productsCriteria.getHasMatchScoreSortCriteria() != null
-            && productsCriteria.getHasMatchScoreSortCriteria()
-            && productsCriteria.getPhraseKeywords() != null) {
+        if (productCriteria.getHasMatchScoreSortCriteria() != null
+            && productCriteria.getHasMatchScoreSortCriteria()
+            && productCriteria.getPhraseKeywords() != null) {
 
             String addMatchScoreQuery =
                 "{\n"
@@ -126,8 +125,8 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
         }
 
         // Stage 3: Sort the resultant products
-        if (productsCriteria.getSortingCriteria() != null) {
-            finalQueryOperations.addAll(productsCriteria.getSortingCriteria()
+        if (productCriteria.getSortingCriteria() != null) {
+            finalQueryOperations.addAll(productCriteria.getSortingCriteria()
                 .stream()
                 .map(option -> Aggregation.sort(option.order(), option.byField()))
                 .toList());

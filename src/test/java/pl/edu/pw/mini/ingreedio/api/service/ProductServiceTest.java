@@ -1,6 +1,8 @@
 package pl.edu.pw.mini.ingreedio.api.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.List;
@@ -13,9 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.security.test.context.support.WithMockUser;
 import pl.edu.pw.mini.ingreedio.api.IntegrationTest;
-import pl.edu.pw.mini.ingreedio.api.criteria.ProductsCriteria;
+import pl.edu.pw.mini.ingreedio.api.criteria.ProductCriteria;
 import pl.edu.pw.mini.ingreedio.api.criteria.ProductsSortingCriteria;
 import pl.edu.pw.mini.ingreedio.api.dto.FullProductDto;
 import pl.edu.pw.mini.ingreedio.api.dto.ProductDto;
@@ -36,7 +38,6 @@ public class ProductServiceTest extends IntegrationTest {
     }
 
     @Nested
-    @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
     class AddAndGetTests {
         @Test
         public void givenProductObject_whenSaveProduct_thenReturnProductObject() {
@@ -91,7 +92,7 @@ public class ProductServiceTest extends IntegrationTest {
             productService.addProduct(Product.builder().name("testProduct2").build());
             productService.addProduct(Product.builder().name("testProduct3").build());
 
-            var criteria = ProductsCriteria.builder().build();
+            var criteria = ProductCriteria.builder().build();
 
             // When
             ProductListResponseDto page = productService.getProductsMatchingCriteria(
@@ -110,7 +111,7 @@ public class ProductServiceTest extends IntegrationTest {
             productService.addProduct(Product.builder().name("daglas").brand("ddaglas").build());
             productService.addProduct(Product.builder().provider("daglas & co.").build());
 
-            var criteria = ProductsCriteria.builder()
+            var criteria = ProductCriteria.builder()
                 .brandsNamesToInclude(Set.of("daglas", "nivea")).build();
 
             // When
@@ -136,7 +137,7 @@ public class ProductServiceTest extends IntegrationTest {
             productService.addProduct(Product.builder().name("perfume").brand("adidas").build());
             productService.addProduct(Product.builder().provider("daglas & co.").build());
 
-            var criteria = ProductsCriteria.builder()
+            var criteria = ProductCriteria.builder()
                 .brandsNamesToExclude(Set.of("adidas", "nivea")).build();
 
             // When
@@ -168,9 +169,9 @@ public class ProductServiceTest extends IntegrationTest {
             productService.addProduct(Product.builder().brand("carfour")
                 .ingredients(Arrays.asList("potato", "beet")).build());
 
-            var criteria1 = ProductsCriteria.builder()
+            var criteria1 = ProductCriteria.builder()
                 .ingredientsNamesToInclude(Set.of("potato", "beet")).build();
-            var criteria2 = ProductsCriteria.builder()
+            var criteria2 = ProductCriteria.builder()
                 .ingredientsNamesToInclude(Set.of("potato")).build();
 
             // When
@@ -212,11 +213,11 @@ public class ProductServiceTest extends IntegrationTest {
             productService.addProduct(Product.builder().brand("carfour")
                 .ingredients(Arrays.asList("potato", "beet")).build());
 
-            var criteria1 = ProductsCriteria.builder()
+            var criteria1 = ProductCriteria.builder()
                 .ingredientsNamesToExclude(Set.of("potato", "beet")).build();
-            var criteria2 = ProductsCriteria.builder()
+            var criteria2 = ProductCriteria.builder()
                 .ingredientsNamesToExclude(Set.of("potato")).build();
-            var criteria3 = ProductsCriteria.builder()
+            var criteria3 = ProductCriteria.builder()
                 .ingredientsNamesToExclude(Set.of("carrot", "tomato")).build();
 
             // When
@@ -269,7 +270,7 @@ public class ProductServiceTest extends IntegrationTest {
             productService.addProduct(Product.builder().brand("carfour")
                 .ingredients(Arrays.asList("potato", "beet")).rating(10).build());
 
-            var criteria = ProductsCriteria.builder()
+            var criteria = ProductCriteria.builder()
                 .ingredientsNamesToInclude(Set.of("potato"))
                 .ingredientsNamesToExclude(Set.of("carrot", "tomato"))
                 .minRating(7)
@@ -346,7 +347,7 @@ public class ProductServiceTest extends IntegrationTest {
                 Product.builder().name("pasta do butów").brand("kiwi").provider("romsan")
                     .build());
 
-            var criteria = ProductsCriteria.builder()
+            var criteria = ProductCriteria.builder()
                     .brandsNamesToInclude(Set.of("karfur"))
                     .providersNames(Set.of("żapka"))
                     .ingredientsNamesToInclude(Set.of("metanol"))
@@ -369,8 +370,6 @@ public class ProductServiceTest extends IntegrationTest {
                 assertThat(product.get().ingredients()).contains("metanol");
             }
         }
-
-
     }
 
     @Nested
@@ -386,7 +385,7 @@ public class ProductServiceTest extends IntegrationTest {
                 .shortDescription("krem do stóp").build());
 
             var sortingCriteria = new ProductsSortingCriteria(Sort.Direction.DESC, "matchScore");
-            var criteria = ProductsCriteria.builder()
+            var criteria = ProductCriteria.builder()
                 .phraseKeywords(Set.of("krem"))
                 .hasMatchScoreSortCriteria(true)
                 .sortingCriteria(Arrays.asList(sortingCriteria))
@@ -400,6 +399,107 @@ public class ProductServiceTest extends IntegrationTest {
             assertThat(result.products().get(0).name()).isEqualTo("almette");
             assertThat(result.products().get(1).name()).isEqualTo("parmezan");
             assertThat(result.products().get(2).name()).isEqualTo("serek");
+        }
+    }
+
+    @Nested
+    class ProductsLikingTests {
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenProduct_whenLikeProduct_thenSuccess() {
+            // Given
+            Product product = Product.builder().name("likedProduct").build();
+            Product savedProduct = productService.addProduct(product);
+            Long id = savedProduct.getId();
+
+            // When
+            boolean result = productService.likeProduct(id);
+            Optional<FullProductDto> updatedProduct = productService.getProductById(id);
+
+            // Then
+            assertTrue(result);
+            assertTrue(updatedProduct.get().isLiked());
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenProduct_whenLikeNonExistingProduct_thenFailure() {
+            // Given
+
+            // When
+            boolean result = productService.likeProduct(1000L);
+
+            // Then
+            assertFalse(result);
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenProduct_whenUnLikeProduct_thenSuccess() {
+            // Given
+            Product product = Product.builder().name("likedProduct").build();
+            Product savedProduct = productService.addProduct(product);
+            Long id = savedProduct.getId();
+
+            // When
+            productService.likeProduct(id);
+            boolean result = productService.unlikeProduct(id);
+            Optional<FullProductDto> updatedProduct = productService.getProductById(id);
+
+            // Then
+            assertTrue(result);
+            assertFalse(updatedProduct.get().isLiked());
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenProduct_whenUnLikeNonExistingProduct_thenFailure() {
+            // Given
+
+            // When
+            boolean result = productService.unlikeProduct(1000L);
+
+            // Then
+            assertFalse(result);
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenProduct_whenLikeAndGetProductsList_thenProductsAreLiked() {
+            // Given
+            Product product1 = productService
+                .addProduct(Product.builder().name("likedProduct1").build());
+            Product product2 = productService
+                .addProduct(Product.builder().name("likedProduct2").build());
+            productService.addProduct(Product.builder().name("likedProduct3").build());
+
+            // When
+            productService.likeProduct(product1.getId());
+            productService.likeProduct(product2.getId());
+
+            ProductListResponseDto page = productService.getProductsMatchingCriteria(
+                ProductCriteria.builder().build(), PageRequest.of(0, 30));
+            List<ProductDto> products = page.products();
+
+            // Then
+            assertThat(products.getFirst().isLiked()).isTrue();
+            assertThat(products.get(1).isLiked()).isTrue();
+            assertThat(products.get(2).isLiked()).isFalse();
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenProduct_whenLikeAndGetProductDetails_thenProductIsLiked() {
+            // Given
+            Product product = productService
+                .addProduct(Product.builder().name("likedProduct").build());
+
+            // When
+            productService.likeProduct(product.getId());
+            Optional<FullProductDto> result = productService.getProductById(product.getId());
+
+            // Then
+            assertThat(result.get().isLiked()).isTrue();
         }
     }
 }

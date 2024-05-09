@@ -7,7 +7,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class ProductsCriteria {
+public class ProductCriteria {
     private Set<String> ingredientsNamesToInclude;
     private Set<String> ingredientsNamesToExclude;
     private Set<String> brandsNamesToInclude;

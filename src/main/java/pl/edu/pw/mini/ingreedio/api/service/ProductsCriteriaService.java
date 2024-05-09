@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import pl.edu.pw.mini.ingreedio.api.criteria.ProductsCriteria;
+import pl.edu.pw.mini.ingreedio.api.criteria.ProductCriteria;
 import pl.edu.pw.mini.ingreedio.api.criteria.ProductsSortingCriteria;
 import pl.edu.pw.mini.ingreedio.api.dto.IngredientDto;
 
@@ -15,14 +15,14 @@ import pl.edu.pw.mini.ingreedio.api.dto.IngredientDto;
 public class ProductsCriteriaService {
     IngredientService ingredientService;
 
-    public ProductsCriteria getProductsCriteria(Optional<Set<Long>> ingredientsToExclude,
-                                                Optional<Set<Long>> ingredientsToInclude,
-                                                Optional<Integer> minRating,
-                                                Optional<String> phrase,
-                                                Optional<List<String>> sortBy,
-                                                Optional<Boolean> liked) {
+    public ProductCriteria getProductsCriteria(Optional<Set<Long>> ingredientsToExclude,
+                                               Optional<Set<Long>> ingredientsToInclude,
+                                               Optional<Integer> minRating,
+                                               Optional<String> phrase,
+                                               Optional<List<String>> sortBy,
+                                               Optional<Boolean> liked) {
         // TODO: provider, brand, category (add arguments too)
-        var builder = ProductsCriteria.builder();
+        var builder = ProductCriteria.builder();
         builder.hasMatchScoreSortCriteria(false);
 
         ingredientsToExclude.ifPresent(

@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import pl.edu.pw.mini.ingreedio.api.criteria.ProductsCriteria;
+import pl.edu.pw.mini.ingreedio.api.criteria.ProductCriteria;
 import pl.edu.pw.mini.ingreedio.api.dto.FullProductDto;
 import pl.edu.pw.mini.ingreedio.api.dto.ProductDto;
 import pl.edu.pw.mini.ingreedio.api.dto.ProductListResponseDto;
@@ -46,7 +46,7 @@ public class ProductService {
             if (productOptional.isPresent()) {
                 Product product = productOptional.get();
                 Boolean isLiked = product.getLikedBy() != null
-                    ? product.getLikedBy().contains(userId) : null;
+                    ? product.getLikedBy().contains(userId) : false;
                 return Optional.ofNullable(FullProductDto.builder()
                     .id(product.getId())
                     .name(product.getName())
@@ -70,7 +70,7 @@ public class ProductService {
     }
 
     public ProductListResponseDto getProductsMatchingCriteria(
-        ProductsCriteria criteria, PageRequest pageRequest) {
+        ProductCriteria criteria, PageRequest pageRequest) {
         Page<Product> productsPage = productRepository
             .getProductsMatchingCriteria(criteria, pageRequest);
 
@@ -89,7 +89,7 @@ public class ProductService {
         List<ProductDto> productDtos = productsPage.getContent().stream()
             .map(product -> {
                 Boolean isLiked = product.getLikedBy() != null
-                    ? product.getLikedBy().contains(userId) : null;
+                    ? product.getLikedBy().contains(userId) : false;
                 return ProductDto.builder()
                     .id(product.getId())
                     .name(product.getName())
