@@ -26,7 +26,6 @@ import pl.edu.pw.mini.ingreedio.api.model.Product;
 import pl.edu.pw.mini.ingreedio.api.repository.ProductRepository;
 
 @SpringBootTest
-@SuppressWarnings("VariableDeclarationUsageDistanceCheck")
 public class ProductServiceTest extends IntegrationTest {
 
     @Autowired
@@ -225,6 +224,7 @@ public class ProductServiceTest extends IntegrationTest {
                 .ingredientsNamesToExclude(Set.of("carrot", "tomato")).build();
 
             // When
+            //CHECKSTYLE:OFF
             ProductListResponseDto potatoBeet = productService
                 .getProductsMatchingCriteria(criteria1, PageRequest.of(0, 16));
 
@@ -233,6 +233,7 @@ public class ProductServiceTest extends IntegrationTest {
 
             ProductListResponseDto carrotTomato = productService
                 .getProductsMatchingCriteria(criteria3, PageRequest.of(0, 16));
+            //CHECKSTYLE:ON
 
             // Then
             assertThat(potatoBeet.products().size()).isEqualTo(0);
