@@ -26,6 +26,7 @@ import pl.edu.pw.mini.ingreedio.api.model.Product;
 import pl.edu.pw.mini.ingreedio.api.repository.ProductRepository;
 
 @SpringBootTest
+@SuppressWarnings("VariableDeclarationUsageDistanceCheck")
 public class ProductServiceTest extends IntegrationTest {
 
     @Autowired
