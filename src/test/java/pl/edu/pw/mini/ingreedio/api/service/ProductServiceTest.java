@@ -27,11 +27,13 @@ import pl.edu.pw.mini.ingreedio.api.repository.ProductRepository;
 
 @SpringBootTest
 public class ProductServiceTest extends IntegrationTest {
+
     @Autowired
     private ProductService productService;
 
     @Autowired
     private ProductRepository productRepository;
+
     @AfterEach
     void clearProducts() {
         productRepository.deleteAll();
@@ -175,8 +177,9 @@ public class ProductServiceTest extends IntegrationTest {
                 .ingredientsNamesToInclude(Set.of("potato")).build();
 
             // When
-            ProductListResponseDto potatoBeet = productService.getProductsMatchingCriteria(criteria1,
-                PageRequest.of(0, 16));
+            ProductListResponseDto potatoBeet =
+                productService.getProductsMatchingCriteria(criteria1,
+                    PageRequest.of(0, 16));
 
             ProductListResponseDto potato = productService.getProductsMatchingCriteria(criteria2,
                 PageRequest.of(0, 16));
@@ -221,14 +224,14 @@ public class ProductServiceTest extends IntegrationTest {
                 .ingredientsNamesToExclude(Set.of("carrot", "tomato")).build();
 
             // When
-            ProductListResponseDto potatoBeet = productService.getProductsMatchingCriteria(criteria1,
-                PageRequest.of(0, 16));
+            ProductListResponseDto potatoBeet = productService
+                .getProductsMatchingCriteria(criteria1, PageRequest.of(0, 16));
 
             ProductListResponseDto potato = productService.getProductsMatchingCriteria(criteria2,
                 PageRequest.of(0, 16));
 
-            ProductListResponseDto carrotTomato = productService.getProductsMatchingCriteria(criteria3,
-                PageRequest.of(0, 16));
+            ProductListResponseDto carrotTomato = productService
+                .getProductsMatchingCriteria(criteria3, PageRequest.of(0, 16));
 
             // Then
             assertThat(potatoBeet.products().size()).isEqualTo(0);
@@ -384,7 +387,8 @@ public class ProductServiceTest extends IntegrationTest {
             productService.addProduct(Product.builder().name("serek")
                 .shortDescription("krem do stóp").build());
 
-            var sortingCriteria = new ProductsSortingCriteria(Sort.Direction.DESC, "matchScore");
+            var sortingCriteria =
+                new ProductsSortingCriteria(Sort.Direction.DESC, "matchScore");
             var criteria = ProductCriteria.builder()
                 .phraseKeywords(Set.of("krem"))
                 .hasMatchScoreSortCriteria(true)
