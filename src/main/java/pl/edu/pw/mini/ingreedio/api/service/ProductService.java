@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import pl.edu.pw.mini.ingreedio.api.criteria.ProductsCriteria;
@@ -28,8 +27,6 @@ public class ProductService {
     private final ProductDtoMapper productDtoMapper;
     private final FullProductDtoMapper fullProductDtoMapper;
     private final SequenceGeneratorService sequenceGenerator;
-
-    private final int pageSize = 10;
 
     public List<ProductDto> getAllProducts() {
         return productRepository
@@ -73,12 +70,10 @@ public class ProductService {
     }
 
     public ProductListResponseDto getProductsMatchingCriteria(
-        ProductsCriteria criteria, Integer pageNumber) {
-        PageRequest pageable = PageRequest.of(pageNumber, pageSize);
+        ProductsCriteria criteria, PageRequest pageRequest) {
         Page<Product> productsPage = productRepository
-            .getProductsMatchingCriteria(criteria, pageable);
+            .getProductsMatchingCriteria(criteria, pageRequest);
 
-        int total = productsPage.getTotalPages();
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
 

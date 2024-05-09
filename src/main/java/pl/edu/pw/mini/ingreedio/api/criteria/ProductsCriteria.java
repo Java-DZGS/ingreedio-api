@@ -8,8 +8,12 @@ import lombok.Getter;
 @Getter
 @Builder
 public class ProductsCriteria {
-    private Set<String> ingredientsToIncludeNames;
-    private Set<String> ingredientsToExcludeNames;
+    private Set<String> ingredientsNamesToInclude;
+    private Set<String> ingredientsNamesToExclude;
+    private Set<String> brandsNamesToInclude;
+    private Set<String> brandsNamesToExclude;
+    private Set<String> providersNames;
+    private Set<String> categoriesNames;
     private Integer minRating;
     private Set<String> phraseKeywords;
     private List<ProductsSortingCriteria> sortingCriteria;

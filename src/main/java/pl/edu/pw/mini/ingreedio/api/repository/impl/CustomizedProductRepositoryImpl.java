@@ -33,18 +33,41 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
                 + String.join("|\\b", productsCriteria.getPhraseKeywords());
         }
 
-        // Stage 1: Filter the products basing on the phrase, rating and ingredients
-        // TODO: brand, provider, category
+        // Stage 1: Filter the products basing on
+        // the ingredients, brand, provider, category, phrase, rating,
         Criteria ingredientsFilteringCriteria = new Criteria().andOperator(
-            productsCriteria.getIngredientsToIncludeNames() != null
-                ? Criteria.where("ingredients").all(productsCriteria.getIngredientsToIncludeNames())
+            productsCriteria.getIngredientsNamesToInclude() != null
+                && !productsCriteria.getIngredientsNamesToInclude().isEmpty()
+                ? Criteria.where("ingredients").all(productsCriteria.getIngredientsNamesToInclude())
                 : new Criteria(),
-            productsCriteria.getIngredientsToExcludeNames() != null
-                ? Criteria.where("ingredients").all(productsCriteria.getIngredientsToExcludeNames())
+            productsCriteria.getIngredientsNamesToExclude() != null
+                && !productsCriteria.getIngredientsNamesToExclude().isEmpty()
+                ? Criteria.where("ingredients").nin(productsCriteria.getIngredientsNamesToExclude())
                 : new Criteria()
         );
 
-        Criteria ratingFilteringCriteria = productsCriteria.getMinRating() == null
+        Criteria brandsFilteringCriteria = new Criteria().andOperator(
+            productsCriteria.getBrandsNamesToInclude() != null
+                && !productsCriteria.getBrandsNamesToInclude().isEmpty()
+                ? Criteria.where("brand").in(productsCriteria.getBrandsNamesToInclude())
+                : new Criteria(),
+            productsCriteria.getBrandsNamesToExclude() != null
+                && !productsCriteria.getBrandsNamesToExclude().isEmpty()
+                ? Criteria.where("brand").nin(productsCriteria.getBrandsNamesToExclude())
+                : new Criteria()
+        );
+
+        Criteria providerFilteringCriteria = productsCriteria.getProvidersNames() != null
+            && !productsCriteria.getProvidersNames().isEmpty()
+            ? Criteria.where("provider").in(productsCriteria.getProvidersNames())
+            : new Criteria();
+
+        Criteria categoriesFilteringCriteria = productsCriteria.getCategoriesNames() != null
+            && !productsCriteria.getCategoriesNames().isEmpty()
+            ? Criteria.where("categories").in(productsCriteria.getCategoriesNames())
+            : new Criteria();
+
+        Criteria ratingFilteringCriteria = productsCriteria.getMinRating() != null
             ? Criteria.where("rating").gte(productsCriteria.getMinRating())
             : new Criteria();
 
@@ -59,6 +82,9 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
 
         AggregationOperation filteringOperation = Aggregation.match(new Criteria().andOperator(
             ingredientsFilteringCriteria,
+            brandsFilteringCriteria,
+            providerFilteringCriteria,
+            categoriesFilteringCriteria,
             ratingFilteringCriteria,
             phraseFilteringCriteria
         ));
@@ -66,7 +92,8 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
         finalQueryOperations.add(filteringOperation);
 
         // Stage 2: Prepare match score for each product (if there is match score sort operation)
-        if (productsCriteria.getHasMatchScoreSortCriteria()
+        if (productsCriteria.getHasMatchScoreSortCriteria() != null
+            && productsCriteria.getHasMatchScoreSortCriteria()
             && productsCriteria.getPhraseKeywords() != null) {
 
             String addMatchScoreQuery =

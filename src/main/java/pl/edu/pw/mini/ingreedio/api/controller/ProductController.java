@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import pl.edu.pw.mini.ingreedio.api.dto.FullProductDto;
 import pl.edu.pw.mini.ingreedio.api.dto.ProductListResponseDto;
 import pl.edu.pw.mini.ingreedio.api.model.Product;
+import pl.edu.pw.mini.ingreedio.api.service.PaginationService;
 import pl.edu.pw.mini.ingreedio.api.service.ProductService;
 import pl.edu.pw.mini.ingreedio.api.service.ProductsCriteriaService;
 
@@ -31,6 +32,7 @@ import pl.edu.pw.mini.ingreedio.api.service.ProductsCriteriaService;
 @Tag(name = "Products" /*, description = "..."*/)
 public class ProductController {
     private final ProductService productService;
+    private final PaginationService paginationService;
     private final ProductsCriteriaService productsCriteriaService;
 
     @Operation(summary = "Get matching products",
@@ -53,8 +55,9 @@ public class ProductController {
                 phrase,
                 sortBy,
                 liked
+                // TODO: provider, brand, category
             ),
-            pageNumber.orElse(0)
+            paginationService.getPageRequest(pageNumber)
         );
 
         return ResponseEntity.ok(products);

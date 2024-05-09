@@ -21,12 +21,13 @@ public class ProductsCriteriaService {
                                                 Optional<String> phrase,
                                                 Optional<List<String>> sortBy,
                                                 Optional<Boolean> liked) {
+        // TODO: provider, brand, category (add arguments too)
         var builder = ProductsCriteria.builder();
         builder.hasMatchScoreSortCriteria(false);
 
         ingredientsToExclude.ifPresent(
             ingredients -> {
-                builder.ingredientsToExcludeNames(ingredientService
+                builder.ingredientsNamesToExclude(ingredientService
                     .getIngredientsByIds(ingredients)
                     .stream()
                     .map(IngredientDto::name)
@@ -35,7 +36,7 @@ public class ProductsCriteriaService {
 
         ingredientsToInclude.ifPresent(
             ingredients -> {
-                builder.ingredientsToIncludeNames(ingredientService
+                builder.ingredientsNamesToInclude(ingredientService
                     .getIngredientsByIds(ingredients)
                     .stream()
                     .map(IngredientDto::name)
