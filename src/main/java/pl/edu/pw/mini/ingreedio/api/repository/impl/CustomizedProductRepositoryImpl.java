@@ -4,37 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import org.bson.Document;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
-import org.springframework.data.mongodb.core.aggregation.AggregationOperationContext;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Repository;
 import pl.edu.pw.mini.ingreedio.api.criteria.ProductsCriteria;
 import pl.edu.pw.mini.ingreedio.api.model.Product;
 import pl.edu.pw.mini.ingreedio.api.repository.CustomizedProductRepository;
-
-class CustomQueryAggregationOperation implements AggregationOperation {
-    private final String jsonOperation;
-
-    public CustomQueryAggregationOperation(String jsonOperation) {
-        this.jsonOperation = jsonOperation;
-    }
-
-    @Override
-    public Document toDocument(AggregationOperationContext aggregationOperationContext) {
-        return aggregationOperationContext.getMappedObject(Document.parse(jsonOperation));
-    }
-
-    @Override
-    public List<Document> toPipelineStages(AggregationOperationContext context) {
-        return AggregationOperation.super.toPipelineStages(context);
-    }
-}
 
 @RequiredArgsConstructor
 @Repository
@@ -44,6 +24,9 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
     @Override
     public Page<Product> getProductsMatchingCriteria(ProductsCriteria productsCriteria,
                                                      Pageable pageable) {
+        // Operations List
+        List<AggregationOperation> finalQueryOperations = new ArrayList<>();
+
         String phraseKeywordsRegExp = "";
         if (productsCriteria.getPhraseKeywords() != null) {
             phraseKeywordsRegExp = "\\b"
@@ -79,60 +62,65 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
             phraseFilteringCriteria
         ));
 
-        // Stage 2: Prepare match score for each product (if there is match score sort operation)
-        List<AggregationOperation> operations = new ArrayList<>();
-        operations.add(filteringOperation);
+        finalQueryOperations.add(filteringOperation);
 
+        // Stage 2: Prepare match score for each product (if there is match score sort operation)
         if (productsCriteria.getHasMatchScoreSortCriteria()
             && productsCriteria.getPhraseKeywords() != null) {
 
             String addMatchScoreQuery =
-                "{\n" +
-                "  \"$addFields\": {\n" +
-                "    \"matchScore\": {\n" +
-                "      \"$add\": [\n" +
-                "        { \"$multiply\": [{ \"$size\": { \"$regexFindAll\": { \"input\": \"$shortDescription\", \"regex\": /" + phraseKeywordsRegExp + "/ } } }, 5] },\n" +
-                "        { \"$multiply\": [{ \"$size\": { \"$regexFindAll\": { \"input\": \"$brand\", \"regex\": /" + phraseKeywordsRegExp + "/ } } }, 10] },\n" +
-                "        { \"$multiply\": [{ \"$size\": { \"$regexFindAll\": { \"input\": \"$name\", \"regex\": /" + phraseKeywordsRegExp + "/ } } }, 15] }\n" +
-                "      ]\n" +
-                "    }\n" +
-                "  }\n" +
-                "}\n";
+                "{\n"
+                + "  \"$addFields\": {\n"
+                + "    \"matchScore\": {\n"
+                + "      \"$add\": [\n"
+                + "        { \"$multiply\": [{ \"$size\": { \"$regexFindAll\": "
+                + "{ \"input\": \"$shortDescription\", \"regex\": /" + phraseKeywordsRegExp
+                + "/ } } }, 5] },\n"
+                + "        { \"$multiply\": [{ \"$size\": { \"$regexFindAll\": "
+                + "{ \"input\": \"$brand\", \"regex\": /" + phraseKeywordsRegExp
+                + "/ } } }, 10] },\n"
+                + "        { \"$multiply\": [{ \"$size\": { \"$regexFindAll\": "
+                + "{ \"input\": \"$name\", \"regex\": /" + phraseKeywordsRegExp
+                + "/ } } }, 15] }\n"
+                + "      ]\n"
+                + "    }\n"
+                + "  }\n"
+                + "}\n";
 
-            operations.add(new CustomQueryAggregationOperation(addMatchScoreQuery));
+            finalQueryOperations.add(new CustomQueryAggregationOperation(addMatchScoreQuery));
         }
 
-        // Stage 3: Sort the resultant products, apply pagination and create the final aggregations
-
-        // Apply sorting to the aggregation
+        // Stage 3: Sort the resultant products
         if (productsCriteria.getSortingCriteria() != null) {
-            operations.addAll(productsCriteria.getSortingCriteria()
+            finalQueryOperations.addAll(productsCriteria.getSortingCriteria()
                 .stream()
                 .map(option -> Aggregation.sort(option.order(), option.byField()))
                 .toList());
         }
 
-        // Perform pagination
-        operations.add(Aggregation.skip(
+        // Stage 4: Perform pagination on the final products list
+        finalQueryOperations.add(Aggregation.skip(
             (long) pageable.getPageSize() * pageable.getPageNumber()));
-        operations.add(Aggregation.limit(pageable.getPageSize()));
+        finalQueryOperations.add(Aggregation.limit(pageable.getPageSize()));
 
-        Aggregation productsAggregation = Aggregation
-            .newAggregation(operations.toArray(new AggregationOperation[0]));
-
+        // First query: Find total product count (only filtering is required)
         Aggregation totalProductsCountAggregation = Aggregation.newAggregation(
             filteringOperation,
             Aggregation.group().count().as("totalProductsCount")
         );
 
-        List<Product> products = mongoTemplate.aggregate(productsAggregation,
-                "products", Product.class)
-            .getMappedResults();
-
         Integer totalProductsCount =
             (Integer) mongoTemplate.aggregate(totalProductsCountAggregation,
                     "products", Map.class)
                 .getMappedResults().getFirst().get("totalProductsCount");
+
+        // Second query: Get products basing on the criteria
+        Aggregation productsAggregation = Aggregation
+            .newAggregation(finalQueryOperations.toArray(new AggregationOperation[0]));
+
+        List<Product> products = mongoTemplate.aggregate(productsAggregation,
+                "products", Product.class)
+            .getMappedResults();
 
         return new PageImpl<>(
             products,
