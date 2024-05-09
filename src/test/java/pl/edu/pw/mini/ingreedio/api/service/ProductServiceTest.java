@@ -203,6 +203,7 @@ public class ProductServiceTest extends IntegrationTest {
         }
 
         @Test
+        @SuppressWarnings("checkstyle:VariableDeclarationUsageDistance")
         public void givenIngredientsExcludeCriteria_whenFilter_thenReturnCorrectProducts() {
             // Given
             productService.addProduct(Product.builder().brand("carfour")
@@ -224,7 +225,6 @@ public class ProductServiceTest extends IntegrationTest {
                 .ingredientsNamesToExclude(Set.of("carrot", "tomato")).build();
 
             // When
-            //CHECKSTYLE:OFF
             ProductListResponseDto potatoBeet = productService
                 .getProductsMatchingCriteria(criteria1, PageRequest.of(0, 16));
 
@@ -233,7 +233,6 @@ public class ProductServiceTest extends IntegrationTest {
 
             ProductListResponseDto carrotTomato = productService
                 .getProductsMatchingCriteria(criteria3, PageRequest.of(0, 16));
-            //CHECKSTYLE:ON
 
             // Then
             assertThat(potatoBeet.products().size()).isEqualTo(0);
