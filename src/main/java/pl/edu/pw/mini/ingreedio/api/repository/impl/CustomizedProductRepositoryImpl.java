@@ -34,6 +34,7 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
         }
 
         // Stage 1: Filter the products basing on the phrase, rating and ingredients
+        // TODO: brand, provider, category
         Criteria ingredientsFilteringCriteria = new Criteria().andOperator(
             productsCriteria.getIngredientsToIncludeNames() != null
                 ? Criteria.where("ingredients").all(productsCriteria.getIngredientsToIncludeNames())
