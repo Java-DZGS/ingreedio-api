@@ -30,6 +30,7 @@ public class IngredientService {
             .findByNameContainingIgnoreCase(query);
         return ingredients.stream().map(ingredientDtoMapper)
                 .collect(Collectors.toList());
+    }
       
     public Ingredient addIngredient(Ingredient ingredient) {
         return ingredientRepository.save(ingredient);
