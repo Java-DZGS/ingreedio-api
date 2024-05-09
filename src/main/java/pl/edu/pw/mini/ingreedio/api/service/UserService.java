@@ -24,8 +24,10 @@ public class UserService {
         return userRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
     public Optional<User> getUserById(Integer id) {
         Optional<User> userOptional = userRepository.findById(id);
+        userOptional.ifPresent(user -> Hibernate.initialize(user.getLikedProducts()));
         return userOptional;
     }
 
@@ -61,6 +63,7 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional(readOnly = true)
     public boolean likeProduct(Integer userId, Long productId) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
@@ -68,6 +71,7 @@ public class UserService {
         }
         
         User user = userOptional.get();
+        Hibernate.initialize(user.getLikedProducts());
         Set<Long> likedProducts = user.getLikedProducts();
         if (!likedProducts.contains(productId)) {
             likedProducts.add(productId);
@@ -77,6 +81,7 @@ public class UserService {
         return true;
     }
 
+    @Transactional(readOnly = true)
     public boolean unlikeProduct(Integer userId, Long productId) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
@@ -84,6 +89,7 @@ public class UserService {
         }
         
         User user = userOptional.get();
+        Hibernate.initialize(user.getLikedProducts());
         Set<Long> likedProducts = user.getLikedProducts();
         if (likedProducts.contains(productId)) {
             likedProducts.remove(productId);
