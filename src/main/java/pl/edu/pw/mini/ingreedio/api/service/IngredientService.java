@@ -24,11 +24,15 @@ public class IngredientService {
         return ingredientRepository.findById(id).map(ingredientDtoMapper);
     }
 
+
     public List<IngredientDto> getIngredients(String query) {
         List<Ingredient> ingredients = ingredientRepository
             .findByNameContainingIgnoreCase(query);
         return ingredients.stream().map(ingredientDtoMapper)
                 .collect(Collectors.toList());
+      
+    public Ingredient addIngredient(Ingredient ingredient) {
+        return ingredientRepository.save(ingredient);
     }
 
     public List<IngredientDto> getLikedIngredients() {

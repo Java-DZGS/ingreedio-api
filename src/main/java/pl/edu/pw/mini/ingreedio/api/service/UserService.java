@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.model.AuthInfo;
 import pl.edu.pw.mini.ingreedio.api.model.Ingredient;
 import pl.edu.pw.mini.ingreedio.api.model.User;
@@ -23,7 +25,8 @@ public class UserService {
     }
 
     public Optional<User> getUserById(Integer id) {
-        return userRepository.findById(id);
+        Optional<User> userOptional = userRepository.findById(id);
+        return userOptional;
     }
 
     public Optional<User> getUserByUsername(String username) {
