@@ -1,8 +1,10 @@
 package pl.edu.pw.mini.ingreedio.api.repository.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -13,6 +15,7 @@ import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Repository;
 import pl.edu.pw.mini.ingreedio.api.criteria.ProductsCriteria;
+import pl.edu.pw.mini.ingreedio.api.dto.ProductListResponseDto;
 import pl.edu.pw.mini.ingreedio.api.model.Product;
 import pl.edu.pw.mini.ingreedio.api.repository.CustomizedProductRepository;
 
@@ -24,8 +27,6 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
     @Override
     public Page<Product> getProductsMatchingCriteria(ProductsCriteria productsCriteria,
                                                      Pageable pageable) {
-        // Operations List
-        List<AggregationOperation> finalQueryOperations = new ArrayList<>();
 
         String phraseKeywordsRegExp = "";
         if (productsCriteria.getPhraseKeywords() != null) {
@@ -35,6 +36,9 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
 
         // Stage 1: Filter the products basing on
         // the ingredients, brand, provider, category, phrase, rating,
+
+        // Note: If a product contain ingredient to exclude and ingredient
+        // to include then the product is excluded (exclude has priority over include)
         Criteria ingredientsFilteringCriteria = new Criteria().andOperator(
             productsCriteria.getIngredientsNamesToInclude() != null
                 && !productsCriteria.getIngredientsNamesToInclude().isEmpty()
@@ -46,16 +50,16 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
                 : new Criteria()
         );
 
-        Criteria brandsFilteringCriteria = new Criteria().andOperator(
-            productsCriteria.getBrandsNamesToInclude() != null
-                && !productsCriteria.getBrandsNamesToInclude().isEmpty()
-                ? Criteria.where("brand").in(productsCriteria.getBrandsNamesToInclude())
-                : new Criteria(),
-            productsCriteria.getBrandsNamesToExclude() != null
-                && !productsCriteria.getBrandsNamesToExclude().isEmpty()
-                ? Criteria.where("brand").nin(productsCriteria.getBrandsNamesToExclude())
-                : new Criteria()
-        );
+        Criteria brandsFilteringCriteria = new Criteria();
+        if (productsCriteria.getBrandsNamesToInclude() != null
+                && !productsCriteria.getBrandsNamesToInclude().isEmpty()) {
+            brandsFilteringCriteria = Criteria.where("brand")
+                .in(productsCriteria.getBrandsNamesToInclude());
+        } else if (productsCriteria.getBrandsNamesToExclude() != null
+                && !productsCriteria.getBrandsNamesToExclude().isEmpty()) {
+            brandsFilteringCriteria = Criteria.where("brand")
+                .nin(productsCriteria.getBrandsNamesToExclude());
+        }
 
         Criteria providerFilteringCriteria = productsCriteria.getProvidersNames() != null
             && !productsCriteria.getProvidersNames().isEmpty()
@@ -79,6 +83,9 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
                 Criteria.where("shortDescription").regex(phraseKeywordsRegExp)
             );
         }
+
+        // Final operations List
+        List<AggregationOperation> finalQueryOperations = new ArrayList<>();
 
         AggregationOperation filteringOperation = Aggregation.match(new Criteria().andOperator(
             ingredientsFilteringCriteria,
@@ -131,28 +138,37 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
             (long) pageable.getPageSize() * pageable.getPageNumber()));
         finalQueryOperations.add(Aggregation.limit(pageable.getPageSize()));
 
-        // First query: Find total product count (only filtering is required)
-        Aggregation totalProductsCountAggregation = Aggregation.newAggregation(
-            filteringOperation,
-            Aggregation.group().count().as("totalProductsCount")
-        );
+        try {
+            // Query 1: Find total product count (only filtering is required)
+            Aggregation totalProductsCountAggregation = Aggregation.newAggregation(
+                filteringOperation,
+                Aggregation.group().count().as("totalProductsCount")
+            );
 
-        Integer totalProductsCount =
-            (Integer) mongoTemplate.aggregate(totalProductsCountAggregation,
-                    "products", Map.class)
-                .getMappedResults().getFirst().get("totalProductsCount");
+            Integer totalProductsCount =
+                (Integer) mongoTemplate.aggregate(totalProductsCountAggregation,
+                        "products", Map.class)
+                    .getMappedResults().getFirst().get("totalProductsCount");
 
-        // Second query: Get products basing on the criteria
-        Aggregation productsAggregation = Aggregation
-            .newAggregation(finalQueryOperations.toArray(new AggregationOperation[0]));
+            // Query 2: Get products basing on the criteria
+            Aggregation productsAggregation = Aggregation
+                .newAggregation(finalQueryOperations.toArray(new AggregationOperation[0]));
 
-        List<Product> products = mongoTemplate.aggregate(productsAggregation,
-                "products", Product.class)
-            .getMappedResults();
+            List<Product> products = mongoTemplate.aggregate(productsAggregation,
+                    "products", Product.class)
+                .getMappedResults();
 
-        return new PageImpl<>(
-            products,
-            pageable,
-            totalProductsCount == null ? 0 : totalProductsCount);
+            return new PageImpl<>(
+                products,
+                pageable,
+                totalProductsCount == null ? 0 : totalProductsCount);
+        } catch (NoSuchElementException noSuchElementException) {
+            return new PageImpl<>(
+                Collections.emptyList(),
+                pageable,
+                0
+            );
+        }
+
     }
 }

@@ -12,6 +12,8 @@ public class ProductDtoMapper implements Function<Product, ProductDto> {
         return ProductDto.builder()
             .id(product.getId())
             .name(product.getName())
+            .brand(product.getBrand())
+            .rating(product.getRating())
             .smallImageUrl(product.getSmallImageUrl())
             .provider(product.getProvider())
             .shortDescription(product.getShortDescription())

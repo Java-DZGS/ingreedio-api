@@ -6,5 +6,5 @@ import lombok.Builder;
 @Builder
 public record FullProductDto(Long id, String name, String largeImageUrl, String provider,
                              String brand, String longDescription, String volume,
-                             List<String> ingredients, Boolean isLiked) {
+                             List<String> ingredients, Boolean isLiked, Integer rating) {
 }
