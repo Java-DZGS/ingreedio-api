@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -27,10 +28,11 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
     public Page<Product> getProductsMatchingCriteria(ProductCriteria productCriteria,
                                                      Pageable pageable) {
 
-        String phraseKeywordsRegExp = "";
+        Pattern phraseKeywordsRegExp = null;
         if (productCriteria.getPhraseKeywords() != null) {
-            phraseKeywordsRegExp = "\\b"
-                + String.join("|\\b", productCriteria.getPhraseKeywords());
+            phraseKeywordsRegExp = Pattern.compile("\\b"
+                + String.join("|\\b", productCriteria.getPhraseKeywords()),
+                Pattern.CASE_INSENSITIVE);
         }
 
         // Stage 1: Filter the products basing on
@@ -73,9 +75,9 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
         Criteria ratingFilteringCriteria = productCriteria.getMinRating() != null
             ? Criteria.where("rating").gte(productCriteria.getMinRating())
             : new Criteria();
-
         Criteria phraseFilteringCriteria = new Criteria();
-        if (productCriteria.getPhraseKeywords() != null) {
+
+        if (phraseKeywordsRegExp != null) {
             phraseFilteringCriteria = new Criteria().orOperator(
                 Criteria.where("name").regex(phraseKeywordsRegExp),
                 Criteria.where("brand").regex(phraseKeywordsRegExp),
@@ -100,7 +102,7 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
         // Stage 2: Prepare match score for each product (if there is match score sort operation)
         if (productCriteria.getHasMatchScoreSortCriteria() != null
             && productCriteria.getHasMatchScoreSortCriteria()
-            && productCriteria.getPhraseKeywords() != null) {
+            && phraseKeywordsRegExp != null) {
 
             String addMatchScoreQuery =
                 "{\n"
@@ -108,14 +110,15 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
                 + "    \"matchScore\": {\n"
                 + "      \"$add\": [\n"
                 + "        { \"$multiply\": [{ \"$size\": { \"$regexFindAll\": "
-                + "{ \"input\": \"$shortDescription\", \"regex\": /" + phraseKeywordsRegExp
-                + "/ } } }, 5] },\n"
+                + "{ \"input\": \"$shortDescription\", \"regex\": /"
+                    + phraseKeywordsRegExp.pattern()
+                + "/, \"options\": 'i' } } }, 5] },\n"
                 + "        { \"$multiply\": [{ \"$size\": { \"$regexFindAll\": "
-                + "{ \"input\": \"$brand\", \"regex\": /" + phraseKeywordsRegExp
-                + "/ } } }, 10] },\n"
+                + "{ \"input\": \"$brand\", \"regex\": /" + phraseKeywordsRegExp.pattern()
+                + "/, \"options\": 'i' } } }, 10] },\n"
                 + "        { \"$multiply\": [{ \"$size\": { \"$regexFindAll\": "
-                + "{ \"input\": \"$name\", \"regex\": /" + phraseKeywordsRegExp
-                + "/ } } }, 15] }\n"
+                + "{ \"input\": \"$name\", \"regex\": /" + phraseKeywordsRegExp.pattern()
+                + "/, \"options\": 'i' } } }, 15] }\n"
                 + "      ]\n"
                 + "    }\n"
                 + "  }\n"
