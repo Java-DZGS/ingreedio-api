@@ -1,10 +1,13 @@
 package pl.edu.pw.mini.ingreedio.api.service;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import pl.edu.pw.mini.ingreedio.api.criteria.ProductCriteria;
@@ -12,23 +15,26 @@ import pl.edu.pw.mini.ingreedio.api.criteria.ProductsSortingCriteria;
 import pl.edu.pw.mini.ingreedio.api.dto.IngredientDto;
 
 @Service
+@AllArgsConstructor
 public class ProductsCriteriaService {
-    IngredientService ingredientService;
+    private final IngredientService ingredientService;
 
-    public ProductCriteria getProductsCriteria(Optional<Set<Long>> ingredientsToExclude,
-                                               Optional<Set<Long>> ingredientsToInclude,
+    public ProductCriteria getProductsCriteria(Optional<List<Long>> ingredientsToExclude,
+                                               Optional<List<Long>> ingredientsToInclude,
                                                Optional<Integer> minRating,
                                                Optional<String> phrase,
                                                Optional<List<String>> sortBy,
                                                Optional<Boolean> liked) {
+
         // TODO: provider, brand, category (add arguments too)
         var builder = ProductCriteria.builder();
         builder.hasMatchScoreSortCriteria(false);
 
         ingredientsToExclude.ifPresent(
             ingredients -> {
+                Set<Long> ingredientsSet = new HashSet<>(ingredients);
                 builder.ingredientsNamesToExclude(ingredientService
-                    .getIngredientsByIds(ingredients)
+                    .getIngredientsByIds(ingredientsSet)
                     .stream()
                     .map(IngredientDto::name)
                     .collect(Collectors.toSet()));
@@ -36,8 +42,9 @@ public class ProductsCriteriaService {
 
         ingredientsToInclude.ifPresent(
             ingredients -> {
+                Set<Long> ingredientsSet = new HashSet<>(ingredients);
                 builder.ingredientsNamesToInclude(ingredientService
-                    .getIngredientsByIds(ingredients)
+                    .getIngredientsByIds(ingredientsSet)
                     .stream()
                     .map(IngredientDto::name)
                     .collect(Collectors.toSet()));

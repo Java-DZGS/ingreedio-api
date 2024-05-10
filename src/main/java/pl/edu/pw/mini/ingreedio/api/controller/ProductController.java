@@ -3,6 +3,7 @@ package pl.edu.pw.mini.ingreedio.api.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -41,12 +42,13 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<ProductListResponseDto> getProducts(
         @RequestParam("page-number") Optional<Integer> pageNumber,
-        @RequestParam("ingredients-exclude") Optional<Set<Long>> ingredientsToExclude,
-        @RequestParam("ingredients-include") Optional<Set<Long>> ingredientsToInclude,
+        @RequestParam("ingredients-exclude") Optional<List<Long>> ingredientsToExclude,
+        @RequestParam("ingredients-include") Optional<List<Long>> ingredientsToInclude,
         @RequestParam("min-rating") Optional<Integer> minRating,
         @RequestParam("phrase") Optional<String> phrase,
         @RequestParam("sort-by") Optional<List<String>> sortBy,
         @RequestParam("liked") Optional<Boolean> liked) {
+
         ProductListResponseDto products = productService.getProductsMatchingCriteria(
             productsCriteriaService.getProductsCriteria(
                 ingredientsToExclude,
