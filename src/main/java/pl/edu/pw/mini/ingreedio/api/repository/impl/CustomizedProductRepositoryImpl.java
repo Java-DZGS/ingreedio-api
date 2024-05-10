@@ -38,7 +38,7 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
         // Stage 1: Filter the products basing on
         // the ingredients, brand, provider, category, phrase, rating,
 
-        // Note: If a product contain ingredient to exclude and ingredient
+        // Note: If a product contains ingredient to exclude and ingredient
         // to include then the product is excluded (exclude has priority over include)
         Criteria ingredientsFilteringCriteria = new Criteria().andOperator(
             productCriteria.getIngredientsNamesToInclude() != null
