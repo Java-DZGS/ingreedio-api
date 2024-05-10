@@ -63,7 +63,7 @@ public class UserService {
         userRepository.save(user);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public boolean likeProduct(Integer userId, Long productId) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
@@ -81,7 +81,7 @@ public class UserService {
         return true;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public boolean unlikeProduct(Integer userId, Long productId) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
