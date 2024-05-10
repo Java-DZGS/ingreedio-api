@@ -405,6 +405,29 @@ public class ProductServiceTest extends IntegrationTest {
             assertThat(result.products().get(1).name()).isEqualTo("parmezan");
             assertThat(result.products().get(2).name()).isEqualTo("serek");
         }
+
+        @Test
+        public void givenMultiCaseFields_whenSearch_thenResultIsCaseInsensitive() {
+            // Given
+            productService.addProduct(Product.builder().name("aLmeTTe")
+                .shortDescription("MaśĆ").build());
+            productService.addProduct(Product.builder().name("ParMez")
+                .shortDescription("SZamPoNik").build());
+            productService.addProduct(Product.builder().name("SErEk")
+                .shortDescription("kRem do stóp").build());
+
+            var criteria = ProductCriteria.builder()
+                .phraseKeywords(Set.of("krem", "serek"))
+                .build();
+
+            // When
+            var result = productService.getProductsMatchingCriteria(
+                criteria, PageRequest.of(0, 30));
+
+            // Then
+            assertThat(result.products().size()).isEqualTo(1);
+            assertThat(result.products().get(0).name()).isEqualTo("SErEk");
+        }
     }
 
     @Nested
