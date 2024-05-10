@@ -379,7 +379,7 @@ public class ProductServiceTest extends IntegrationTest {
     @Nested
     class PhraseAndSortingTests {
         @Test
-        public void givenTwoProducts_whenMatchSort_thenProductWithGreaterMatchScoreIsFirst() {
+        public void givenProducts_whenMatchSort_thenProductWithGreaterMatchScoreIsFirst() {
             // Given
             productService.addProduct(Product.builder().name("almette")
                 .shortDescription("krem kremik kremiasty").build());

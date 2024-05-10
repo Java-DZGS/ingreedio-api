@@ -1,0 +1,26 @@
+{
+  "$addFields": {
+    "matchScore": {
+      "$add": [
+        {
+          "$multiply": [
+            { "$size": { "$regexFindAll": { "input": "$shortDescription", "regex": "%1$s/", "options": "i" } } },
+            5
+          ]
+        },
+        {
+          "$multiply": [
+            { "$size": { "$regexFindAll": { "input": "$brand", "regex": "%1$s", "options": "i" } } },
+            10
+          ]
+        },
+        {
+          "$multiply": [
+            { "$size": { "$regexFindAll": { "input": "$name", "regex": "%1$s", "options": "i" } } },
+            15
+          ]
+        }
+      ]
+    }
+  }
+}

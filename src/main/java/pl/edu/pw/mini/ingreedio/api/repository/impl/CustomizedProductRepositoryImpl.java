@@ -1,5 +1,9 @@
 package pl.edu.pw.mini.ingreedio.api.repository.impl;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -7,6 +11,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +29,9 @@ import pl.edu.pw.mini.ingreedio.api.repository.CustomizedProductRepository;
 @Repository
 public class CustomizedProductRepositoryImpl implements CustomizedProductRepository {
     private final MongoTemplate mongoTemplate;
+
+    @Value("${mongodb.query.create-match-score-query}")
+    private Resource createMatchScoreQueryResource;
 
     @Override
     public Page<Product> getProductsMatchingCriteria(ProductCriteria productCriteria,
@@ -104,27 +113,14 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
             && productCriteria.hasMatchScoreSortCriteria()
             && phraseKeywordsRegExp != null) {
 
-            String addMatchScoreQuery =
-                "{\n"
-                + "  \"$addFields\": {\n"
-                + "    \"matchScore\": {\n"
-                + "      \"$add\": [\n"
-                + "        { \"$multiply\": [{ \"$size\": { \"$regexFindAll\": "
-                + "{ \"input\": \"$shortDescription\", \"regex\": /"
-                    + phraseKeywordsRegExp.pattern()
-                + "/, \"options\": 'i' } } }, 5] },\n"
-                + "        { \"$multiply\": [{ \"$size\": { \"$regexFindAll\": "
-                + "{ \"input\": \"$brand\", \"regex\": /" + phraseKeywordsRegExp.pattern()
-                + "/, \"options\": 'i' } } }, 10] },\n"
-                + "        { \"$multiply\": [{ \"$size\": { \"$regexFindAll\": "
-                + "{ \"input\": \"$name\", \"regex\": /" + phraseKeywordsRegExp.pattern()
-                + "/, \"options\": 'i' } } }, 15] }\n"
-                + "      ]\n"
-                + "    }\n"
-                + "  }\n"
-                + "}\n";
+            try {
+                String queryString = String.format(
+                    createMatchScoreQueryResource.getContentAsString(UTF_8), phraseKeywordsRegExp);
 
-            finalQueryOperations.add(new CustomQueryAggregationOperation(addMatchScoreQuery));
+                finalQueryOperations.add(new CustomQueryAggregationOperation(queryString));
+            } catch (IOException exception) {
+                throw new UncheckedIOException(exception);
+            }
         }
 
         // Stage 3: Sort the resultant products
