@@ -40,6 +40,8 @@ public class Product {
     @Field
     private List<String> ingredients;
     @Field
+    private Integer rating;
+    @Field
     @Nullable
     private List<Long> likedBy;
 }

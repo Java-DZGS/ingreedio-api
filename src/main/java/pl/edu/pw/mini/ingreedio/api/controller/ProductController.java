@@ -3,11 +3,11 @@ package pl.edu.pw.mini.ingreedio.api.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,13 +20,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import pl.edu.pw.mini.ingreedio.api.criteria.ProductFilterCriteria;
 import pl.edu.pw.mini.ingreedio.api.dto.FullProductDto;
-import pl.edu.pw.mini.ingreedio.api.dto.ProductDto;
 import pl.edu.pw.mini.ingreedio.api.dto.ProductListResponseDto;
-import pl.edu.pw.mini.ingreedio.api.mapper.ProductDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.model.Product;
+import pl.edu.pw.mini.ingreedio.api.service.PaginationService;
 import pl.edu.pw.mini.ingreedio.api.service.ProductService;
+import pl.edu.pw.mini.ingreedio.api.service.ProductsCriteriaService;
 
 @RestController
 @RequestMapping("/api/products")
@@ -34,41 +33,36 @@ import pl.edu.pw.mini.ingreedio.api.service.ProductService;
 @Tag(name = "Products" /*, description = "..."*/)
 public class ProductController {
     private final ProductService productService;
-    private final ProductDtoMapper productDtoMapper;
-    private final int pageSize = 10;
+    private final PaginationService paginationService;
+    private final ProductsCriteriaService productsCriteriaService;
 
     @Operation(summary = "Get matching products",
         description = "Get matching products",
         security = {@SecurityRequirement(name = "Bearer Authentication")})
     @GetMapping
     public ResponseEntity<ProductListResponseDto> getProducts(
-        int pageNumber,
-        @RequestParam Optional<String> name,
-        @RequestParam Optional<String> provider,
-        @RequestParam Optional<String> brand,
-        @RequestParam Optional<Integer> volumeFrom,
-        @RequestParam Optional<Integer> volumeTo,
-        @RequestParam Optional<String[]> ingredients) {
-        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
+        @RequestParam("page-number") Optional<Integer> pageNumber,
+        @RequestParam("ingredients-exclude") Optional<Set<Long>> ingredientsToExclude,
+        @RequestParam("ingredients-include") Optional<Set<Long>> ingredientsToInclude,
+        @RequestParam("min-rating") Optional<Integer> minRating,
+        @RequestParam("phrase") Optional<String> phrase,
+        @RequestParam("sort-by") Optional<List<String>> sortBy,
+        @RequestParam("liked") Optional<Boolean> liked) {
 
-        Page<ProductDto> page = productService.getProductsMatching(
-            ProductFilterCriteria.builder()
-                .name(name.orElse(null))
-                .provider(provider.orElse(null))
-                .brand(brand.orElse(null))
-                .volumeFrom(volumeFrom.orElse(null))
-                .volumeTo(volumeTo.orElse(null))
-                .ingredients(ingredients.orElse(null))
-                .build(),
-            pageRequest
+        ProductListResponseDto products = productService.getProductsMatchingCriteria(
+            productsCriteriaService.getProductsCriteria(
+                ingredientsToExclude,
+                ingredientsToInclude,
+                minRating,
+                phrase,
+                sortBy,
+                liked
+                // TODO: provider, brand, category
+            ),
+            paginationService.getPageRequest(pageNumber)
         );
 
-        int totalPages = page.getTotalPages();
-
-        ProductListResponseDto responseDto = new ProductListResponseDto(page.getContent(),
-            totalPages);
-
-        return ResponseEntity.ok(responseDto);
+        return ResponseEntity.ok(products);
     }
 
     @Operation(summary = "Get info of a specific product",

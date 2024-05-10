@@ -6,12 +6,12 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import pl.edu.pw.mini.ingreedio.api.criteria.ProductFilterCriteria;
+import pl.edu.pw.mini.ingreedio.api.criteria.ProductCriteria;
 import pl.edu.pw.mini.ingreedio.api.dto.FullProductDto;
 import pl.edu.pw.mini.ingreedio.api.dto.ProductDto;
+import pl.edu.pw.mini.ingreedio.api.dto.ProductListResponseDto;
 import pl.edu.pw.mini.ingreedio.api.mapper.FullProductDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.mapper.ProductDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.model.Product;
@@ -21,7 +21,6 @@ import pl.edu.pw.mini.ingreedio.api.repository.ProductRepository;
 @Service
 @RequiredArgsConstructor
 public class ProductService {
-
     private final ProductRepository productRepository;
     private final UserService userService;
     private final AuthService authService;
@@ -70,14 +69,18 @@ public class ProductService {
         return productRepository.save(product);
     }
 
-    public Page<ProductDto> getProductsMatching(ProductFilterCriteria criteria, Pageable pageable) {
-        Page<Product> productsPage = productRepository.getProductsMatching(criteria, pageable);
+    public ProductListResponseDto getProductsMatchingCriteria(
+        ProductCriteria criteria, PageRequest pageRequest) {
+        Page<Product> productsPage = productRepository
+            .getProductsMatchingCriteria(criteria, pageRequest);
 
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
 
         if (userOptional.isEmpty()) {
-            return productsPage.map(productDtoMapper);
+            return new ProductListResponseDto(
+                productsPage.getContent().stream().map(productDtoMapper).toList(),
+                productsPage.getTotalPages());
         }
         
         User user = userOptional.get();
@@ -98,9 +101,8 @@ public class ProductService {
             })
             .collect(Collectors.toList());
 
-        return new PageImpl<>(productDtos,
-            productsPage.getPageable(),
-            productsPage.getTotalElements());
+        return new ProductListResponseDto(productDtos,
+            productsPage.getTotalPages());
     }
 
     public boolean likeProduct(Long productId) {
