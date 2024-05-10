@@ -9,6 +9,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.lang.Nullable;
 
 @Document(collection = "products")
 @AllArgsConstructor
@@ -35,7 +36,12 @@ public class Product {
     @Field
     private String longDescription;
     @Field
-    private Integer volume;
+    private String volume;
     @Field
     private List<String> ingredients;
+    @Field
+    private Integer rating;
+    @Field
+    @Nullable
+    private List<Long> likedBy;
 }

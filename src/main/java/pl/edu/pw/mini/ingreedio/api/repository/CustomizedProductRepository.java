@@ -1,9 +1,10 @@
 package pl.edu.pw.mini.ingreedio.api.repository;
 
-import java.util.List;
-import pl.edu.pw.mini.ingreedio.api.criteria.ProductFilterCriteria;
-import pl.edu.pw.mini.ingreedio.api.dto.ProductDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import pl.edu.pw.mini.ingreedio.api.criteria.ProductCriteria;
+import pl.edu.pw.mini.ingreedio.api.model.Product;
 
 public interface CustomizedProductRepository {
-    List<ProductDto> getProductsMatching(ProductFilterCriteria criteria);
+    Page<Product> getProductsMatchingCriteria(ProductCriteria criteria, Pageable pageable);
 }

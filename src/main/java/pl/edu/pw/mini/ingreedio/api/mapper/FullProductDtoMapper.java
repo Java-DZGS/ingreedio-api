@@ -17,6 +17,7 @@ public class FullProductDtoMapper implements Function<Product, FullProductDto> {
             .brand(product.getBrand())
             .longDescription(product.getLongDescription())
             .volume(product.getVolume())
+            .rating(product.getRating())
             .ingredients(product.getIngredients())
             .build();
     }

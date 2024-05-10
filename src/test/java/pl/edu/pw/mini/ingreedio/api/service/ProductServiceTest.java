@@ -1,389 +1,533 @@
 package pl.edu.pw.mini.ingreedio.api.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
+import java.util.Set;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.test.context.support.WithMockUser;
 import pl.edu.pw.mini.ingreedio.api.IntegrationTest;
-import pl.edu.pw.mini.ingreedio.api.criteria.ProductFilterCriteria;
+import pl.edu.pw.mini.ingreedio.api.criteria.ProductCriteria;
+import pl.edu.pw.mini.ingreedio.api.criteria.ProductsSortingCriteria;
 import pl.edu.pw.mini.ingreedio.api.dto.FullProductDto;
 import pl.edu.pw.mini.ingreedio.api.dto.ProductDto;
+import pl.edu.pw.mini.ingreedio.api.dto.ProductListResponseDto;
 import pl.edu.pw.mini.ingreedio.api.model.Product;
+import pl.edu.pw.mini.ingreedio.api.repository.ProductRepository;
 
 @SpringBootTest
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ProductServiceTest extends IntegrationTest {
+
     @Autowired
     private ProductService productService;
 
-    @Test
-    @Order(1)
-    public void givenProductObject_whenSaveProduct_thenReturnProductObject() {
-        // Given
-        Product product = Product.builder().name("testProduct").build();
+    @Autowired
+    private ProductRepository productRepository;
 
-        // When
-        Product savedProduct = productService.addProduct(product);
-
-        // Then
-        assertThat(savedProduct).isNotNull();
+    @AfterEach
+    void clearProducts() {
+        productRepository.deleteAll();
     }
 
-    @Test
-    @Order(2)
-    public void givenProductsList_whenGetAllProducts_thenReturnProductsList() {
-        // Given
-        productService.addProduct(Product.builder().name("testProduct1").build());
-        productService.addProduct(Product.builder().name("testProduct2").build());
-        productService.addProduct(Product.builder().name("testProduct3").build());
+    @Nested
+    class AddAndGetTests {
+        @Test
+        public void givenProductObject_whenSaveProduct_thenReturnProductObject() {
+            // Given
+            Product product = Product.builder().name("testProduct").build();
 
-        // When
-        List<ProductDto> productsList = productService.getAllProducts();
+            // When
+            Product savedProduct = productService.addProduct(product);
 
-        // Then
-        assertThat(productsList).isNotNull();
-        assertThat(productsList.size()).isEqualTo(4);
-    }
+            // Then
+            assertThat(savedProduct).isNotNull();
+        }
 
-    @Test
-    @Order(3)
-    public void givenProductId_whenGetProductById_thenReturnFullProductDtoObject() {
-        // When
-        FullProductDto fullProductDto = productService.getProductById(1L).orElseThrow();
+        @Test
+        public void givenProductsList_whenGetAllProducts_thenReturnProductsList() {
+            // Given
+            productService.addProduct(Product.builder().name("testProduct1").build());
+            productService.addProduct(Product.builder().name("testProduct2").build());
+            productService.addProduct(Product.builder().name("testProduct3").build());
 
-        // Then
-        assertThat(fullProductDto).isNotNull();
-        assertThat(fullProductDto.id()).isEqualTo(1L);
-        assertThat(fullProductDto.name()).isEqualTo("testProduct");
-    }
+            // When
+            List<ProductDto> productsList = productService.getAllProducts();
 
-    @Test
-    @Order(4)
-    public void givenNoCriteria_whenFilter_thenReturnAllProducts() {
-        // Given
+            // Then
+            assertThat(productsList).isNotNull();
+            assertThat(productsList.size()).isEqualTo(3);
+        }
 
-        // When
-        List<ProductDto> res =
-            productService.getProductsMatching(ProductFilterCriteria.builder().build());
+        @Test
+        public void givenProductId_whenGetProductById_thenReturnFullProductDtoObject() {
+            // Given
+            Product product = productService
+                .addProduct(Product.builder().name("testProduct1").build());
 
-        // Then
-        assertThat(res).isNotNull();
-        assertThat(res.size()).isEqualTo(4);
-    }
+            // When
+            FullProductDto fullProductDto = productService.getProductById(product.getId())
+                .orElseThrow();
 
-    @Test
-    @Order(5)
-    public void givenProviderCriteria_whenFilter_thenReturnCorrectProducts() {
-        // Given
-        productService.addProduct(Product.builder().provider("daglas").build());
-        productService.addProduct(Product.builder().provider("daglas").build());
-        productService.addProduct(Product.builder().name("daglas").build());
-        productService.addProduct(Product.builder().provider("daglas & co.").build());
-
-        // When
-        List<ProductDto> daglasProducts = productService.getProductsMatching(
-            ProductFilterCriteria.builder().provider("daglas").build());
-
-        // Then
-        assertThat(daglasProducts.size()).isEqualTo(2);
-
-        for (ProductDto productDto : daglasProducts) {
-            assertThat(productDto.provider()).isEqualTo("daglas");
+            // Then
+            assertThat(fullProductDto).isNotNull();
+            assertThat(fullProductDto.id()).isEqualTo(product.getId());
+            assertThat(fullProductDto.name()).isEqualTo("testProduct1");
         }
     }
 
-    @Test
-    @Order(6)
-    public void givenBrandCriteria_whenFilter_thenReturnCorrectProducts() {
-        // Given
-        productService.addProduct(Product.builder().brand("daglas").build());
-        productService.addProduct(Product.builder().brand("daglas").build());
-        productService.addProduct(Product.builder().name("daglas").build());
-        productService.addProduct(Product.builder().provider("daglas & co.").build());
+    @Nested
+    class FilteringTests {
+        @Test
+        public void givenNoCriteria_whenMatch_thenReturnAllProducts() {
+            // Given
+            productService.addProduct(Product.builder().name("testProduct1").build());
+            productService.addProduct(Product.builder().name("testProduct2").build());
+            productService.addProduct(Product.builder().name("testProduct3").build());
 
-        // When
-        List<ProductDto> daglasProducts = productService.getProductsMatching(
-            ProductFilterCriteria.builder().brand("daglas").build());
+            var criteria = ProductCriteria.builder().build();
 
-        // Then
-        assertThat(daglasProducts.size()).isEqualTo(2);
+            // When
+            ProductListResponseDto page = productService.getProductsMatchingCriteria(
+                criteria, PageRequest.of(0, 10));
 
-        for (ProductDto productDto : daglasProducts) {
-            Optional<FullProductDto> product = productService.getProductById(productDto.id());
-
-            assertThat(product).isPresent();
-            assertThat(product.get().brand()).isEqualTo("daglas");
-        }
-    }
-
-    @Test
-    @Order(7)
-    public void givenIngredientsCriteria_whenFilter_thenReturnCorrectProducts() {
-        // Given
-        productService.addProduct(Product.builder().brand("karfur")
-            .ingredients(Arrays.asList("ziemniak", "marchewka", "burak")).build());
-        productService.addProduct(Product.builder().brand("karfur")
-            .ingredients(List.of("burak")).build());
-        productService.addProduct(Product.builder().brand("karfur")
-            .ingredients(Arrays.asList("ziemniak", "marchewka")).build());
-        productService.addProduct(Product.builder().brand("karfur")
-            .ingredients(Arrays.asList("marchewka", "burak")).build());
-        productService.addProduct(Product.builder().brand("karfur")
-            .ingredients(Arrays.asList("ziemniak", "burak")).build());
-
-        // When
-        List<ProductDto> ziemniakBurakProducts = productService.getProductsMatching(
-            ProductFilterCriteria.builder()
-                .ingredients(new String[] {"ziemniak", "burak"})
-                .build());
-        List<ProductDto> ziemniakProducts = productService.getProductsMatching(
-            ProductFilterCriteria.builder()
-                .ingredients(new String[] {"ziemniak"})
-                .build());
-
-        // Then
-        assertThat(ziemniakBurakProducts.size()).isEqualTo(2);
-        for (ProductDto productDto : ziemniakBurakProducts) {
-            Optional<FullProductDto> product = productService.getProductById(productDto.id());
-
-            assertThat(product).isPresent();
-            assertThat(product.get().ingredients()).contains("ziemniak");
-            assertThat(product.get().ingredients()).contains("burak");
+            // Then
+            assertThat(page).isNotNull();
+            assertThat(page.products().size()).isEqualTo(3);
         }
 
-        assertThat(ziemniakProducts.size()).isEqualTo(3);
-        for (ProductDto productDto : ziemniakProducts) {
-            Optional<FullProductDto> product = productService.getProductById(productDto.id());
+        @Test
+        public void givenBrandsIncludeCriteria_whenFilter_thenReturnCorrectProducts() {
+            // Given
+            productService.addProduct(Product.builder().brand("daglas").build()); // +1
+            productService.addProduct(Product.builder().brand("nivea").build()); // +1
+            productService.addProduct(Product.builder().name("daglas").brand("ddaglas").build());
+            productService.addProduct(Product.builder().provider("daglas & co.").build());
 
-            assertThat(product).isPresent();
-            assertThat(product.get().ingredients()).contains("ziemniak");
-        }
-    }
+            var criteria = ProductCriteria.builder()
+                .brandsNamesToInclude(Set.of("daglas", "nivea")).build();
 
-    @Test
-    @Order(8)
-    public void givenVolumeCriteria_whenFilter_thenReturnCorrectProducts() {
-        // Given
-        productService.addProduct(Product.builder().name("woda").brand("cisowiana")
-            .volume(3).build());
-        productService.addProduct(Product.builder().name("woda").brand("contigo")
-            .volume(4).build());
-        productService.addProduct(Product.builder().name("woda").brand("skarb życia muszyna")
-            .volume(5).build());
-        productService.addProduct(Product.builder().name("woda").brand("nałęczowiana")
-            .volume(6).build());
-        productService.addProduct(Product.builder().name("woda").brand("pepsi")
-            .volume(7).build());
+            // When
+            ProductListResponseDto page = productService.getProductsMatchingCriteria(
+                criteria, PageRequest.of(0, 10));
 
-        // When
-        List<ProductDto> lessProducts = productService.getProductsMatching(
-            ProductFilterCriteria.builder().volumeTo(6).build()
-        );
+            // Then
+            assertThat(page.products().size()).isEqualTo(2);
 
-        // Then
-        assertThat(lessProducts.size()).isEqualTo(4);
-        for (ProductDto productDto : lessProducts) {
-            Optional<FullProductDto> product = productService.getProductById(productDto.id());
+            for (ProductDto productDto : page.products()) {
+                Optional<FullProductDto> product = productService.getProductById(productDto.id());
 
-            assertThat(product).isPresent();
-            assertThat(product.get().volume()).isLessThanOrEqualTo(6);
-        }
-    }
-
-    @Test
-    @Order(9)
-    public void givenVolumeFromCriteria_whenFilter_thenReturnCorrectProducts() {
-        // Given
-
-        // When
-        List<ProductDto> greaterProducts = productService.getProductsMatching(
-            ProductFilterCriteria.builder().volumeFrom(4).build()
-        );
-
-        // Then
-        assertThat(greaterProducts.size()).isEqualTo(4);
-        for (ProductDto productDto : greaterProducts) {
-            Optional<FullProductDto> product = productService.getProductById(productDto.id());
-
-            assertThat(product).isPresent();
-            assertThat(product.get().volume()).isGreaterThanOrEqualTo(4);
-        }
-    }
-
-    @Test
-    @Order(10)
-    public void givenVolumeBetweenCriteria_whenFilter_thenReturnCorrectProducts() {
-        // Given
-
-        // When
-        List<ProductDto> betweenProducts = productService.getProductsMatching(
-            ProductFilterCriteria.builder().volumeTo(6).volumeFrom(3).build()
-        );
-
-        // Then
-        assertThat(betweenProducts.size()).isEqualTo(4);
-        for (ProductDto productDto : betweenProducts) {
-            Optional<FullProductDto> product = productService.getProductById(productDto.id());
-
-            assertThat(product).isPresent();
-            assertThat(product.get().volume()).isLessThanOrEqualTo(6);
-            assertThat(product.get().volume()).isGreaterThanOrEqualTo(3);
-        }
-    }
-
-    @Test
-    @Order(11)
-    public void givenMultiCriteria_whenFilter_thenReturnCorrectProducts() {
-        // Given
-
-        // Proper
-        productService.addProduct(
-            Product.builder()
-                .name("pasta do zębów")
-                .brand("karfur")
-                .provider("żapka")
-                .volume(12)
-                .ingredients(Arrays.asList("polietylen", "guma guar", "metanol"))
-                .build());
-        productService.addProduct(
-            Product.builder()
-                .name("poper")
-                .brand("karfur")
-                .provider("żapka")
-                .volume(14)
-                .ingredients(Arrays.asList("rak", "guma", "metanol"))
-                .build());
-
-        // Red herrings
-        productService.addProduct(
-            Product.builder().name("ziemniak").brand("karfur").provider("żapka").volume(13)
-                .build());
-        productService.addProduct(
-            Product.builder().name("obrazek").brand("karfur").provider("żapka").volume(15)
-                .build());
-        productService.addProduct(
-            Product.builder().name("szampą").brand("żapka").provider("karfur").volume(200)
-                .build());
-        productService.addProduct(
-            Product.builder().name("szamka").brand("grycan").provider("żapka").volume(13).build());
-        productService.addProduct(
-            Product.builder().name("baton").brand("sniker").provider("żapka").volume(12).build());
-        productService.addProduct(
-            Product.builder().name("marchew").brand("ogródek").provider("rosman").volume(1)
-                .build());
-        productService.addProduct(
-            Product.builder().name("pianka do golenia").brand("golibroda").provider("romsan")
-                .volume(12).build());
-        productService.addProduct(
-            Product.builder().name("pasta do zębów").brand("kolgat").provider("romsan").volume(12)
-                .build());
-        productService.addProduct(
-            Product.builder().name("pasta do zębów").brand("sęsodę").provider("romsan").volume(12)
-                .build());
-        productService.addProduct(
-            Product.builder().name("pasta do zębów").brand("elmech").provider("romsan").volume(12)
-                .build());
-        productService.addProduct(
-            Product.builder().name("pasta do zębów").brand("akuafresz").provider("romsan")
-                .volume(12).build());
-        productService.addProduct(
-            Product.builder().name("pasta do butów").brand("kiwi").provider("romsan").volume(12)
-                .build());
-
-        // When
-        List<ProductDto> karfurZapkaProducts = productService.getProductsMatching(
-            ProductFilterCriteria.builder()
-                .brand("karfur")
-                .volumeFrom(12)
-                .volumeTo(14)
-                .provider("żapka")
-                .ingredients(new String[] {"metanol"})
-                .build());
-
-        // Then
-        assertThat(karfurZapkaProducts.size()).isEqualTo(2);
-
-        for (ProductDto productDto : karfurZapkaProducts) {
-            Optional<FullProductDto> product = productService.getProductById(productDto.id());
-
-            assertThat(product).isPresent();
-            assertThat(product.get().provider()).isEqualTo("żapka");
-            assertThat(product.get().brand()).isEqualTo("karfur");
-            assertThat(product.get().volume()).isBetween(12, 14);
-            assertThat(product.get().ingredients()).contains("metanol");
-        }
-    }
-
-    @Test
-    @Order(12)
-    public void givenNameCriteria_whenFilter_thenReturnCorrectProducts() {
-        // Given
-        productService.addProduct(Product.builder()
-            .name("Matte Blush")
-            .brand("Maybelline")
-            .shortDescription("Matte blush for a natural finish.")
-            .longDescription("Controls shine and blurs pores for a natural, matte finish.")
-            .build());
-        productService.addProduct(Product.builder()
-            .name("Pressed Powder")
-            .brand("Rimmel London")
-            .shortDescription("Pressed powder for smooth skin.")
-            .longDescription(
-                "Helps minimize the appearance of pores and leaves a smooth, matte finish.")
-            .build());
-        productService.addProduct(Product.builder()
-            .name("Amazonian Clay 12-Hour Blush")
-            .brand("Tarte")
-            .shortDescription("Long-lasting blush with Amazonian clay.")
-            .longDescription("Infused with Amazonian clay for 12 hours of fade-free wear.")
-            .build());
-        productService.addProduct(Product.builder()
-            .name("Stay Matte Pressed Powder")
-            .brand("Rimmel London")
-            .shortDescription("Matte pressed powder for a smooth finish.")
-            .longDescription(
-                "Helps minimize the appearance of pores and leaves a smooth, matte finish.")
-            .build());
-        productService.addProduct(Product.builder()
-            .name("Stay Matte Powder")
-            .brand("Lovely")
-            .shortDescription("Matte powder for smooth skin.")
-            .longDescription(
-                "Helps minimize the appearance of pores and leaves a smooth, matte finish.")
-            .build());
-        String searchTerm = "Matte Powder Rimmel";
-
-        // When
-        List<ProductDto> liquidProducts = productService.getProductsMatching(
-            ProductFilterCriteria.builder().name(searchTerm).build());
-
-        // Then
-        assertThat(liquidProducts.size()).isEqualTo(2);
-
-        for (ProductDto productDto : liquidProducts) {
-            Optional<FullProductDto> product = productService.getProductById(productDto.id());
-
-            assertThat(product).isPresent();
-
-            String brand = product.get().brand().toLowerCase();
-            String name = product.get().name().toLowerCase();
-            String longDescription = product.get().longDescription().toLowerCase();
-            String shortDescription = productDto.shortDescription().toLowerCase();
-
-            String[] searchTermsArray = searchTerm.split("\\s+");
-            for (String term : searchTermsArray) {
-                assertThat(brand.contains(term.toLowerCase())
-                    || name.contains(term.toLowerCase())
-                    || longDescription.contains(term.toLowerCase())
-                    || shortDescription.contains(term.toLowerCase())).isTrue();
+                assertThat(product).isPresent();
+                assertThat(product.get().brand()).isIn("daglas", "nivea");
             }
+        }
+
+        @Test
+        public void givenBrandsExcludeCriteria_whenFilter_thenReturnCorrectProducts() {
+            // Given
+            productService.addProduct(Product.builder().brand("daglas").build()); // +1
+            productService.addProduct(Product.builder().brand("nivea").build()); // +1
+            productService.addProduct(Product.builder().name("perfume").brand("adidas").build());
+            productService.addProduct(Product.builder().provider("daglas & co.").build());
+
+            var criteria = ProductCriteria.builder()
+                .brandsNamesToExclude(Set.of("adidas", "nivea")).build();
+
+            // When
+            ProductListResponseDto page = productService.getProductsMatchingCriteria(
+                criteria, PageRequest.of(0, 10));
+
+            // Then
+            assertThat(page.products().size()).isEqualTo(2);
+
+            for (ProductDto productDto : page.products()) {
+                Optional<FullProductDto> product = productService.getProductById(productDto.id());
+
+                assertThat(product).isPresent();
+                assertThat(product.get().brand()).isNotIn("daglas & co.", "nivea");
+            }
+        }
+
+        @Test
+        public void givenIngredientsIncludeCriteria_whenFilter_thenReturnCorrectProducts() {
+            // Given
+            productService.addProduct(Product.builder().brand("carfour")
+                .ingredients(Arrays.asList("potato", "carrot", "beet")).build());
+            productService.addProduct(Product.builder().brand("carfour")
+                .ingredients(List.of("beet")).build());
+            productService.addProduct(Product.builder().brand("carfour")
+                .ingredients(Arrays.asList("potato", "carrot")).build());
+            productService.addProduct(Product.builder().brand("carfour")
+                .ingredients(Arrays.asList("carrot", "beet")).build());
+            productService.addProduct(Product.builder().brand("carfour")
+                .ingredients(Arrays.asList("potato", "beet")).build());
+
+            var criteria1 = ProductCriteria.builder()
+                .ingredientsNamesToInclude(Set.of("potato", "beet")).build();
+            var criteria2 = ProductCriteria.builder()
+                .ingredientsNamesToInclude(Set.of("potato")).build();
+
+            // When
+            ProductListResponseDto potatoBeet =
+                productService.getProductsMatchingCriteria(criteria1,
+                    PageRequest.of(0, 16));
+
+            ProductListResponseDto potato = productService.getProductsMatchingCriteria(criteria2,
+                PageRequest.of(0, 16));
+
+            // Then
+            assertThat(potatoBeet.products().size()).isEqualTo(2);
+            for (ProductDto productDto : potatoBeet.products()) {
+                Optional<FullProductDto> product = productService.getProductById(productDto.id());
+
+                assertThat(product).isPresent();
+                assertThat(product.get().ingredients()).contains("potato", "beet");
+            }
+
+            assertThat(potato.products().size()).isEqualTo(3);
+            for (ProductDto productDto : potato.products()) {
+                Optional<FullProductDto> product = productService.getProductById(productDto.id());
+
+                assertThat(product).isPresent();
+                assertThat(product.get().ingredients()).contains("potato");
+            }
+        }
+
+        @Test
+        @SuppressWarnings("checkstyle:VariableDeclarationUsageDistance")
+        public void givenIngredientsExcludeCriteria_whenFilter_thenReturnCorrectProducts() {
+            // Given
+            productService.addProduct(Product.builder().brand("carfour")
+                .ingredients(Arrays.asList("potato", "carrot", "beet")).build());
+            productService.addProduct(Product.builder().brand("carfour")
+                .ingredients(List.of("beet", "tomato")).build());
+            productService.addProduct(Product.builder().brand("carfour")
+                .ingredients(Arrays.asList("potato", "carrot")).build());
+            productService.addProduct(Product.builder().brand("carfour")
+                .ingredients(Arrays.asList("carrot", "beet")).build());
+            productService.addProduct(Product.builder().brand("carfour")
+                .ingredients(Arrays.asList("potato", "beet")).build());
+
+            var criteria1 = ProductCriteria.builder()
+                .ingredientsNamesToExclude(Set.of("potato", "beet")).build();
+            var criteria2 = ProductCriteria.builder()
+                .ingredientsNamesToExclude(Set.of("potato")).build();
+            var criteria3 = ProductCriteria.builder()
+                .ingredientsNamesToExclude(Set.of("carrot", "tomato")).build();
+
+            // When
+            ProductListResponseDto potatoBeet = productService
+                .getProductsMatchingCriteria(criteria1, PageRequest.of(0, 16));
+
+            ProductListResponseDto potato = productService.getProductsMatchingCriteria(criteria2,
+                PageRequest.of(0, 16));
+
+            ProductListResponseDto carrotTomato = productService
+                .getProductsMatchingCriteria(criteria3, PageRequest.of(0, 16));
+
+            // Then
+            assertThat(potatoBeet.products().size()).isEqualTo(0);
+
+            assertThat(potato.products().size()).isEqualTo(2);
+            for (ProductDto productDto : potato.products()) {
+                Optional<FullProductDto> product = productService.getProductById(productDto.id());
+
+                assertThat(product).isPresent();
+                assertThat(product.get().ingredients()).doesNotContain("potato");
+            }
+
+            assertThat(carrotTomato.products().size()).isEqualTo(1);
+            for (ProductDto productDto : carrotTomato.products()) {
+                Optional<FullProductDto> product = productService.getProductById(productDto.id());
+
+                assertThat(product).isPresent();
+                assertThat(product.get().ingredients()).doesNotContain("carrot", "tomato");
+            }
+        }
+
+        @Test
+        public void givenRatingIngredientsCriteria_whenFilter_thenReturnCorrectProducts() {
+            // Given
+            productService.addProduct(Product.builder().brand("carfour")
+                .ingredients(Arrays.asList("potato", "carrot", "beet")).build());
+            productService.addProduct(Product.builder().brand("carfour")
+                .ingredients(List.of("beet", "tomato")).build());
+            productService.addProduct(Product.builder().brand("carfour")
+                .ingredients(Arrays.asList("potato", "carrot")).build());
+            productService.addProduct(Product.builder().brand("carfour")
+                .ingredients(Arrays.asList("carrot", "beet")).build());
+            productService.addProduct(Product.builder().brand("carfour")
+                .ingredients(Arrays.asList("potato")).rating(6).build());
+            productService.addProduct(Product.builder().brand("carfour")
+                .ingredients(Arrays.asList("potato", "beet")).rating(7).build());
+            productService.addProduct(Product.builder().brand("carfour")
+                .ingredients(Arrays.asList("beet")).rating(10).build());
+            productService.addProduct(Product.builder().brand("carfour")
+                .ingredients(Arrays.asList("potato", "beet")).rating(10).build());
+
+            var criteria = ProductCriteria.builder()
+                .ingredientsNamesToInclude(Set.of("potato"))
+                .ingredientsNamesToExclude(Set.of("carrot", "tomato"))
+                .minRating(7)
+                .build();
+
+            // When
+            ProductListResponseDto result = productService.getProductsMatchingCriteria(criteria,
+                PageRequest.of(0, 16));
+
+            assertThat(result.products().size()).isEqualTo(2);
+            for (ProductDto productDto : result.products()) {
+                Optional<FullProductDto> product = productService.getProductById(productDto.id());
+
+                assertThat(product).isPresent();
+                assertThat(product.get().ingredients()).doesNotContain("carrot", "tomato");
+                assertThat(product.get().ingredients()).contains("potato");
+                assertThat(product.get().rating()).isGreaterThanOrEqualTo(7);
+            }
+        }
+
+        @Test
+        public void givenMultiCriteria_whenFilter_thenReturnCorrectProducts() {
+            // Given
+
+            // Proper
+            productService.addProduct(
+                Product.builder()
+                    .name("pasta do zębów")
+                    .brand("karfur")
+                    .provider("żapka")
+                    .ingredients(Arrays.asList("polietylen", "guma guar", "metanol"))
+                    .build());
+            productService.addProduct(
+                Product.builder()
+                    .name("poper")
+                    .brand("karfur")
+                    .provider("żapka")
+                    .ingredients(Arrays.asList("rak", "guma", "metanol"))
+                    .build());
+
+            // Red herrings
+            productService.addProduct(
+                Product.builder().name("ziemniak").brand("karfur").provider("żapka")
+                    .build());
+            productService.addProduct(
+                Product.builder().name("obrazek").brand("karfur").provider("żapka")
+                    .build());
+            productService.addProduct(
+                Product.builder().name("szampą").brand("żapka").provider("karfur")
+                    .build());
+            productService.addProduct(
+                Product.builder().name("szamka").brand("grycan").provider("żapka").build());
+            productService.addProduct(
+                Product.builder().name("baton").brand("sniker").provider("żapka").build());
+            productService.addProduct(
+                Product.builder().name("marchew").brand("ogródek").provider("rosman")
+                    .build());
+            productService.addProduct(
+                Product.builder().name("pianka do golenia").brand("golibroda").provider("romsan")
+                    .build());
+            productService.addProduct(
+                Product.builder().name("pasta do zębów").brand("kolgat").provider("romsan")
+                    .build());
+            productService.addProduct(
+                Product.builder().name("pasta do zębów").brand("sęsodę").provider("romsan")
+                    .build());
+            productService.addProduct(
+                Product.builder().name("pasta do zębów").brand("elmech").provider("romsan")
+                    .build());
+            productService.addProduct(
+                Product.builder().name("pasta do zębów").brand("akuafresz").provider("romsan")
+                    .build());
+            productService.addProduct(
+                Product.builder().name("pasta do butów").brand("kiwi").provider("romsan")
+                    .build());
+
+            var criteria = ProductCriteria.builder()
+                    .brandsNamesToInclude(Set.of("karfur"))
+                    .providersNames(Set.of("żapka"))
+                    .ingredientsNamesToInclude(Set.of("metanol"))
+                    .build();
+
+            // When
+            var kerfurZabkaPage = productService.getProductsMatchingCriteria(
+                criteria, PageRequest.of(0, 30));
+            List<ProductDto> karfurZapkaProducts = kerfurZabkaPage.products();
+
+            // Then
+            assertThat(karfurZapkaProducts.size()).isEqualTo(2);
+
+            for (ProductDto productDto : karfurZapkaProducts) {
+                Optional<FullProductDto> product = productService.getProductById(productDto.id());
+
+                assertThat(product).isPresent();
+                assertThat(product.get().provider()).isEqualTo("żapka");
+                assertThat(product.get().brand()).isEqualTo("karfur");
+                assertThat(product.get().ingredients()).contains("metanol");
+            }
+        }
+    }
+
+    @Nested
+    class PhraseAndSortingTests {
+        @Test
+        public void givenProducts_whenMatchSort_thenProductWithGreaterMatchScoreIsFirst() {
+            // Given
+            productService.addProduct(Product.builder().name("almette")
+                .shortDescription("krem kremik kremiasty").build());
+            productService.addProduct(Product.builder().name("parmezan")
+                .shortDescription("krem kremik").build());
+            productService.addProduct(Product.builder().name("serek")
+                .shortDescription("krem do stóp").build());
+
+            var sortingCriteria =
+                new ProductsSortingCriteria(Sort.Direction.DESC, "matchScore");
+            var criteria = ProductCriteria.builder()
+                .phraseKeywords(Set.of("krem"))
+                .hasMatchScoreSortCriteria(true)
+                .sortingCriteria(Arrays.asList(sortingCriteria))
+                .build();
+
+            // When
+            var result = productService.getProductsMatchingCriteria(
+                criteria, PageRequest.of(0, 30));
+
+            // Then
+            assertThat(result.products().get(0).name()).isEqualTo("almette");
+            assertThat(result.products().get(1).name()).isEqualTo("parmezan");
+            assertThat(result.products().get(2).name()).isEqualTo("serek");
+        }
+
+        @Test
+        public void givenMultiCaseFields_whenSearch_thenResultIsCaseInsensitive() {
+            // Given
+            productService.addProduct(Product.builder().name("aLmeTTe")
+                .shortDescription("MaśĆ").build());
+            productService.addProduct(Product.builder().name("ParMez")
+                .shortDescription("SZamPoNik").build());
+            productService.addProduct(Product.builder().name("SErEk")
+                .shortDescription("kRem do stóp").build());
+
+            var criteria = ProductCriteria.builder()
+                .phraseKeywords(Set.of("krem", "serek"))
+                .build();
+
+            // When
+            var result = productService.getProductsMatchingCriteria(
+                criteria, PageRequest.of(0, 30));
+
+            // Then
+            assertThat(result.products().size()).isEqualTo(1);
+            assertThat(result.products().get(0).name()).isEqualTo("SErEk");
+        }
+    }
+
+    @Nested
+    class ProductsLikingTests {
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenProduct_whenLikeProduct_thenSuccess() {
+            // Given
+            Product product = Product.builder().name("likedProduct").build();
+            Product savedProduct = productService.addProduct(product);
+            Long id = savedProduct.getId();
+
+            // When
+            boolean result = productService.likeProduct(id);
+            Optional<FullProductDto> updatedProduct = productService.getProductById(id);
+
+            // Then
+            assertTrue(result);
+            assertTrue(updatedProduct.get().isLiked());
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenProduct_whenLikeNonExistingProduct_thenFailure() {
+            // Given
+
+            // When
+            boolean result = productService.likeProduct(1000L);
+
+            // Then
+            assertFalse(result);
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenProduct_whenUnLikeProduct_thenSuccess() {
+            // Given
+            Product product = Product.builder().name("likedProduct").build();
+            Product savedProduct = productService.addProduct(product);
+            Long id = savedProduct.getId();
+
+            // When
+            productService.likeProduct(id);
+            boolean result = productService.unlikeProduct(id);
+            Optional<FullProductDto> updatedProduct = productService.getProductById(id);
+
+            // Then
+            assertTrue(result);
+            assertFalse(updatedProduct.get().isLiked());
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenProduct_whenUnLikeNonExistingProduct_thenFailure() {
+            // Given
+
+            // When
+            boolean result = productService.unlikeProduct(1000L);
+
+            // Then
+            assertFalse(result);
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenProduct_whenLikeAndGetProductsList_thenProductsAreLiked() {
+            // Given
+            Product product1 = productService
+                .addProduct(Product.builder().name("likedProduct1").build());
+            Product product2 = productService
+                .addProduct(Product.builder().name("likedProduct2").build());
+            productService.addProduct(Product.builder().name("likedProduct3").build());
+
+            // When
+            productService.likeProduct(product1.getId());
+            productService.likeProduct(product2.getId());
+
+            ProductListResponseDto page = productService.getProductsMatchingCriteria(
+                ProductCriteria.builder().build(), PageRequest.of(0, 30));
+            List<ProductDto> products = page.products();
+
+            // Then
+            assertThat(products.getFirst().isLiked()).isTrue();
+            assertThat(products.get(1).isLiked()).isTrue();
+            assertThat(products.get(2).isLiked()).isFalse();
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenProduct_whenLikeAndGetProductDetails_thenProductIsLiked() {
+            // Given
+            Product product = productService
+                .addProduct(Product.builder().name("likedProduct").build());
+
+            // When
+            productService.likeProduct(product.getId());
+            Optional<FullProductDto> result = productService.getProductById(product.getId());
+
+            // Then
+            assertThat(result.get().isLiked()).isTrue();
         }
     }
 }
