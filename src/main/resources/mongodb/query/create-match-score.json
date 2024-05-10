@@ -4,7 +4,7 @@
       "$add": [
         {
           "$multiply": [
-            { "$size": { "$regexFindAll": { "input": "$shortDescription", "regex": "%1$s/", "options": "i" } } },
+            { "$size": { "$regexFindAll": { "input": "$shortDescription", "regex": "%1$s", "options": "i" } } },
             5
           ]
         },
