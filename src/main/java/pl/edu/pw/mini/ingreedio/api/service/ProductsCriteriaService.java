@@ -63,8 +63,7 @@ public class ProductsCriteriaService {
             List<ProductsSortingCriteria> sortingCriteriaList =
                 sortingSignatures.stream()
                 .map(this::getProductsSortingCriteria)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+                .flatMap(Optional::stream)
                 .toList();
 
             Optional<ProductsSortingCriteria> foundCriteria = sortingCriteriaList.stream()
