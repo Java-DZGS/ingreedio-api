@@ -5,18 +5,17 @@ import java.util.Set;
 import lombok.Builder;
 import lombok.Getter;
 
-@Getter
 @Builder
-public class ProductCriteria {
-    private Set<String> ingredientsNamesToInclude;
-    private Set<String> ingredientsNamesToExclude;
-    private Set<String> brandsNamesToInclude;
-    private Set<String> brandsNamesToExclude;
-    private Set<String> providersNames;
-    private Set<String> categoriesNames;
-    private Integer minRating;
-    private Set<String> phraseKeywords;
-    private List<ProductsSortingCriteria> sortingCriteria;
-    private Boolean hasMatchScoreSortCriteria;
-    private Boolean liked;
-}
+public record ProductCriteria(
+        Set<String> ingredientsNamesToInclude,
+        Set<String> ingredientsNamesToExclude,
+        Set<String> brandsNamesToInclude,
+        Set<String> brandsNamesToExclude,
+        Set<String> providersNames,
+        Set<String> categoriesNames,
+        Integer minRating,
+        Set<String> phraseKeywords,
+        List<ProductsSortingCriteria> sortingCriteria,
+        Boolean hasMatchScoreSortCriteria,
+        Boolean liked
+) {}
