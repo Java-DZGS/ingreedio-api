@@ -19,8 +19,8 @@ import pl.edu.pw.mini.ingreedio.api.dto.IngredientDto;
 public class ProductsCriteriaService {
     private final IngredientService ingredientService;
 
-    public ProductCriteria getProductsCriteria(Optional<List<Long>> ingredientsToExclude,
-                                               Optional<List<Long>> ingredientsToInclude,
+    public ProductCriteria getProductsCriteria(Optional<Set<Long>> ingredientsToExclude,
+                                               Optional<Set<Long>> ingredientsToInclude,
                                                Optional<Integer> minRating,
                                                Optional<String> phrase,
                                                Optional<List<String>> sortBy,
@@ -32,9 +32,8 @@ public class ProductsCriteriaService {
 
         ingredientsToExclude.ifPresent(
             ingredients -> {
-                Set<Long> ingredientsSet = new HashSet<>(ingredients);
                 builder.ingredientsNamesToExclude(ingredientService
-                    .getIngredientsByIds(ingredientsSet)
+                    .getIngredientsByIds(ingredients)
                     .stream()
                     .map(IngredientDto::name)
                     .collect(Collectors.toSet()));
@@ -42,9 +41,8 @@ public class ProductsCriteriaService {
 
         ingredientsToInclude.ifPresent(
             ingredients -> {
-                Set<Long> ingredientsSet = new HashSet<>(ingredients);
                 builder.ingredientsNamesToInclude(ingredientService
-                    .getIngredientsByIds(ingredientsSet)
+                    .getIngredientsByIds(ingredients)
                     .stream()
                     .map(IngredientDto::name)
                     .collect(Collectors.toSet()));

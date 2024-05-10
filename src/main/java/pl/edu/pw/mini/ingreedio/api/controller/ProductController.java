@@ -42,8 +42,8 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<ProductListResponseDto> getProducts(
         @RequestParam("page-number") Optional<Integer> pageNumber,
-        @RequestParam("ingredients-exclude") Optional<List<Long>> ingredientsToExclude,
-        @RequestParam("ingredients-include") Optional<List<Long>> ingredientsToInclude,
+        @RequestParam("ingredients-exclude") Optional<Set<Long>> ingredientsToExclude,
+        @RequestParam("ingredients-include") Optional<Set<Long>> ingredientsToInclude,
         @RequestParam("min-rating") Optional<Integer> minRating,
         @RequestParam("phrase") Optional<String> phrase,
         @RequestParam("sort-by") Optional<List<String>> sortBy,
