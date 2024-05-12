@@ -532,7 +532,7 @@ public class ProductServiceTest extends IntegrationTest {
     }
 
     @Nested
-    class editAndDeleteTest {
+    class EditAndDeleteTest {
         @Test
         public void givenProductId_whenEditProduct_thenProductIsDeleted() {
             Product productToEdit = productService.addProduct(Product.builder()
