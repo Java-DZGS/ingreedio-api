@@ -560,20 +560,26 @@ public class ProductServiceTest extends IntegrationTest {
                 .build();
 
             // When
-            Optional<Product> editedProduct = productService.editProduct(productToEdit.getId(), productEdited);
+            Optional<Product> editedProduct = productService
+                .editProduct(productToEdit.getId(), productEdited);
 
             // Then
             assertThat(editedProduct.isPresent()).isTrue();
             assertThat(editedProduct.get().getId()).isEqualTo(productToEdit.getId());
             assertThat(editedProduct.get().getName()).isEqualTo("productEdited");
-            assertThat(editedProduct.get().getSmallImageUrl()).isEqualTo("newSmallImageUrl");
-            assertThat(editedProduct.get().getLargeImageUrl()).isEqualTo("newLargeImageUrl");
+            assertThat(editedProduct.get().getSmallImageUrl())
+                .isEqualTo("newSmallImageUrl");
+            assertThat(editedProduct.get().getLargeImageUrl())
+                .isEqualTo("newLargeImageUrl");
             assertThat(editedProduct.get().getProvider()).isEqualTo("newProvider");
             assertThat(editedProduct.get().getBrand()).isEqualTo("newBrand");
-            assertThat(editedProduct.get().getShortDescription()).isEqualTo("newShortDescription");
-            assertThat(editedProduct.get().getLongDescription()).isEqualTo("newLongDescription");
+            assertThat(editedProduct.get().getShortDescription())
+                .isEqualTo("newShortDescription");
+            assertThat(editedProduct.get().getLongDescription())
+                .isEqualTo("newLongDescription");
             assertThat(editedProduct.get().getVolume()).isEqualTo("newVolume");
-            assertThat(editedProduct.get().getIngredients()).containsExactly("newIngredient1", "newIngredient2");
+            assertThat(editedProduct.get().getIngredients())
+                .containsExactly("newIngredient1", "newIngredient2");
         }
 
         @Test
