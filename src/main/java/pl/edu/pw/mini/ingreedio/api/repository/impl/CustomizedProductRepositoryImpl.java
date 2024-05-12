@@ -20,6 +20,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 import pl.edu.pw.mini.ingreedio.api.criteria.ProductCriteria;
 import pl.edu.pw.mini.ingreedio.api.model.Product;
@@ -167,6 +168,5 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
                 0
             );
         }
-
     }
 }

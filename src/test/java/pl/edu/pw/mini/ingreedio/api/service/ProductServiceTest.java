@@ -530,4 +530,91 @@ public class ProductServiceTest extends IntegrationTest {
             assertThat(result.get().isLiked()).isTrue();
         }
     }
+
+    @Nested
+    class editAndDeleteTest {
+        @Test
+        public void givenProductId_whenEditProduct_thenProductIsDeleted() {
+            Product productToEdit = productService.addProduct(Product.builder()
+                .name("productToEdit")
+                .smallImageUrl("oldSmallImageUrl")
+                .largeImageUrl("oldLargeImageUrl")
+                .provider("oldProvider")
+                .brand("oldBrand")
+                .shortDescription("oldShortDescription")
+                .longDescription("oldLongDescription")
+                .volume("oldVolume")
+                .ingredients(List.of("oldIngredient1", "oldIngredient2"))
+                .build());
+
+            Product productEdited = Product.builder()
+                .name("productEdited")
+                .smallImageUrl("newSmallImageUrl")
+                .largeImageUrl("newLargeImageUrl")
+                .provider("newProvider")
+                .brand("newBrand")
+                .shortDescription("newShortDescription")
+                .longDescription("newLongDescription")
+                .volume("newVolume")
+                .ingredients(List.of("newIngredient1", "newIngredient2"))
+                .build();
+
+            // When
+            Optional<Product> editedProduct = productService.editProduct(productToEdit.getId(), productEdited);
+
+            // Then
+            assertThat(editedProduct.isPresent()).isTrue();
+            assertThat(editedProduct.get().getId()).isEqualTo(productToEdit.getId());
+            assertThat(editedProduct.get().getName()).isEqualTo("productEdited");
+            assertThat(editedProduct.get().getSmallImageUrl()).isEqualTo("newSmallImageUrl");
+            assertThat(editedProduct.get().getLargeImageUrl()).isEqualTo("newLargeImageUrl");
+            assertThat(editedProduct.get().getProvider()).isEqualTo("newProvider");
+            assertThat(editedProduct.get().getBrand()).isEqualTo("newBrand");
+            assertThat(editedProduct.get().getShortDescription()).isEqualTo("newShortDescription");
+            assertThat(editedProduct.get().getLongDescription()).isEqualTo("newLongDescription");
+            assertThat(editedProduct.get().getVolume()).isEqualTo("newVolume");
+            assertThat(editedProduct.get().getIngredients()).containsExactly("newIngredient1", "newIngredient2");
+        }
+
+        @Test
+        public void givenProductId_whenEditNonExistingProduct_thenReturnFalse() {
+            // Given
+            Product editedProduct = productService.addProduct(Product.builder()
+                .name("edited").build());
+
+            // When
+            Optional<Product> edited = productService.editProduct(1000L, editedProduct);
+            Optional<FullProductDto> result = productService.getProductById(1000L);
+
+            // Then
+            assertThat(edited.isPresent()).isFalse();
+            assertThat(result.isPresent()).isFalse();
+        }
+
+        @Test
+        public void givenProductId_whenDeleteProduct_thenProductIsDeleted() {
+            // Given
+            Product product = productService
+                .addProduct(Product.builder().name("productToDelete").build());
+
+            // When
+            boolean deleted = productService.deleteProduct(product.getId());
+            Optional<FullProductDto> result = productService.getProductById(product.getId());
+
+            // Then
+            assertThat(deleted).isTrue();
+            assertThat(result.isPresent()).isFalse();
+        }
+
+        @Test
+        public void givenProductId_whenDeleteNonExistingProduct_thenReturnFalse() {
+            // Given
+
+            // When
+            boolean deleted = productService.deleteProduct(1000L);
+
+            // Then
+            assertThat(deleted).isFalse();
+        }
+    }
 }
