@@ -10,7 +10,8 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
-import pl.edu.pw.mini.ingreedio.api.security.JwtUserClaims;
+import pl.edu.pw.mini.ingreedio.api.auth.security.JwtUserClaims;
+import pl.edu.pw.mini.ingreedio.api.auth.service.JwtService;
 
 public class JwtServiceTest {
     JwtService jwtService;

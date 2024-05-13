@@ -9,8 +9,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.data.jpa.repository.support.JpaEntityInformation;
 import org.springframework.data.mongodb.repository.query.MongoEntityInformation;
 import org.springframework.data.repository.support.Repositories;
-import pl.edu.pw.mini.ingreedio.api.model.Product;
-import pl.edu.pw.mini.ingreedio.api.model.User;
+import pl.edu.pw.mini.ingreedio.api.product.model.Product;
+import pl.edu.pw.mini.ingreedio.api.user.model.User;
 
 @SpringBootTest
 public class MultistoreTest extends IntegrationTest {

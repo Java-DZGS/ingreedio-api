@@ -17,13 +17,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.test.context.support.WithMockUser;
 import pl.edu.pw.mini.ingreedio.api.IntegrationTest;
-import pl.edu.pw.mini.ingreedio.api.criteria.ProductCriteria;
-import pl.edu.pw.mini.ingreedio.api.criteria.ProductsSortingCriteria;
-import pl.edu.pw.mini.ingreedio.api.dto.FullProductDto;
-import pl.edu.pw.mini.ingreedio.api.dto.ProductDto;
-import pl.edu.pw.mini.ingreedio.api.dto.ProductListResponseDto;
-import pl.edu.pw.mini.ingreedio.api.model.Product;
-import pl.edu.pw.mini.ingreedio.api.repository.ProductRepository;
+import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductCriteria;
+import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductsSortingCriteria;
+import pl.edu.pw.mini.ingreedio.api.product.dto.FullProductDto;
+import pl.edu.pw.mini.ingreedio.api.product.dto.ProductDto;
+import pl.edu.pw.mini.ingreedio.api.product.dto.ProductListResponseDto;
+import pl.edu.pw.mini.ingreedio.api.product.model.Product;
+import pl.edu.pw.mini.ingreedio.api.product.repository.ProductRepository;
+import pl.edu.pw.mini.ingreedio.api.product.service.ProductService;
 
 @SpringBootTest
 public class ProductServiceTest extends IntegrationTest {
