@@ -2,7 +2,10 @@ package pl.edu.pw.mini.ingreedio.api.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,6 +18,7 @@ import pl.edu.pw.mini.ingreedio.api.dto.ProductListResponseDto;
 import pl.edu.pw.mini.ingreedio.api.mapper.FullProductDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.mapper.ProductDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.model.Product;
+import pl.edu.pw.mini.ingreedio.api.model.Review;
 import pl.edu.pw.mini.ingreedio.api.model.User;
 import pl.edu.pw.mini.ingreedio.api.repository.ProductRepository;
 
@@ -24,6 +28,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final UserService userService;
     private final AuthService authService;
+    private final ReviewService reviewService;
     private final ProductDtoMapper productDtoMapper;
     private final FullProductDtoMapper fullProductDtoMapper;
     private final SequenceGeneratorService sequenceGenerator;
@@ -163,5 +168,128 @@ public class ProductService {
             userService.unlikeProduct(userId.intValue(), productId);
         }
         return true;
+    }
+
+    public boolean addReview(Review review) {
+        Optional<User> userOptional = userService
+            .getUserByUsername(authService.getCurrentUsername());
+        if (userOptional.isEmpty()) {
+            return false;
+        }
+
+        Optional<Product> productOptional = productRepository.findById(review.getProductId());
+        if (productOptional.isEmpty()) {
+            return false;
+        }
+
+        User user = userOptional.get();
+        Long userId = user.getId();
+        review.setUser(user);
+
+        Optional<Review> reviewOptional = reviewService.addReview(userId, review);
+        if (reviewOptional.isEmpty()) {
+            return false;
+        }
+
+        Product product = productOptional.get();
+        Map<Long, Integer> ratings = product.getRatings();
+        if (ratings == null) {
+            ratings = new TreeMap<Long, Integer>();
+        }
+
+        if (ratings.containsKey(userId)) {
+            return false;
+        }
+
+        ratings.put(userId, review.getRating());
+        product.setRatings(ratings);
+        productRepository.save(product);
+
+        return true;
+    }
+
+    public boolean editReview(Review review) {
+        Optional<User> userOptional = userService
+            .getUserByUsername(authService.getCurrentUsername());
+        if (userOptional.isEmpty()) {
+            return false;
+        }
+
+        Optional<Product> productOptional = productRepository.findById(review.getProductId());
+        if (productOptional.isEmpty()) {
+            return false;
+        }
+
+        User user = userOptional.get();
+        Long userId = user.getId();
+        if (!Objects.equals(userId, review.getId())) {
+            return false;
+        }
+
+        Optional<Review> reviewOptional = reviewService.editReview(review);
+        if (reviewOptional.isEmpty()) {
+            return false;
+        }
+
+        Product product = productOptional.get();
+        Map<Long, Integer> ratings = product.getRatings();
+        if (ratings == null) {
+            return false;
+        }
+
+        ratings.put(userId, review.getRating());
+        product.setRatings(ratings);
+        productRepository.save(product);
+
+        return true;
+    }
+
+    public boolean deleteReview(Long productId, Long reviewId) {
+        Optional<User> userOptional = userService
+            .getUserByUsername(authService.getCurrentUsername());
+        if (userOptional.isEmpty()) {
+            return false;
+        }
+
+        Optional<Product> productOptional = productRepository.findById(productId);
+        if (productOptional.isEmpty()) {
+            return false;
+        }
+
+        Optional<Review> reviewOptional = reviewService.getReviewById(reviewId);
+        if (reviewOptional.isEmpty()) {
+            return false;
+        }
+
+        Review review = reviewOptional.get();
+
+        User user = userOptional.get();
+        Long userId = user.getId();
+        if (!Objects.equals(userId, review.getUser().getId())) {
+            return false;
+        }
+
+        Product product = productOptional.get();
+        Map<Long, Integer> ratings = product.getRatings();
+        if (ratings == null || !ratings.containsKey(userId)) {
+            return false;
+        }
+
+        reviewService.deleteReview(reviewId);
+
+        ratings.remove(userId);
+        product.setRatings(ratings);
+        productRepository.save(product);
+
+        return true;
+    }
+
+    public Optional<List<Review>> getProductReviews(Long productId) {
+        Optional<Product> productOptional = productRepository.findById(productId);
+        if (productOptional.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(reviewService.getProductreviews(productId));
     }
 }
