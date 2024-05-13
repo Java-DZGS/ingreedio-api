@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Request;
 import org.apache.http.protocol.HTTP;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import pl.edu.pw.mini.ingreedio.api.dto.FullProductDto;
 import pl.edu.pw.mini.ingreedio.api.dto.ProductListResponseDto;
+import pl.edu.pw.mini.ingreedio.api.dto.ReviewRequestDto;
 import pl.edu.pw.mini.ingreedio.api.model.Product;
+import pl.edu.pw.mini.ingreedio.api.model.Review;
 import pl.edu.pw.mini.ingreedio.api.service.PaginationService;
 import pl.edu.pw.mini.ingreedio.api.service.ProductService;
 import pl.edu.pw.mini.ingreedio.api.service.ProductsCriteriaService;
@@ -130,8 +133,8 @@ public class ProductController {
         }
     }
 
-    @Operation(summary = "",
-        description = "",
+    @Operation(summary = "Unlike product",
+        description = "Unlike product",
         security = {@SecurityRequirement(name = "Bearer Authentication")})
     @DeleteMapping("/{id}/likes")
     @ResponseBody
@@ -142,5 +145,64 @@ public class ProductController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @Operation(summary = "Add product review",
+        description = "Add product review",
+        security = {@SecurityRequirement(name = "Bearer Authentication")})
+    @PostMapping("/{id}/ratings")
+    @ResponseBody
+    public ResponseEntity<Void> addReview(@PathVariable Long id,
+                                          @RequestBody ReviewRequestDto reviewRequest) {
+        Review review = Review.builder().productId(id).rating(reviewRequest.rating())
+            .content(reviewRequest.content()).build();
+        boolean added = productService.addReview(review);
+        if (added) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.badRequest().build();
+    }
+
+    @Operation(summary = "Edit product review",
+        description = "Edit product review",
+        security = {@SecurityRequirement(name = "Bearer Authentication")})
+    @PutMapping("/{id}/ratings")
+    @ResponseBody
+    public ResponseEntity<Void> editReview(@PathVariable Long id,
+                                          @RequestBody ReviewRequestDto reviewRequest) {
+        Review review = Review.builder()
+            .id(reviewRequest.id())
+            .productId(id)
+            .rating(reviewRequest.rating())
+            .content(reviewRequest.content())
+            .build();
+        boolean edited = productService.editReview(reviewRequest.userId(), review);
+        if (edited) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.badRequest().build();
+    }
+
+    @Operation(summary = "Delete product review",
+        description = "Delete product review",
+        security = {@SecurityRequirement(name = "Bearer Authentication")})
+    @DeleteMapping("/{id}/ratings")
+    public ResponseEntity<Void> deleteReview(@PathVariable Long id, @RequestBody Long reviewId) {
+        boolean deleted = productService.deleteReview(id, reviewId);
+        if (deleted) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.badRequest().build();
+    }
+
+    @Operation(summary = "Get prodict reviews",
+        description = "Get product reviews",
+        security = {@SecurityRequirement(name = "Bearer Authentication")})
+    @GetMapping("/{id}/ratings")
+    @ResponseBody
+    public ResponseEntity<List<Review>> getProductReviews(@PathVariable Long id) {
+        Optional<List<Review>> reviewsOptional = productService.getProductReviews(id);
+        return reviewsOptional.map(ResponseEntity::ok)
+            .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }
