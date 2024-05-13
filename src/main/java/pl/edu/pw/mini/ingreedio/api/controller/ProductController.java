@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Request;
+import org.apache.http.protocol.HTTP;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -89,8 +90,37 @@ public class ProductController {
         return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
     }
 
-    @Operation(summary = "Like product",
-        description = "Like product",
+    @Operation(summary = "Delete product from the database",
+        description = "Delete product from the database",
+        security = {@SecurityRequirement(name = "Bearer Authentication")})
+    @PreAuthorize("hasAuthority('REMOVE_PRODUCT')")
+    @DeleteMapping
+    @ResponseBody
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+        boolean deleted = productService.deleteProduct(id);
+        if (deleted) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @Operation(summary = "Edit product in the database",
+        description = "Edit product in the database",
+        security = {@SecurityRequirement(name = "Bearer Authentication")})
+    @PreAuthorize("hasAuthority('EDIT_PRODUCT')")
+    @PutMapping("/{id}")
+    @ResponseBody
+    public ResponseEntity<Product> editProduct(@PathVariable Long id,
+                                               @RequestBody Product product) {
+        Optional<Product> editedProduct = productService.editProduct(id, product);
+        if (editedProduct.isPresent()) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @Operation(summary = "",
+        description = "",
         security = {@SecurityRequirement(name = "Bearer Authentication")})
     @PostMapping("/{id}/likes")
     @ResponseBody

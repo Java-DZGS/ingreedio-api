@@ -74,6 +74,36 @@ public class ProductService {
         return productRepository.save(product);
     }
 
+    public boolean deleteProduct(Long id) {
+        Optional<Product> productOptional = productRepository.findById(id);
+        if (productOptional.isPresent()) {
+            userService.deleteProduct(id);
+            productRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+    public Optional<Product> editProduct(Long id, Product product) {
+        Product existingProduct = productRepository.findById(id).orElse(null);
+        if (existingProduct != null) {
+            existingProduct.setName(product.getName());
+            existingProduct.setSmallImageUrl(product.getSmallImageUrl());
+            existingProduct.setLargeImageUrl(product.getLargeImageUrl());
+            existingProduct.setProvider(product.getProvider());
+            existingProduct.setBrand(product.getBrand());
+            existingProduct.setShortDescription(product.getShortDescription());
+            existingProduct.setLongDescription(product.getLongDescription());
+            existingProduct.setVolume(product.getVolume());
+            existingProduct.setIngredients(product.getIngredients());
+            existingProduct.setRating(product.getRating());
+
+            productRepository.save(existingProduct);
+            return Optional.of(existingProduct);
+        }
+        return Optional.empty();
+    }
+
     public ProductListResponseDto getProductsMatchingCriteria(
         ProductCriteria criteria, PageRequest pageRequest) {
         Page<Product> productsPage = productRepository
