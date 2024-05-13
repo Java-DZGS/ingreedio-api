@@ -10,8 +10,8 @@ import pl.edu.pw.mini.ingreedio.api.auth.service.AuthService;
 import pl.edu.pw.mini.ingreedio.api.product.dto.IngredientDto;
 import pl.edu.pw.mini.ingreedio.api.product.mapper.IngredientDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.product.model.Ingredient;
-import pl.edu.pw.mini.ingreedio.api.user.model.User;
 import pl.edu.pw.mini.ingreedio.api.product.repository.IngredientRepository;
+import pl.edu.pw.mini.ingreedio.api.user.model.User;
 import pl.edu.pw.mini.ingreedio.api.user.service.UserService;
 
 @Service

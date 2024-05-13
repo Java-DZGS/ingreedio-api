@@ -16,13 +16,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.BadCredentialsException;
 import pl.edu.pw.mini.ingreedio.api.IntegrationTest;
-import pl.edu.pw.mini.ingreedio.api.auth.service.AuthService;
-import pl.edu.pw.mini.ingreedio.api.auth.service.RoleService;
 import pl.edu.pw.mini.ingreedio.api.auth.dto.AuthRequestDto;
 import pl.edu.pw.mini.ingreedio.api.auth.dto.JwtResponseDto;
 import pl.edu.pw.mini.ingreedio.api.auth.dto.RefreshTokenRequestDto;
 import pl.edu.pw.mini.ingreedio.api.auth.dto.RegisterRequestDto;
 import pl.edu.pw.mini.ingreedio.api.auth.model.Role;
+import pl.edu.pw.mini.ingreedio.api.auth.service.AuthService;
+import pl.edu.pw.mini.ingreedio.api.auth.service.RoleService;
 import pl.edu.pw.mini.ingreedio.api.user.model.User;
 
 @SpringBootTest

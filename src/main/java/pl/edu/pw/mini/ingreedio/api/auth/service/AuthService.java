@@ -14,8 +14,8 @@ import pl.edu.pw.mini.ingreedio.api.auth.dto.RefreshTokenRequestDto;
 import pl.edu.pw.mini.ingreedio.api.auth.dto.RegisterRequestDto;
 import pl.edu.pw.mini.ingreedio.api.auth.model.AuthInfo;
 import pl.edu.pw.mini.ingreedio.api.auth.model.RefreshToken;
-import pl.edu.pw.mini.ingreedio.api.user.model.User;
 import pl.edu.pw.mini.ingreedio.api.auth.repository.AuthRepository;
+import pl.edu.pw.mini.ingreedio.api.user.model.User;
 import pl.edu.pw.mini.ingreedio.api.user.repository.UserRepository;
 
 @Service

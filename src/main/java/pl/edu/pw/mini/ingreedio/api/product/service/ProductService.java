@@ -20,8 +20,8 @@ import pl.edu.pw.mini.ingreedio.api.product.mapper.FullProductDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.product.mapper.ProductDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.product.model.Product;
 import pl.edu.pw.mini.ingreedio.api.product.model.Review;
-import pl.edu.pw.mini.ingreedio.api.user.model.User;
 import pl.edu.pw.mini.ingreedio.api.product.repository.ProductRepository;
+import pl.edu.pw.mini.ingreedio.api.user.model.User;
 import pl.edu.pw.mini.ingreedio.api.user.service.UserService;
 
 @Service

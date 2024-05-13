@@ -8,9 +8,9 @@ import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.auth.model.AuthInfo;
+import pl.edu.pw.mini.ingreedio.api.auth.repository.AuthRepository;
 import pl.edu.pw.mini.ingreedio.api.product.model.Ingredient;
 import pl.edu.pw.mini.ingreedio.api.user.model.User;
-import pl.edu.pw.mini.ingreedio.api.auth.repository.AuthRepository;
 import pl.edu.pw.mini.ingreedio.api.user.repository.UserRepository;
 
 @Service
