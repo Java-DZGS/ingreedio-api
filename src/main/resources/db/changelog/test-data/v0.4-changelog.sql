@@ -19,6 +19,6 @@ CREATE TABLE reviews
     user_id  BIGINT NOT NULL,
     product_id BIGINT NOT NULL,
     rating INT NOT NULL,
-    content VARCHAR(512), NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users (id),
+    content VARCHAR(512) NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users (id)
 );

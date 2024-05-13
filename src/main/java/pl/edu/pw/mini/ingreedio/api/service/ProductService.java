@@ -208,7 +208,7 @@ public class ProductService {
         return true;
     }
 
-    public boolean editReview(Review review) {
+    public boolean editReview(Long id, Review review) {
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
         if (userOptional.isEmpty()) {
@@ -222,7 +222,7 @@ public class ProductService {
 
         User user = userOptional.get();
         Long userId = user.getId();
-        if (!Objects.equals(userId, review.getId())) {
+        if (!Objects.equals(userId, id)) {
             return false;
         }
 

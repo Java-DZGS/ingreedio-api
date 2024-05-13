@@ -140,9 +140,13 @@ public class ProductController {
     @ResponseBody
     public ResponseEntity<Void> editReview(@PathVariable Long id,
                                           @RequestBody ReviewRequestDto reviewRequest) {
-        Review review = Review.builder().productId(id).rating(reviewRequest.rating())
-            .content(reviewRequest.content()).build();
-        boolean edited = productService.editReview(review);
+        Review review = Review.builder()
+            .id(reviewRequest.id())
+            .productId(id)
+            .rating(reviewRequest.rating())
+            .content(reviewRequest.content())
+            .build();
+        boolean edited = productService.editReview(reviewRequest.userId(), review);
         if (edited) {
             return ResponseEntity.ok().build();
         }
@@ -153,7 +157,6 @@ public class ProductController {
         description = "Delete product review",
         security = {@SecurityRequirement(name = "Bearer Authentication")})
     @DeleteMapping("/{id}/ratings")
-    @ResponseBody
     public ResponseEntity<Void> deleteReview(@PathVariable Long id, @RequestBody Long reviewId) {
         boolean deleted = productService.deleteReview(id, reviewId);
         if (deleted) {
