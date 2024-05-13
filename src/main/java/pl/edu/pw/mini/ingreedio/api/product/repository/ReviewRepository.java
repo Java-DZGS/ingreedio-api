@@ -1,4 +1,4 @@
-package pl.edu.pw.mini.ingreedio.api.repository;
+package pl.edu.pw.mini.ingreedio.api.product.repository;
 
 import java.util.List;
 import java.util.Optional;

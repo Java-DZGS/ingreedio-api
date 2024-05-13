@@ -43,6 +43,8 @@ public class Product {
     @Field
     private Integer rating;
     @Field
+    private Integer ratingSum;
+    @Field
     @Nullable
     private List<Long> likedBy;
     @Field

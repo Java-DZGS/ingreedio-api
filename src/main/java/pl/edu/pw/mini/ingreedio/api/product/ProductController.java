@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
-import org.apache.http.protocol.HTTP;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,10 +22,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import pl.edu.pw.mini.ingreedio.api.product.dto.FullProductDto;
 import pl.edu.pw.mini.ingreedio.api.product.dto.ProductListResponseDto;
-import pl.edu.pw.mini.ingreedio.api.dto.ReviewRequestDto;
+import pl.edu.pw.mini.ingreedio.api.product.dto.ProductRequestDto;
+import pl.edu.pw.mini.ingreedio.api.product.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.product.dto.ReviewRequestDto;
 import pl.edu.pw.mini.ingreedio.api.product.model.Product;
-import pl.edu.pw.mini.ingreedio.api.model.Review;
 import pl.edu.pw.mini.ingreedio.api.product.model.Review;
 import pl.edu.pw.mini.ingreedio.api.product.service.PaginationService;
 import pl.edu.pw.mini.ingreedio.api.product.service.ProductService;
@@ -85,7 +84,19 @@ public class ProductController {
     @PreAuthorize("hasAuthority('ADD_PRODUCT')")
     @PostMapping
     @ResponseBody
-    public ResponseEntity<Product> addProduct(@RequestBody Product product) {
+    public ResponseEntity<Product> addProduct(@RequestBody ProductRequestDto productRequest) {
+        Product product = Product.builder()
+            .name(productRequest.name())
+            .smallImageUrl(productRequest.smallImageUrl())
+            .largeImageUrl(productRequest.largeImageUrl())
+            .provider(productRequest.provider())
+            .brand(productRequest.brand())
+            .shortDescription(productRequest.shortDescription())
+            .longDescription(productRequest.longDescription())
+            .volume(productRequest.volume())
+            .ingredients(productRequest.ingredients())
+            .build();
+
         Product savedProduct = productService.addProduct(product);
         return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
     }
@@ -111,7 +122,7 @@ public class ProductController {
     @PutMapping("/{id}")
     @ResponseBody
     public ResponseEntity<Product> editProduct(@PathVariable Long id,
-                                               @RequestBody Product product) {
+                                               @RequestBody ProductRequestDto product) {
         Optional<Product> editedProduct = productService.editProduct(id, product);
         if (editedProduct.isPresent()) {
             return ResponseEntity.ok().build();
@@ -154,8 +165,15 @@ public class ProductController {
     @ResponseBody
     public ResponseEntity<Void> addReview(@PathVariable Long id,
                                           @RequestBody ReviewRequestDto reviewRequest) {
-        Review review = Review.builder().productId(id).rating(reviewRequest.rating())
-            .content(reviewRequest.content()).build();
+        if (reviewRequest.rating() < 0 || reviewRequest.rating() > 10) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Review review = Review.builder()
+            .productId(id)
+            .rating(reviewRequest.rating())
+            .content(reviewRequest.content())
+            .build();
         boolean added = productService.addReview(review);
         if (added) {
             return ResponseEntity.ok().build();
@@ -170,13 +188,16 @@ public class ProductController {
     @ResponseBody
     public ResponseEntity<Void> editReview(@PathVariable Long id,
                                           @RequestBody ReviewRequestDto reviewRequest) {
+        if (reviewRequest.rating() < 0 || reviewRequest.rating() > 10) {
+            return ResponseEntity.badRequest().build();
+        }
+
         Review review = Review.builder()
-            .id(reviewRequest.id())
             .productId(id)
             .rating(reviewRequest.rating())
             .content(reviewRequest.content())
             .build();
-        boolean edited = productService.editReview(reviewRequest.userId(), review);
+        boolean edited = productService.editReview(review);
         if (edited) {
             return ResponseEntity.ok().build();
         }
@@ -187,21 +208,21 @@ public class ProductController {
         description = "Delete product review",
         security = {@SecurityRequirement(name = "Bearer Authentication")})
     @DeleteMapping("/{id}/ratings")
-    public ResponseEntity<Void> deleteReview(@PathVariable Long id, @RequestBody Long reviewId) {
-        boolean deleted = productService.deleteReview(id, reviewId);
+    public ResponseEntity<Void> deleteReview(@PathVariable Long id) {
+        boolean deleted = productService.deleteReview(id);
         if (deleted) {
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.badRequest().build();
     }
 
-    @Operation(summary = "Get prodict reviews",
+    @Operation(summary = "Get product reviews",
         description = "Get product reviews",
         security = {@SecurityRequirement(name = "Bearer Authentication")})
     @GetMapping("/{id}/ratings")
     @ResponseBody
-    public ResponseEntity<List<Review>> getProductReviews(@PathVariable Long id) {
-        Optional<List<Review>> reviewsOptional = productService.getProductReviews(id);
+    public ResponseEntity<List<ReviewDto>> getProductReviews(@PathVariable Long id) {
+        Optional<List<ReviewDto>> reviewsOptional = productService.getProductReviews(id);
         return reviewsOptional.map(ResponseEntity::ok)
             .orElseGet(() -> ResponseEntity.notFound().build());
     }
