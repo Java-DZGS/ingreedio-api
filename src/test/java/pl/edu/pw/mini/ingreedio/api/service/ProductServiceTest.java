@@ -647,7 +647,8 @@ public class ProductServiceTest extends IntegrationTest {
 
             // When
             boolean added = productService.addReview(review);
-            Optional<FullProductDto> reviewedProduct = productService.getProductById(product.getId());
+            Optional<FullProductDto> reviewedProduct = productService
+                .getProductById(product.getId());
 
             // Then
             assertThat(added).isTrue();
@@ -731,7 +732,8 @@ public class ProductServiceTest extends IntegrationTest {
             boolean edited = productService.editReview(editedReview);
             Optional<List<ReviewDto>> reviews = productService
                 .getProductReviews(product.getId());
-            Optional<FullProductDto> reviewedProduct = productService.getProductById(product.getId());
+            Optional<FullProductDto> reviewedProduct = productService
+                .getProductById(product.getId());
 
             // Then
             assertThat(edited).isTrue();
