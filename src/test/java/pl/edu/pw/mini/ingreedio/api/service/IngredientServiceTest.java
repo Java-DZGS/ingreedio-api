@@ -11,8 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import pl.edu.pw.mini.ingreedio.api.IntegrationTest;
-import pl.edu.pw.mini.ingreedio.api.dto.IngredientDto;
-import pl.edu.pw.mini.ingreedio.api.model.Ingredient;
+import pl.edu.pw.mini.ingreedio.api.product.dto.IngredientDto;
+import pl.edu.pw.mini.ingreedio.api.product.model.Ingredient;
+import pl.edu.pw.mini.ingreedio.api.product.service.IngredientService;
 
 @SpringBootTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)

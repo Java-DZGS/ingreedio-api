@@ -2,15 +2,16 @@ package pl.edu.pw.mini.ingreedio.api.service;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import pl.edu.pw.mini.ingreedio.api.IntegrationTest;
-import pl.edu.pw.mini.ingreedio.api.dto.RegisterRequestDto;
-import pl.edu.pw.mini.ingreedio.api.model.AuthInfo;
-import pl.edu.pw.mini.ingreedio.api.model.Role;
-import pl.edu.pw.mini.ingreedio.api.repository.RoleRepository;
+import pl.edu.pw.mini.ingreedio.api.auth.service.AuthService;
+import pl.edu.pw.mini.ingreedio.api.auth.service.RoleService;
+import pl.edu.pw.mini.ingreedio.api.auth.dto.RegisterRequestDto;
+import pl.edu.pw.mini.ingreedio.api.auth.model.AuthInfo;
+import pl.edu.pw.mini.ingreedio.api.auth.model.Role;
+import pl.edu.pw.mini.ingreedio.api.auth.repository.RoleRepository;
 
 @SpringBootTest
 public class RoleServiceTest extends IntegrationTest {
