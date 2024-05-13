@@ -98,4 +98,15 @@ public class UserService {
         }
         return true;
     }
+
+    @Transactional
+    public void deleteProduct(Long productId) {
+        List<User> users = userRepository.findUsersByLikedProduct(productId);
+
+        for (User user : users) {
+            user.getLikedProducts().remove(productId);
+        }
+
+        userRepository.saveAll(users);
+    }
 }
