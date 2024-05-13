@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.apache.http.protocol.HTTP;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -83,6 +85,35 @@ public class ProductController {
     public ResponseEntity<Product> addProduct(@RequestBody Product product) {
         Product savedProduct = productService.addProduct(product);
         return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
+    }
+
+    @Operation(summary = "Delete product from the database",
+        description = "Delete product from the database",
+        security = {@SecurityRequirement(name = "Bearer Authentication")})
+    @PreAuthorize("hasAuthority('REMOVE_PRODUCT')")
+    @DeleteMapping
+    @ResponseBody
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+        boolean deleted = productService.deleteProduct(id);
+        if (deleted) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @Operation(summary = "Edit product in the database",
+        description = "Edit product in the database",
+        security = {@SecurityRequirement(name = "Bearer Authentication")})
+    @PreAuthorize("hasAuthority('EDIT_PRODUCT')")
+    @PutMapping("/{id}")
+    @ResponseBody
+    public ResponseEntity<Product> editProduct(@PathVariable Long id,
+                                               @RequestBody Product product) {
+        Optional<Product> editedProduct = productService.editProduct(id, product);
+        if (editedProduct.isPresent()) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @Operation(summary = "",
