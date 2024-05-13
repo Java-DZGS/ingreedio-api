@@ -11,6 +11,7 @@ import pl.edu.pw.mini.ingreedio.api.repository.ReviewRepository;
 @RequiredArgsConstructor
 public class ReviewService {
     private final ReviewRepository reviewRepository;
+
     public Optional<Review> getReviewById(Long id) {
         return reviewRepository.findById(id);
     }
