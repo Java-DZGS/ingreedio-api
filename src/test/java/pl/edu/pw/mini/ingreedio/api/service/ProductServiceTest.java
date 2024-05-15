@@ -4,18 +4,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.IntegrationTest;
 import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductCriteria;
 import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductsSortingCriteria;
@@ -23,24 +21,15 @@ import pl.edu.pw.mini.ingreedio.api.product.dto.FullProductDto;
 import pl.edu.pw.mini.ingreedio.api.product.dto.ProductDto;
 import pl.edu.pw.mini.ingreedio.api.product.dto.ProductListResponseDto;
 import pl.edu.pw.mini.ingreedio.api.product.model.Product;
-import pl.edu.pw.mini.ingreedio.api.product.repository.ProductRepository;
 import pl.edu.pw.mini.ingreedio.api.product.service.ProductService;
 
-@SpringBootTest
 public class ProductServiceTest extends IntegrationTest {
 
     @Autowired
     private ProductService productService;
 
-    @Autowired
-    private ProductRepository productRepository;
-
-    @AfterEach
-    void clearProducts() {
-        productRepository.deleteAll();
-    }
-
     @Nested
+    @Transactional
     class AddAndGetTests {
         @Test
         public void givenProductObject_whenSaveProduct_thenReturnProductObject() {
@@ -87,6 +76,7 @@ public class ProductServiceTest extends IntegrationTest {
     }
 
     @Nested
+    @Transactional
     class FilteringTests {
         @Test
         public void givenNoCriteria_whenMatch_thenReturnAllProducts() {
@@ -162,15 +152,15 @@ public class ProductServiceTest extends IntegrationTest {
         public void givenIngredientsIncludeCriteria_whenFilter_thenReturnCorrectProducts() {
             // Given
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("potato", "carrot", "beet")).build());
+                .ingredients(List.of("potato", "carrot", "beet")).build());
             productService.addProduct(Product.builder().brand("carfour")
                 .ingredients(List.of("beet")).build());
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("potato", "carrot")).build());
+                .ingredients(List.of("potato", "carrot")).build());
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("carrot", "beet")).build());
+                .ingredients(List.of("carrot", "beet")).build());
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("potato", "beet")).build());
+                .ingredients(List.of("potato", "beet")).build());
 
             var criteria1 = ProductCriteria.builder()
                 .ingredientsNamesToInclude(Set.of("potato", "beet")).build();
@@ -208,15 +198,15 @@ public class ProductServiceTest extends IntegrationTest {
         public void givenIngredientsExcludeCriteria_whenFilter_thenReturnCorrectProducts() {
             // Given
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("potato", "carrot", "beet")).build());
+                .ingredients(List.of("potato", "carrot", "beet")).build());
             productService.addProduct(Product.builder().brand("carfour")
                 .ingredients(List.of("beet", "tomato")).build());
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("potato", "carrot")).build());
+                .ingredients(List.of("potato", "carrot")).build());
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("carrot", "beet")).build());
+                .ingredients(List.of("carrot", "beet")).build());
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("potato", "beet")).build());
+                .ingredients(List.of("potato", "beet")).build());
 
             var criteria1 = ProductCriteria.builder()
                 .ingredientsNamesToExclude(Set.of("potato", "beet")).build();
@@ -259,21 +249,21 @@ public class ProductServiceTest extends IntegrationTest {
         public void givenRatingIngredientsCriteria_whenFilter_thenReturnCorrectProducts() {
             // Given
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("potato", "carrot", "beet")).build());
+                .ingredients(List.of("potato", "carrot", "beet")).build());
             productService.addProduct(Product.builder().brand("carfour")
                 .ingredients(List.of("beet", "tomato")).build());
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("potato", "carrot")).build());
+                .ingredients(List.of("potato", "carrot")).build());
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("carrot", "beet")).build());
+                .ingredients(List.of("carrot", "beet")).build());
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("potato")).rating(6).build());
+                .ingredients(List.of("potato")).rating(6).build());
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("potato", "beet")).rating(7).build());
+                .ingredients(List.of("potato", "beet")).rating(7).build());
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("beet")).rating(10).build());
+                .ingredients(List.of("beet")).rating(10).build());
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("potato", "beet")).rating(10).build());
+                .ingredients(List.of("potato", "beet")).rating(10).build());
 
             var criteria = ProductCriteria.builder()
                 .ingredientsNamesToInclude(Set.of("potato"))
@@ -306,14 +296,14 @@ public class ProductServiceTest extends IntegrationTest {
                     .name("pasta do zębów")
                     .brand("karfur")
                     .provider("żapka")
-                    .ingredients(Arrays.asList("polietylen", "guma guar", "metanol"))
+                    .ingredients(List.of("polietylen", "guma guar", "metanol"))
                     .build());
             productService.addProduct(
                 Product.builder()
                     .name("poper")
                     .brand("karfur")
                     .provider("żapka")
-                    .ingredients(Arrays.asList("rak", "guma", "metanol"))
+                    .ingredients(List.of("rak", "guma", "metanol"))
                     .build());
 
             // Red herrings
@@ -353,10 +343,10 @@ public class ProductServiceTest extends IntegrationTest {
                     .build());
 
             var criteria = ProductCriteria.builder()
-                    .brandsNamesToInclude(Set.of("karfur"))
-                    .providersNames(Set.of("żapka"))
-                    .ingredientsNamesToInclude(Set.of("metanol"))
-                    .build();
+                .brandsNamesToInclude(Set.of("karfur"))
+                .providersNames(Set.of("żapka"))
+                .ingredientsNamesToInclude(Set.of("metanol"))
+                .build();
 
             // When
             var kerfurZabkaPage = productService.getProductsMatchingCriteria(
@@ -378,6 +368,7 @@ public class ProductServiceTest extends IntegrationTest {
     }
 
     @Nested
+    @Transactional
     class PhraseAndSortingTests {
         @Test
         public void givenProducts_whenMatchSort_thenProductWithGreaterMatchScoreIsFirst() {
@@ -394,7 +385,7 @@ public class ProductServiceTest extends IntegrationTest {
             var criteria = ProductCriteria.builder()
                 .phraseKeywords(Set.of("krem"))
                 .hasMatchScoreSortCriteria(true)
-                .sortingCriteria(Arrays.asList(sortingCriteria))
+                .sortingCriteria(List.of(sortingCriteria))
                 .build();
 
             // When
@@ -427,11 +418,12 @@ public class ProductServiceTest extends IntegrationTest {
 
             // Then
             assertThat(result.products().size()).isEqualTo(1);
-            assertThat(result.products().get(0).name()).isEqualTo("SErEk");
+            assertThat(result.products().getFirst().name()).isEqualTo("SErEk");
         }
     }
 
     @Nested
+    @Transactional
     class ProductsLikingTests {
         @Test
         @WithMockUser(username = "user", password = "user", roles = {})
@@ -447,6 +439,7 @@ public class ProductServiceTest extends IntegrationTest {
 
             // Then
             assertTrue(result);
+            assertTrue(updatedProduct.isPresent());
             assertTrue(updatedProduct.get().isLiked());
         }
 
@@ -477,6 +470,7 @@ public class ProductServiceTest extends IntegrationTest {
 
             // Then
             assertTrue(result);
+            assertTrue(updatedProduct.isPresent());
             assertFalse(updatedProduct.get().isLiked());
         }
 
@@ -528,11 +522,13 @@ public class ProductServiceTest extends IntegrationTest {
             Optional<FullProductDto> result = productService.getProductById(product.getId());
 
             // Then
+            assertTrue(result.isPresent());
             assertThat(result.get().isLiked()).isTrue();
         }
     }
 
     @Nested
+    @Transactional
     class EditAndDeleteTest {
         @Test
         public void givenProductId_whenEditProduct_thenProductIsDeleted() {

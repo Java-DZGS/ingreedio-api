@@ -7,12 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.BadCredentialsException;
 import pl.edu.pw.mini.ingreedio.api.IntegrationTest;
@@ -25,8 +21,6 @@ import pl.edu.pw.mini.ingreedio.api.auth.service.AuthService;
 import pl.edu.pw.mini.ingreedio.api.auth.service.RoleService;
 import pl.edu.pw.mini.ingreedio.api.user.model.User;
 
-@SpringBootTest
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AuthServiceTest extends IntegrationTest {
 
     @Autowired
@@ -36,7 +30,6 @@ public class AuthServiceTest extends IntegrationTest {
     private RoleService roleService;
 
     @Test
-    @Order(1)
     public void givenValidRegistrationRequest_whenRegister_thenTokenGenerated() {
         // Given
         RegisterRequestDto request = new RegisterRequestDto("us", "Us", "us@as.pl", "pass");
@@ -50,22 +43,23 @@ public class AuthServiceTest extends IntegrationTest {
     }
 
     @Test
-    @Order(2)
     public void givenDuplicateUsernameRegisterRequest_whenRegister_thenExceptionThrown() {
         // Given
-        RegisterRequestDto request = new RegisterRequestDto("us", "Us", "us@as.pl", "pass");
+        RegisterRequestDto request = new RegisterRequestDto("user", "User", "us@as.pl", "pass");
 
         // When / Then
         assertThrows(DataIntegrityViolationException.class, () -> authService.register(request));
     }
 
     @Test
-    @Order(3)
     public void givenValidRegistrationRequest_whenRegister_thenNewUserHasDefaultRoles() {
         // Given
-        Set<String> newUserRoles = authService.getAuthInfoByUsername("us").getRoles()
-            .stream().map(Role::getName).collect(Collectors.toSet());
+        RegisterRequestDto request = new RegisterRequestDto("us", "Us", "us@as.pl", "pass");
+        authService.register(request);
+
         Set<String> defaultRoles = roleService.getDefaultUserRoles()
+            .stream().map(Role::getName).collect(Collectors.toSet());
+        Set<String> newUserRoles = authService.getAuthInfoByUsername("us").getRoles()
             .stream().map(Role::getName).collect(Collectors.toSet());
 
         // When
@@ -76,10 +70,9 @@ public class AuthServiceTest extends IntegrationTest {
     }
 
     @Test
-    @Order(4)
     void givenValidLoginRequest_whenLogin_thenTokensGenerated() {
         // Given
-        AuthRequestDto request = new AuthRequestDto("us", "pass");
+        AuthRequestDto request = new AuthRequestDto("user", "user");
 
         // When
         JwtResponseDto response = authService.login(request);
@@ -90,7 +83,6 @@ public class AuthServiceTest extends IntegrationTest {
     }
 
     @Test
-    @Order(5)
     void givenInvalidUsernameLoginRequest_whenLogin_thenBadCredentialsExceptionThrown() {
         // Given
         AuthRequestDto request = new AuthRequestDto("invalid", "password");
@@ -100,7 +92,6 @@ public class AuthServiceTest extends IntegrationTest {
     }
 
     @Test
-    @Order(6)
     void givenInvalidPasswordLoginRequest_whenLogin_thenBadCredentialsExceptionThrown() {
         // Given
         AuthRequestDto request = new AuthRequestDto("us", "password");
@@ -110,10 +101,9 @@ public class AuthServiceTest extends IntegrationTest {
     }
 
     @Test
-    @Order(7)
     void givenValidRefreshTokenRequest_whenRefresh_thenNewTokenGenerated() {
         // Given
-        AuthRequestDto loginRequest = new AuthRequestDto("us", "pass");
+        AuthRequestDto loginRequest = new AuthRequestDto("user", "user");
         JwtResponseDto loginResponse = authService.login(loginRequest);
         RefreshTokenRequestDto refreshTokenRequest =
             new RefreshTokenRequestDto(loginResponse.refreshToken());
@@ -127,7 +117,6 @@ public class AuthServiceTest extends IntegrationTest {
     }
 
     @Test
-    @Order(8)
     void givenInvalidRefreshTokenRequest_whenRefresh_thenExceptionThrown() {
         // Given
         RefreshTokenRequestDto refreshTokenRequest = new RefreshTokenRequestDto("token");

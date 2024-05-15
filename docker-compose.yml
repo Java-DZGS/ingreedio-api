@@ -1,4 +1,4 @@
-version: '2'
+version: '3.8'
 
 services:
   app:
@@ -10,15 +10,15 @@ services:
     container_name: app
     depends_on:
       - postgres
-      - mongo
+      - mongo1
+      - mongo2
+      - mongo3
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ingreedio
       - SPRING_DATASOURCE_USERNAME=compose-postgres
       - SPRING_DATASOURCE_PASSWORD=compose-postgres
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - SPRING_DATA_MONGODB_HOST=mongo
-      - SPRING_DATA_MONGODB_USERNAME=compose-mongo
-      - SPRING_DATA_MONGODB_PASSWORD=compose-mongo
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo1:27017,mongo2:27018,mongo3:27019/?replicaSet=rs0
 
   postgres:
     image: 'postgres:13.1-alpine'
@@ -30,15 +30,45 @@ services:
       - POSTGRES_PASSWORD=compose-postgres
       - POSTGRES_DB=ingreedio
 
-  mongo:
+  mongo1:
     image: 'mongo'
-    container_name: mongo
-    restart: always
+    command: [ '--replSet', 'rs0', '--bind_ip_all', '--port', '27017' ]
     ports:
-      - '27016:27017'
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: compose-mongo
-      MONGO_INITDB_ROOT_PASSWORD: compose-mongo
+      - '30001:27017'
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    healthcheck:
+      test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'host.docker.internal:30001',priority:1},{_id:1,host:'host.docker.internal:30002',priority:0.5},{_id:2,host:'host.docker.internal:30003',priority:0.5}]}) }" | mongosh --port 27017 --quiet
+      interval: 5s
+      timeout: 30s
+      start_period: 0s
+      #      start_interval: 1s
+      retries: 30
+    volumes:
+      - "mongo1_data:/data/db"
+      - "mongo1_config:/data/configdb"
+
+  mongo2:
+    image: 'mongo'
+    command: [ "--replSet", "rs0", "--bind_ip_all", "--port", "27018" ]
+    ports:
+      - '30002:27018'
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - "mongo2_data:/data/db"
+      - "mongo2_config:/data/configdb"
+
+  mongo3:
+    image: 'mongo'
+    command: [ "--replSet", "rs0", "--bind_ip_all", "--port", "27019" ]
+    ports:
+      - '30003:27019'
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - "mongo3_data:/data/db"
+      - "mongo3_config:/data/configdb"
 
   mongo-express:
     image: 'mongo-express'
@@ -47,9 +77,19 @@ services:
     ports:
       - '8081:8081'
     depends_on:
-      - mongo
+      - mongo1
+      - mongo2
+      - mongo3
     environment:
       ME_CONFIG_MONGODB_ADMINUSERNAME: compose-mongo
       ME_CONFIG_MONGODB_ADMINPASSWORD: compose-mongo
-      ME_CONFIG_MONGODB_URL: mongodb://compose-mongo:compose-mongo@mongo:27017/
+      ME_CONFIG_MONGODB_URL: mongodb://mongo1:27017,mongo2:27018,mongo2:27019/?replicaSet=rs0
       ME_CONFIG_BASICAUTH: false
+
+volumes:
+  mongo1_data:
+  mongo2_data:
+  mongo3_data:
+  mongo1_config:
+  mongo2_config:
+  mongo3_config:

@@ -6,10 +6,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 @SpringBootTest
+@Transactional
 public class IntegrationTest {
     private static final String POSTGRES_NAME = "postgres_1";
     private static final int POSTGRES_PORT = 5432;
@@ -18,18 +20,25 @@ public class IntegrationTest {
     private static final String POSTGRES_USERNAME = "compose-postgres";
     private static final String POSTGRES_PASSWORD = "compose-postgres";
 
-    private static final String MONGO_NAME = "mongo_1";
-    public static final int MONGO_PORT = 27017;
+    private static final String MONGO_HOST = "localhost";
+    public static final int MONGO_PORT = 30001;
     private static final String MONGO_DB = "ingreedio";
-    private static final String MONGO_USERNAME = "compose-mongo";
-    private static final String MONGO_PASSWORD = "compose-mongo";
+    private static final String MONGO_OPTIONS = "?replicaSet=rs0";
+    private static final String MONGO_URI = "mongodb://%s/%s";
 
+    @SuppressWarnings("rawtypes")
     public static DockerComposeContainer environment =
         new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
             .withExposedService(POSTGRES_NAME, POSTGRES_PORT,
                 Wait.forListeningPort().withStartupTimeout(
                     Duration.ofSeconds(30)))
-            .withExposedService("mongo", MONGO_PORT,
+            .withExposedService("mongo1", MONGO_PORT,
+                Wait.forListeningPort().withStartupTimeout(
+                    Duration.ofSeconds(30)))
+            .withExposedService("mongo2", MONGO_PORT + 1,
+                Wait.forListeningPort().withStartupTimeout(
+                    Duration.ofSeconds(30)))
+            .withExposedService("mongo3", MONGO_PORT + 2,
                 Wait.forListeningPort().withStartupTimeout(
                     Duration.ofSeconds(30)));
 
@@ -49,12 +58,14 @@ public class IntegrationTest {
         registry.add("spring.datasource.password", () -> POSTGRES_PASSWORD);
 
         // MONGO
-        registry.add("spring.data.mongodb.host",
-            () -> environment.getServiceHost(MONGO_NAME, MONGO_PORT));
-        registry.add("spring.data.mongodb.port",
-            () -> environment.getServicePort(MONGO_NAME, MONGO_PORT));
+        var connectionBuilder = new StringBuilder(MONGO_HOST).append(':').append(MONGO_PORT);
+        for (int i = 1; i < 3; i++) {
+            connectionBuilder.append(',').append(MONGO_HOST).append(':').append(MONGO_PORT + i);
+        }
+
+        String connection = String.format(MONGO_URI, connectionBuilder, MONGO_OPTIONS);
+        System.out.println(connection);
+        registry.add("spring.data.mongodb.uri", () -> connection);
         registry.add("spring.data.mongodb.database", () -> MONGO_DB);
-        registry.add("spring.data.mongodb.username", () -> MONGO_USERNAME);
-        registry.add("spring.data.mongodb.password", () -> MONGO_PASSWORD);
     }
 }
