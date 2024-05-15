@@ -20,8 +20,8 @@ public class IntegrationTest {
     private static final String POSTGRES_USERNAME = "compose-postgres";
     private static final String POSTGRES_PASSWORD = "compose-postgres";
 
-    private static final String MONGO_HOST = "localhost";
-    public static final int MONGO_PORT = 30001;
+    private static final String[] MONGO_NAME = new String[] {"mongo1_1", "mongo2_1", "mongo3_1"};
+    public static final int MONGO_PORT = 27017;
     private static final String MONGO_DB = "ingreedio";
     private static final String MONGO_OPTIONS = "?replicaSet=rs0";
     private static final String MONGO_URI = "mongodb://%s/%s";
@@ -32,13 +32,13 @@ public class IntegrationTest {
             .withExposedService(POSTGRES_NAME, POSTGRES_PORT,
                 Wait.forListeningPort().withStartupTimeout(
                     Duration.ofSeconds(30)))
-            .withExposedService("mongo1", MONGO_PORT,
+            .withExposedService(MONGO_NAME[0], MONGO_PORT,
                 Wait.forListeningPort().withStartupTimeout(
                     Duration.ofSeconds(30)))
-            .withExposedService("mongo2", MONGO_PORT + 1,
+            .withExposedService(MONGO_NAME[1], MONGO_PORT + 1,
                 Wait.forListeningPort().withStartupTimeout(
                     Duration.ofSeconds(30)))
-            .withExposedService("mongo3", MONGO_PORT + 2,
+            .withExposedService(MONGO_NAME[2], MONGO_PORT + 2,
                 Wait.forListeningPort().withStartupTimeout(
                     Duration.ofSeconds(30)));
 
@@ -58,9 +58,14 @@ public class IntegrationTest {
         registry.add("spring.datasource.password", () -> POSTGRES_PASSWORD);
 
         // MONGO
-        var connectionBuilder = new StringBuilder(MONGO_HOST).append(':').append(MONGO_PORT);
+        var host = environment.getServiceHost(MONGO_NAME[0], MONGO_PORT);
+        var port = environment.getServicePort(MONGO_NAME[0], MONGO_PORT);
+        var connectionBuilder = new StringBuilder(host).append(':').append(port);
+
         for (int i = 1; i < 3; i++) {
-            connectionBuilder.append(',').append(MONGO_HOST).append(':').append(MONGO_PORT + i);
+            host = environment.getServiceHost(MONGO_NAME[i], MONGO_PORT + i);
+            port = environment.getServicePort(MONGO_NAME[i], MONGO_PORT + i);
+            connectionBuilder.append(',').append(host).append(':').append(port);
         }
 
         String connection = String.format(MONGO_URI, connectionBuilder, MONGO_OPTIONS);
