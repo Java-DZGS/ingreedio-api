@@ -22,7 +22,10 @@ import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductsSortingCriteria;
 import pl.edu.pw.mini.ingreedio.api.product.dto.FullProductDto;
 import pl.edu.pw.mini.ingreedio.api.product.dto.ProductDto;
 import pl.edu.pw.mini.ingreedio.api.product.dto.ProductListResponseDto;
+import pl.edu.pw.mini.ingreedio.api.product.dto.ProductRequestDto;
+import pl.edu.pw.mini.ingreedio.api.product.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.product.model.Product;
+import pl.edu.pw.mini.ingreedio.api.product.model.Review;
 import pl.edu.pw.mini.ingreedio.api.product.repository.ProductRepository;
 import pl.edu.pw.mini.ingreedio.api.product.service.ProductService;
 
@@ -548,7 +551,7 @@ public class ProductServiceTest extends IntegrationTest {
                 .ingredients(List.of("oldIngredient1", "oldIngredient2"))
                 .build());
 
-            Product productEdited = Product.builder()
+            ProductRequestDto productEdited = ProductRequestDto.builder()
                 .name("productEdited")
                 .smallImageUrl("newSmallImageUrl")
                 .largeImageUrl("newLargeImageUrl")
@@ -589,8 +592,11 @@ public class ProductServiceTest extends IntegrationTest {
             Product editedProduct = productService.addProduct(Product.builder()
                 .name("edited").build());
 
+            ProductRequestDto productRequest = ProductRequestDto.builder()
+                .name("edited")
+                .build();
             // When
-            Optional<Product> edited = productService.editProduct(1000L, editedProduct);
+            Optional<Product> edited = productService.editProduct(1000L, productRequest);
             Optional<FullProductDto> result = productService.getProductById(1000L);
 
             // Then
@@ -624,4 +630,183 @@ public class ProductServiceTest extends IntegrationTest {
             assertThat(deleted).isFalse();
         }
     }
+
+    @Nested
+    class ReviewTest {
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenProductId_whenAddReview_reviewIsAdded() {
+            // Given
+            Product product = productService
+                .addProduct(Product.builder().name("testProduct").build());
+            Review review = Review.builder()
+                .productId(product.getId())
+                .content("testContent")
+                .rating(5)
+                .build();
+
+            // When
+            boolean added = productService.addReview(review);
+            Optional<FullProductDto> reviewedProduct = productService
+                .getProductById(product.getId());
+
+            // Then
+            assertThat(added).isTrue();
+            assertThat(reviewedProduct.isPresent()).isTrue();
+            assertThat(reviewedProduct.get().rating()).isEqualTo(5);
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenNonExistingProductId_whenAddReview_reviewIsNotAdded() {
+            // Given
+            Review review = Review.builder()
+                .productId(1000L)
+                .content("testContent")
+                .rating(5)
+                .build();
+
+            // When
+            boolean added = productService.addReview(review);
+
+            // Then
+            assertThat(added).isFalse();
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenProductId_whenGetReviews_thenGetProductReviews() {
+            // Given
+            Product product = productService
+                .addProduct(Product.builder().name("testProduct").build());
+            Review review = Review.builder()
+                .productId(product.getId())
+                .content("testContent")
+                .rating(1)
+                .build();
+
+            // When
+            productService.addReview(review);
+            Optional<List<ReviewDto>> reviews = productService
+                .getProductReviews(product.getId());
+
+            // Then
+            assertThat(reviews.isPresent()).isTrue();
+            assertThat(reviews.get().size()).isEqualTo(1);
+            assertThat(reviews.get().getFirst().rating()).isEqualTo(1);
+            assertThat(reviews.get().getFirst().content()).isEqualTo("testContent");
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenNonExistingProductId_whenGetReviews_thenGetEmptyResponse() {
+            // Given
+
+            // When
+            Optional<List<ReviewDto>> reviews = productService
+                .getProductReviews(1000L);
+
+            // Then
+            assertThat(reviews.isEmpty()).isTrue();
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenProductId_whenEditReview_reviewIsEdited() {
+            Product product = productService
+                .addProduct(Product.builder().name("testProduct").build());
+            Review review = Review.builder()
+                .productId(product.getId())
+                .content("testContent")
+                .rating(1)
+                .build();
+
+            Review editedReview = Review.builder()
+                .productId(product.getId())
+                .content("edited")
+                .rating(5)
+                .build();
+
+            // When
+            productService.addReview(review);
+            boolean edited = productService.editReview(editedReview);
+            Optional<List<ReviewDto>> reviews = productService
+                .getProductReviews(product.getId());
+            Optional<FullProductDto> reviewedProduct = productService
+                .getProductById(product.getId());
+
+            // Then
+            assertThat(edited).isTrue();
+            assertThat(reviews.isPresent()).isTrue();
+            assertThat(reviews.get().size()).isEqualTo(1);
+            assertThat(reviews.get().getFirst().rating()).isEqualTo(5);
+            assertThat(reviews.get().getFirst().content()).isEqualTo("edited");
+
+            assertThat(reviewedProduct.isPresent()).isTrue();
+            assertThat(reviewedProduct.get().rating()).isEqualTo(5);
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenNonExistingProductId_whenEditReview_reviewIsNotEdited() {
+            Product product = productService
+                .addProduct(Product.builder().name("testProduct").build());
+            Review editedReview = Review.builder()
+                .productId(product.getId())
+                .content("edited")
+                .rating(5)
+                .build();
+
+            // When
+            boolean edited = productService.editReview(editedReview);
+
+            // Then
+            assertThat(edited).isFalse();
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenProductId_whenEditNonExistingReview_reviewIsNotEdited() {
+            Review editedReview = Review.builder()
+                .productId(1000L)
+                .content("edited")
+                .rating(5)
+                .build();
+
+            // When
+            boolean edited = productService.editReview(editedReview);
+
+            // Then
+            assertThat(edited).isFalse();
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenProductId_whenDeleteReview_reviewIsDeleted() {
+            Product product = productService
+                .addProduct(Product.builder().name("testProduct").build());
+            Review review = Review.builder()
+                .productId(product.getId())
+                .content("review")
+                .rating(5)
+                .build();
+
+            // When
+            productService.addReview(review);
+            Optional<List<ReviewDto>> reviews = productService
+                .getProductReviews(product.getId());
+
+            productService.deleteReview(product.getId());
+            Optional<List<ReviewDto>> reviewsDeleted = productService
+                .getProductReviews(product.getId());
+
+            // Then
+            assertThat(reviews.isPresent()).isTrue();
+            assertThat(reviews.get().size()).isEqualTo(1);
+            assertThat(reviewsDeleted.isPresent()).isTrue();
+            assertThat(reviewsDeleted.get().size()).isEqualTo(0);
+        }
+
+    }
+
 }
