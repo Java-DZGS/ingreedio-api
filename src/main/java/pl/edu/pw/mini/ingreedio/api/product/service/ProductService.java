@@ -3,7 +3,6 @@ package pl.edu.pw.mini.ingreedio.api.product.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
@@ -54,8 +53,8 @@ public class ProductService {
             Optional<Product> productOptional = productRepository.findById(id);
             if (productOptional.isPresent()) {
                 Product product = productOptional.get();
-                Boolean isLiked = product.getLikedBy() != null
-                    ? product.getLikedBy().contains(userId) : false;
+                Boolean isLiked =
+                    product.getLikedBy() != null && product.getLikedBy().contains(userId);
                 return Optional.ofNullable(FullProductDto.builder()
                     .id(product.getId())
                     .name(product.getName())
@@ -121,14 +120,14 @@ public class ProductService {
                 productsPage.getContent().stream().map(productDtoMapper).toList(),
                 productsPage.getTotalPages());
         }
-        
+
         User user = userOptional.get();
         Long userId = user.getId();
 
         List<ProductDto> productDtos = productsPage.getContent().stream()
             .map(product -> {
-                Boolean isLiked = product.getLikedBy() != null
-                    ? product.getLikedBy().contains(userId) : false;
+                Boolean isLiked =
+                    product.getLikedBy() != null && product.getLikedBy().contains(userId);
                 return ProductDto.builder()
                     .id(product.getId())
                     .name(product.getName())
@@ -230,7 +229,7 @@ public class ProductService {
         Integer ratingSum = product.getRatingSum();
 
         if (ratings == null) {
-            ratings = new TreeMap<Long, Integer>();
+            ratings = new TreeMap<>();
             ratingSum = 0;
         }
 
@@ -243,10 +242,10 @@ public class ProductService {
         product.setRatings(ratings);
         product.setRatingSum(ratingSum);
 
-        Integer rating = (int) (ratingSum / ratings.size());
+        Integer rating = ratingSum / ratings.size();
         product.setRating(rating);
 
-        var p = productRepository.save(product);
+        productRepository.save(product);
 
         return true;
     }
@@ -283,7 +282,7 @@ public class ProductService {
         product.setRatings(ratings);
         product.setRatingSum(ratingSum);
 
-        Integer rating = ratings.isEmpty() ? 0 : (int) (ratingSum / ratings.size());
+        Integer rating = ratings.isEmpty() ? 0 : (ratingSum / ratings.size());
         product.setRating(rating);
 
         productRepository.save(product);
@@ -321,7 +320,7 @@ public class ProductService {
         product.setRatings(ratings);
         product.setRatingSum(ratingSum);
 
-        Integer rating = ratings.isEmpty() ? 0 : (int) (ratingSum / ratings.size());
+        Integer rating = ratings.isEmpty() ? 0 : (ratingSum / ratings.size());
         product.setRating(rating);
 
         productRepository.save(product);

@@ -26,8 +26,8 @@ public class IntegrationTest {
     private static final String MONGO_USERNAME = "compose-mongo";
     private static final String MONGO_PASSWORD = "compose-mongo";
 
-    public static DockerComposeContainer environment =
-        new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
+    public static DockerComposeContainer<?> environment =
+        new DockerComposeContainer<>(new File("src/test/resources/compose-test.yml"))
             .withExposedService(POSTGRES_NAME, POSTGRES_PORT,
                 Wait.forListeningPort().withStartupTimeout(
                     Duration.ofSeconds(30)))

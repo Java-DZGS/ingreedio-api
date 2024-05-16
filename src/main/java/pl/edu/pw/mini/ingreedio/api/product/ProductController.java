@@ -105,7 +105,7 @@ public class ProductController {
         description = "Delete product from the database",
         security = {@SecurityRequirement(name = "Bearer Authentication")})
     @PreAuthorize("hasAuthority('REMOVE_PRODUCT')")
-    @DeleteMapping
+    @DeleteMapping("/{id}")
     @ResponseBody
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         boolean deleted = productService.deleteProduct(id);
@@ -187,7 +187,7 @@ public class ProductController {
     @PutMapping("/{id}/ratings")
     @ResponseBody
     public ResponseEntity<Void> editReview(@PathVariable Long id,
-                                          @RequestBody ReviewRequestDto reviewRequest) {
+                                           @RequestBody ReviewRequestDto reviewRequest) {
         if (reviewRequest.rating() < 0 || reviewRequest.rating() > 10) {
             return ResponseEntity.badRequest().build();
         }

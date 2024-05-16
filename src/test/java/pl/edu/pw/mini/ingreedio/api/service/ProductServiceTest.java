@@ -24,8 +24,8 @@ import pl.edu.pw.mini.ingreedio.api.product.dto.ProductListResponseDto;
 import pl.edu.pw.mini.ingreedio.api.product.dto.ProductRequestDto;
 import pl.edu.pw.mini.ingreedio.api.product.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.product.model.Product;
-import pl.edu.pw.mini.ingreedio.api.product.repository.ProductRepository;
 import pl.edu.pw.mini.ingreedio.api.product.model.Review;
+import pl.edu.pw.mini.ingreedio.api.product.repository.ProductRepository;
 import pl.edu.pw.mini.ingreedio.api.product.service.ProductService;
 
 public class ProductServiceTest extends IntegrationTest {
@@ -598,8 +598,7 @@ public class ProductServiceTest extends IntegrationTest {
         @Test
         public void givenProductId_whenEditNonExistingProduct_thenReturnFalse() {
             // Given
-            Product editedProduct = productService.addProduct(Product.builder()
-                .name("edited").build());
+            productService.addProduct(Product.builder().name("edited").build());
 
             ProductRequestDto productRequest = ProductRequestDto.builder()
                 .name("edited")
