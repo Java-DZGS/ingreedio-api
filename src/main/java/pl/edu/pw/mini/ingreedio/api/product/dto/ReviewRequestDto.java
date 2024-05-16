@@ -1,9 +1,6 @@
 package pl.edu.pw.mini.ingreedio.api.product.dto;
 
-public record ReviewRequestDto(Long id,
-                               Long userId,
-                               Long productId,
-                               Integer rating,
+public record ReviewRequestDto(Integer rating,
                                String content) {
 
 }

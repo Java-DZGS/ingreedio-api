@@ -16,6 +16,8 @@ import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductCriteria;
 import pl.edu.pw.mini.ingreedio.api.product.dto.FullProductDto;
 import pl.edu.pw.mini.ingreedio.api.product.dto.ProductDto;
 import pl.edu.pw.mini.ingreedio.api.product.dto.ProductListResponseDto;
+import pl.edu.pw.mini.ingreedio.api.product.dto.ProductRequestDto;
+import pl.edu.pw.mini.ingreedio.api.product.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.product.mapper.FullProductDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.product.mapper.ProductDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.product.model.Product;
@@ -64,6 +66,7 @@ public class ProductService {
                     .longDescription(product.getLongDescription())
                     .ingredients(product.getIngredients())
                     .isLiked(isLiked)
+                    .rating(product.getRating())
                     .build());
             }
             return productOptional.map(fullProductDtoMapper);
@@ -86,19 +89,18 @@ public class ProductService {
         return false;
     }
 
-    public Optional<Product> editProduct(Long id, Product product) {
+    public Optional<Product> editProduct(Long id, ProductRequestDto product) {
         Product existingProduct = productRepository.findById(id).orElse(null);
         if (existingProduct != null) {
-            existingProduct.setName(product.getName());
-            existingProduct.setSmallImageUrl(product.getSmallImageUrl());
-            existingProduct.setLargeImageUrl(product.getLargeImageUrl());
-            existingProduct.setProvider(product.getProvider());
-            existingProduct.setBrand(product.getBrand());
-            existingProduct.setShortDescription(product.getShortDescription());
-            existingProduct.setLongDescription(product.getLongDescription());
-            existingProduct.setVolume(product.getVolume());
-            existingProduct.setIngredients(product.getIngredients());
-            existingProduct.setRating(product.getRating());
+            existingProduct.setName(product.name());
+            existingProduct.setSmallImageUrl(product.smallImageUrl());
+            existingProduct.setLargeImageUrl(product.largeImageUrl());
+            existingProduct.setProvider(product.provider());
+            existingProduct.setBrand(product.brand());
+            existingProduct.setShortDescription(product.shortDescription());
+            existingProduct.setLongDescription(product.longDescription());
+            existingProduct.setVolume(product.volume());
+            existingProduct.setIngredients(product.ingredients());
 
             productRepository.save(existingProduct);
             return Optional.of(existingProduct);
@@ -225,8 +227,11 @@ public class ProductService {
 
         Product product = productOptional.get();
         Map<Long, Integer> ratings = product.getRatings();
+        Integer ratingSum = product.getRatingSum();
+
         if (ratings == null) {
             ratings = new TreeMap<Long, Integer>();
+            ratingSum = 0;
         }
 
         if (ratings.containsKey(userId)) {
@@ -234,13 +239,19 @@ public class ProductService {
         }
 
         ratings.put(userId, review.getRating());
+        ratingSum = ratingSum + review.getRating();
         product.setRatings(ratings);
-        productRepository.save(product);
+        product.setRatingSum(ratingSum);
+
+        Integer rating = (int) (ratingSum / ratings.size());
+        product.setRating(rating);
+
+        var p = productRepository.save(product);
 
         return true;
     }
 
-    public boolean editReview(Long id, Review review) {
+    public boolean editReview(Review review) {
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
         if (userOptional.isEmpty()) {
@@ -254,11 +265,8 @@ public class ProductService {
 
         User user = userOptional.get();
         Long userId = user.getId();
-        if (!Objects.equals(userId, id)) {
-            return false;
-        }
 
-        Optional<Review> reviewOptional = reviewService.editReview(review);
+        Optional<Review> reviewOptional = reviewService.editReview(userId, review);
         if (reviewOptional.isEmpty()) {
             return false;
         }
@@ -268,15 +276,22 @@ public class ProductService {
         if (ratings == null) {
             return false;
         }
-
+        Integer ratingSum = product.getRatingSum();
+        ratingSum = ratingSum - ratings.get(userId) + review.getRating();
         ratings.put(userId, review.getRating());
+
         product.setRatings(ratings);
+        product.setRatingSum(ratingSum);
+
+        Integer rating = ratings.isEmpty() ? 0 : (int) (ratingSum / ratings.size());
+        product.setRating(rating);
+
         productRepository.save(product);
 
         return true;
     }
 
-    public boolean deleteReview(Long productId, Long reviewId) {
+    public boolean deleteReview(Long productId) {
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
         if (userOptional.isEmpty()) {
@@ -288,18 +303,8 @@ public class ProductService {
             return false;
         }
 
-        Optional<Review> reviewOptional = reviewService.getReviewById(reviewId);
-        if (reviewOptional.isEmpty()) {
-            return false;
-        }
-
-        Review review = reviewOptional.get();
-
         User user = userOptional.get();
         Long userId = user.getId();
-        if (!Objects.equals(userId, review.getUser().getId())) {
-            return false;
-        }
 
         Product product = productOptional.get();
         Map<Long, Integer> ratings = product.getRatings();
@@ -307,21 +312,29 @@ public class ProductService {
             return false;
         }
 
-        reviewService.deleteReview(reviewId);
+        reviewService.deleteReview(userId, productId);
+
+        Integer ratingSum = product.getRatingSum();
+        ratingSum = ratingSum - ratings.get(userId);
 
         ratings.remove(userId);
         product.setRatings(ratings);
+        product.setRatingSum(ratingSum);
+
+        Integer rating = ratings.isEmpty() ? 0 : (int) (ratingSum / ratings.size());
+        product.setRating(rating);
+
         productRepository.save(product);
 
         return true;
     }
 
-    public Optional<List<Review>> getProductReviews(Long productId) {
+    public Optional<List<ReviewDto>> getProductReviews(Long productId) {
         Optional<Product> productOptional = productRepository.findById(productId);
         if (productOptional.isEmpty()) {
             return Optional.empty();
         }
 
-        return Optional.of(reviewService.getProductreviews(productId));
+        return Optional.of(reviewService.getProductReviews(productId));
     }
 }
