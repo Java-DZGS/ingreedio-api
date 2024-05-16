@@ -39,6 +39,8 @@ dependencies {
     implementation 'com.google.cloud.sql:postgres-socket-factory:1.18.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.testcontainers:testcontainers'
+    testImplementation 'org.testcontainers:mongodb'
+    testImplementation 'org.testcontainers:postgresql'
 
     testImplementation 'org.springframework.security:spring-security-test'
 }

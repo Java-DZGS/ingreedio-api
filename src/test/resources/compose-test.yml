@@ -12,13 +12,14 @@ services:
 
   mongo1:
     image: 'mongo'
-    command: ['--replSet', 'rs0', '--bind_ip_all', '--port', '27017']
+    hostname: 'mongo1'
     ports:
       - '30001:27017'
-    extra_hosts:
-      - "host.docker.internal:172.17.0.1"
+    networks:
+      - mongo-net
+    command: ['--replSet', 'rs0', '--bind_ip_all']
     healthcheck:
-      test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'host.docker.internal:30001',priority:1},{_id:1,host:'host.docker.internal:30002',priority:0.5},{_id:2,host:'host.docker.internal:30003',priority:0.5}]}) }" | mongosh --port 27017 --quiet
+      test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo1:27017',priority:1},{_id:1,host:'mongo2:27017',priority:0.5},{_id:2,host:'mongo3:27017',priority:0.5}]}) }" | mongosh --port 27017 --quiet
       interval: 5s
       timeout: 30s
       start_period: 0s
@@ -30,22 +31,23 @@ services:
 
   mongo2:
     image: 'mongo'
-    command: [ "--replSet", "rs0", "--bind_ip_all", "--port", "27018" ]
+    hostname: mongo2
+    networks:
+      - mongo-net
     ports:
-      - '30002:27018'
-    extra_hosts:
-      - "host.docker.internal:172.17.0.1"
+      - '30002:27017'
+    command: [ "--replSet", "rs0", "--bind_ip_all" ]
     volumes:
       - "mongo2_data:/data/db"
       - "mongo2_config:/data/configdb"
-
   mongo3:
     image: 'mongo'
-    command: [ "--replSet", "rs0", "--bind_ip_all", "--port", "27019" ]
+    hostname: mongo3
+    networks:
+      - mongo-net
     ports:
-      - '30003:27019'
-    extra_hosts:
-      - "host.docker.internal:172.17.0.1"
+      - '30003:27017'
+    command: [ "--replSet", "rs0", "--bind_ip_all" ]
     volumes:
       - "mongo3_data:/data/db"
       - "mongo3_config:/data/configdb"
@@ -57,3 +59,6 @@ volumes:
   mongo1_config:
   mongo2_config:
   mongo3_config:
+
+networks:
+  mongo-net:
