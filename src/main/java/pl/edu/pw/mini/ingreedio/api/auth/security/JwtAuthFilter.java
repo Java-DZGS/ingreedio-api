@@ -1,6 +1,6 @@
 package pl.edu.pw.mini.ingreedio.api.auth.security;
 
-import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -44,7 +44,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         try {
             username = jwtService.extractUsername(jwt);
-        } catch (ExpiredJwtException ignore) {
+        } catch (JwtException ignore) {
             filterChain.doFilter(request, response);
             return;
         }
