@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,8 +25,7 @@ public class IngredientController {
     private final IngredientService ingredientService;
 
     @Operation(summary = "Search ingredients",
-        description = "Search ingredients",
-        security = {@SecurityRequirement(name = "Bearer Authentication")})
+        description = "Search ingredients")
     @GetMapping
     public ResponseEntity<List<IngredientDto>> getIngredients(
         @RequestParam int count,
@@ -36,6 +36,14 @@ public class IngredientController {
             matchingIngredients = matchingIngredients.subList(0, count);
         }
         return ResponseEntity.ok(matchingIngredients);
+    }
+
+    @Operation(summary = "Get full ingredients by ids",
+        description = "Get full ingredients by ids")
+    @GetMapping("/get-by")
+    public ResponseEntity<Set<IngredientDto>> getIngredientsByIds(
+        @RequestParam("ids") Set<Long> ingredientsIds) {
+        return ResponseEntity.ok(ingredientService.getIngredientsByIds(ingredientsIds));
     }
 
     @Operation(summary = "Get liked ingredients",
