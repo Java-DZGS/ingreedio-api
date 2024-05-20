@@ -8,6 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.auth.dto.AuthRequestDto;
 import pl.edu.pw.mini.ingreedio.api.auth.dto.JwtResponseDto;
 import pl.edu.pw.mini.ingreedio.api.auth.dto.RefreshTokenRequestDto;
@@ -31,6 +32,7 @@ public class AuthService {
     private final JwtClaimsService jwtClaimsService;
     private final RoleService roleService;
 
+    @Transactional
     public User register(RegisterRequestDto request) {
         User user = User.builder()
             .displayName(request.displayName())
@@ -50,6 +52,7 @@ public class AuthService {
         return user;
     }
 
+    @Transactional
     public JwtResponseDto refresh(RefreshTokenRequestDto request) {
         return refreshTokenService.findByToken(request.refreshToken())
             .map(refreshTokenService::verifyExpirationOfToken)
@@ -67,6 +70,7 @@ public class AuthService {
             .orElseThrow(() -> new RuntimeException("Invalid refresh token."));
     }
 
+    @Transactional
     public JwtResponseDto login(AuthRequestDto request) {
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
@@ -88,6 +92,7 @@ public class AuthService {
         }
     }
 
+    @Transactional(readOnly = true)
     public String getCurrentUsername() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
@@ -97,6 +102,7 @@ public class AuthService {
         return null;
     }
 
+    @Transactional(readOnly = true)
     public AuthInfo getAuthInfoByUsername(String username) throws UsernameNotFoundException {
         return authRepository.findByUsername(username)
             .orElseThrow(() -> new UsernameNotFoundException("User '" + username + "' not found!"));

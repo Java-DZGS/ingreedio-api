@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.auth.service.AuthService;
 import pl.edu.pw.mini.ingreedio.api.product.dto.IngredientDto;
 import pl.edu.pw.mini.ingreedio.api.product.mapper.IngredientDtoMapper;
@@ -22,27 +23,32 @@ public class IngredientService {
     private final AuthService authService;
     private final IngredientDtoMapper ingredientDtoMapper;
 
+    @Transactional(readOnly = true)
     public Optional<IngredientDto> getIngredientById(Long id) {
         return ingredientRepository.findById(id).map(ingredientDtoMapper);
     }
 
+    @Transactional(readOnly = true)
     public Set<IngredientDto> getIngredientsByIds(Set<Long> ids) {
         return ingredientRepository.findAllByIdIn(ids).stream()
             .map(ingredientDtoMapper)
             .collect(Collectors.toSet());
     }
 
+    @Transactional(readOnly = true)
     public List<IngredientDto> getIngredients(String query) {
         List<Ingredient> ingredients = ingredientRepository
             .findByNameContainingIgnoreCase(query);
         return ingredients.stream().map(ingredientDtoMapper)
                 .collect(Collectors.toList());
     }
-      
+
+    @Transactional
     public Ingredient addIngredient(Ingredient ingredient) {
         return ingredientRepository.save(ingredient);
     }
 
+    @Transactional(readOnly = true)
     public List<IngredientDto> getLikedIngredients() {
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
@@ -53,6 +59,7 @@ public class IngredientService {
         return List.of();
     }
 
+    @Transactional(readOnly = true)
     public List<IngredientDto> getAllergens() {
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
@@ -63,6 +70,7 @@ public class IngredientService {
         return List.of();
     }
 
+    @Transactional
     public boolean likeIngredient(Long id) {
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
@@ -78,6 +86,7 @@ public class IngredientService {
         return false;
     }
 
+    @Transactional
     public boolean unlikeIngredient(Long id) {
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
@@ -93,6 +102,7 @@ public class IngredientService {
         return false;
     }
 
+    @Transactional
     public boolean addAllergen(Long id) {
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
@@ -108,6 +118,7 @@ public class IngredientService {
         return false;
     }
 
+    @Transactional
     public boolean removeAllergen(Long id) {
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());

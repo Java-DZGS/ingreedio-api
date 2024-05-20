@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.auth.service.AuthService;
 import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductCriteria;
 import pl.edu.pw.mini.ingreedio.api.product.dto.FullProductDto;
@@ -36,6 +37,7 @@ public class ProductService {
     private final FullProductDtoMapper fullProductDtoMapper;
     private final SequenceGeneratorService sequenceGenerator;
 
+    @Transactional(readOnly = true)
     public List<ProductDto> getAllProducts() {
         return productRepository
             .findAll()
@@ -43,6 +45,7 @@ public class ProductService {
             .map(productDtoMapper).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public Optional<FullProductDto> getProductById(Long id) {
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
@@ -73,11 +76,13 @@ public class ProductService {
         return productRepository.findById(id).map(fullProductDtoMapper);
     }
 
+    @Transactional
     public Product addProduct(Product product) {
         product.setId(sequenceGenerator.generateSequence(Product.SEQUENCE_NAME));
         return productRepository.save(product);
     }
 
+    @Transactional
     public boolean deleteProduct(Long id) {
         Optional<Product> productOptional = productRepository.findById(id);
         if (productOptional.isPresent()) {
@@ -88,6 +93,7 @@ public class ProductService {
         return false;
     }
 
+    @Transactional
     public Optional<Product> editProduct(Long id, ProductRequestDto product) {
         Product existingProduct = productRepository.findById(id).orElse(null);
         if (existingProduct != null) {
@@ -107,6 +113,7 @@ public class ProductService {
         return Optional.empty();
     }
 
+    @Transactional(readOnly = true)
     public ProductListResponseDto getProductsMatchingCriteria(
         ProductCriteria criteria, PageRequest pageRequest) {
         Page<Product> productsPage = productRepository
@@ -143,6 +150,7 @@ public class ProductService {
             productsPage.getTotalPages());
     }
 
+    @Transactional
     public boolean likeProduct(Long productId) {
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
@@ -173,6 +181,7 @@ public class ProductService {
         return true;
     }
 
+    @Transactional
     public boolean unlikeProduct(Long productId) {
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
@@ -203,6 +212,7 @@ public class ProductService {
         return true;
     }
 
+    @Transactional
     public Optional<ReviewDto> addReview(Review review) {
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
@@ -250,6 +260,7 @@ public class ProductService {
         return reviewOptional;
     }
 
+    @Transactional
     public Optional<ReviewDto> editReview(Review review) {
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
@@ -290,6 +301,7 @@ public class ProductService {
         return reviewOptional;
     }
 
+    @Transactional
     public boolean deleteReview(Long productId) {
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
@@ -328,6 +340,7 @@ public class ProductService {
         return true;
     }
 
+    @Transactional(readOnly = true)
     public Optional<List<ReviewDto>> getProductReviews(Long productId) {
         Optional<Product> productOptional = productRepository.findById(productId);
         if (productOptional.isEmpty()) {
