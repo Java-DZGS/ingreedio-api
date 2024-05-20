@@ -113,7 +113,7 @@ public class ProductService {
         return Optional.empty();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public ProductListResponseDto getProductsMatchingCriteria(
         ProductCriteria criteria, PageRequest pageRequest) {
         Page<Product> productsPage = productRepository
@@ -340,7 +340,7 @@ public class ProductService {
         return true;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Optional<List<ReviewDto>> getProductReviews(Long productId) {
         Optional<Product> productOptional = productRepository.findById(productId);
         if (productOptional.isEmpty()) {
