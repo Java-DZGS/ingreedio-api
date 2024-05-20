@@ -336,4 +336,15 @@ public class ProductService {
 
         return Optional.of(reviewService.getProductReviews(productId));
     }
+
+    public Optional<ReviewDto> getProductUserReview(Long id) {
+        Optional<User> userOptional = userService
+            .getUserByUsername(authService.getCurrentUsername());
+        if (userOptional.isEmpty()) {
+            return Optional.empty();
+        }
+
+        User user = userOptional.get();
+        return reviewService.getProductUserReview(user, id);
+    }
 }

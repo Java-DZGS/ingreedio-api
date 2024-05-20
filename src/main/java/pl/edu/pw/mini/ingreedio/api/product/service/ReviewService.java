@@ -81,4 +81,10 @@ public class ReviewService {
             .map(reviewDtoMapper)
             .collect(Collectors.toList());
     }
+
+    public Optional<ReviewDto> getProductUserReview(User user, Long productId) {
+        Optional<Review> reviewOptional = reviewRepository
+            .findByUserIdAndProductId(user.getId(), productId);
+        return reviewOptional.map(reviewDtoMapper);
+    }
 }

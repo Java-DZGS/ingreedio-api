@@ -61,4 +61,6 @@ public class UserController {
         return userOptional.map(user -> ResponseEntity.ok(userService.getUserRatings(user)))
             .orElseGet(() -> ResponseEntity.notFound().build());
     }
+
+
 }
