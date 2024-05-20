@@ -25,8 +25,7 @@ public class IngredientController {
     private final IngredientService ingredientService;
 
     @Operation(summary = "Search ingredients",
-        description = "Search ingredients",
-        security = {@SecurityRequirement(name = "Bearer Authentication")})
+        description = "Search ingredients")
     @GetMapping
     public ResponseEntity<List<IngredientDto>> getIngredients(
         @RequestParam int count,
