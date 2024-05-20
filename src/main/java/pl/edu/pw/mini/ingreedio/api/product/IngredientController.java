@@ -40,8 +40,7 @@ public class IngredientController {
     }
 
     @Operation(summary = "Get full ingredients by ids",
-        description = "Get full ingredients by ids",
-        security = {@SecurityRequirement(name = "Bearer Authentication")})
+        description = "Get full ingredients by ids")
     @GetMapping("/get-by")
     public ResponseEntity<Set<IngredientDto>> getIngredientsByIds(
         @RequestParam("ids") Set<Long> ingredientsIds) {
