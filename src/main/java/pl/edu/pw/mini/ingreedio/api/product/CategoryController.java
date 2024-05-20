@@ -9,6 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/categories")
 @RequiredArgsConstructor
 @Tag(name = "Categories")
-public class CategoriesController {
+public class CategoryController {
     // TODO: implement getCategoriesByIds
 }
