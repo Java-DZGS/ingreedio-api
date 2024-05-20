@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.auth.model.AuthInfo;
 import pl.edu.pw.mini.ingreedio.api.auth.model.Permission;
 import pl.edu.pw.mini.ingreedio.api.auth.model.Role;
@@ -32,6 +33,7 @@ public class RoleService {
         defaultUserRoles = getRolesByRolesNames(defaultUserRolesNames);
     }
 
+    @Transactional(readOnly = true)
     public Set<Role> getRolesByRolesNames(Set<String> rolesNames) throws RoleNotFoundException {
         HashSet<Role> result = new HashSet<>();
 
@@ -46,6 +48,7 @@ public class RoleService {
         return result;
     }
 
+    @Transactional
     public void grantRole(AuthInfo userAuthInfo, Role role) {
         Set<Role> roles = userAuthInfo.getRoles();
         roles.add(role);
@@ -53,12 +56,14 @@ public class RoleService {
 
         authRepository.save(userAuthInfo);
     }
-    
+
+    @Transactional(readOnly = true)
     public Role getRoleByName(String roleName) throws RoleNotFoundException {
         return roleRepository.findByName(roleName).orElseThrow(
             () -> new RoleNotFoundException("User '" + roleName + "' not found!"));
     }
 
+    @Transactional
     public Role createRoleWithName(String roleName) {
         Role role = Role.builder().name(roleName).build();
         roleRepository.save(role);
@@ -66,6 +71,7 @@ public class RoleService {
         return role;
     }
 
+    @Transactional
     public void addPermissionToRole(Role role, Permission permission) {
         role.getPermissions().add(permission);
         roleRepository.save(role);

@@ -3,6 +3,7 @@ package pl.edu.pw.mini.ingreedio.api.auth.service;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.auth.mapper.AuthInfoMapper;
 import pl.edu.pw.mini.ingreedio.api.auth.model.AuthInfo;
 import pl.edu.pw.mini.ingreedio.api.auth.repository.AuthRepository;
@@ -14,6 +15,7 @@ public class JwtClaimsService {
     AuthRepository authRepository;
     AuthInfoMapper authInfoMapper;
 
+    @Transactional(readOnly = true)
     public JwtUserClaims getJwtUserClaimsByUsername(String username)
         throws UsernameNotFoundException {
         AuthInfo authInfo = authRepository.findByUsername(username)

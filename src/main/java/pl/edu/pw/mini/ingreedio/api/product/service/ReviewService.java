@@ -2,10 +2,10 @@ package pl.edu.pw.mini.ingreedio.api.product.service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.product.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.product.mapper.ReviewDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.product.model.Review;
@@ -20,11 +20,13 @@ public class ReviewService {
     private final ReviewDtoMapper reviewDtoMapper;
     private final UserRepository userRepository;
 
+    @Transactional(readOnly = true)
     public Optional<ReviewDto> getReviewById(Long id) {
         return reviewRepository.findById(id)
             .map(reviewDtoMapper);
     }
 
+    @Transactional
     public Optional<ReviewDto> addReview(User user, Review review) {
         Optional<Review> reviewOptional = reviewRepository.findByUserIdAndProductId(user.getId(),
             review.getProductId());
@@ -41,6 +43,7 @@ public class ReviewService {
         return Optional.of(reviewDtoMapper.apply(addedReview));
     }
 
+    @Transactional
     public Optional<ReviewDto> editReview(User user, Review updatedReview) {
         Optional<Review> reviewOptional = reviewRepository
             .findByUserIdAndProductId(user.getId(), updatedReview.getProductId());
@@ -61,6 +64,7 @@ public class ReviewService {
         return Optional.empty();
     }
 
+    @Transactional
     public void deleteReview(User user, Long productId) {
         Optional<Review> reviewOptional = reviewRepository
             .findByUserIdAndProductId(user.getId(), productId);
@@ -75,6 +79,7 @@ public class ReviewService {
         }
     }
 
+    @Transactional(readOnly = true)
     public List<ReviewDto> getProductReviews(Long productId) {
         return reviewRepository.getProductReviews(productId)
             .stream()
