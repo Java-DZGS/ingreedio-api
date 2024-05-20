@@ -163,7 +163,7 @@ public class ProductController {
         security = {@SecurityRequirement(name = "Bearer Authentication")})
     @PostMapping("/{id}/ratings")
     @ResponseBody
-    public ResponseEntity<Void> addReview(@PathVariable Long id,
+    public ResponseEntity<ReviewDto> addReview(@PathVariable Long id,
                                           @RequestBody ReviewRequestDto reviewRequest) {
         if (reviewRequest.rating() < 0 || reviewRequest.rating() > 10) {
             return ResponseEntity.badRequest().build();
@@ -174,11 +174,9 @@ public class ProductController {
             .rating(reviewRequest.rating())
             .content(reviewRequest.content())
             .build();
-        boolean added = productService.addReview(review);
-        if (added) {
-            return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.badRequest().build();
+        Optional<ReviewDto> reviewOptional = productService.addReview(review);
+        return reviewOptional.map(reviewDto -> new ResponseEntity<>(reviewDto, HttpStatus.CREATED))
+            .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Operation(summary = "Edit product review",
@@ -186,7 +184,7 @@ public class ProductController {
         security = {@SecurityRequirement(name = "Bearer Authentication")})
     @PutMapping("/{id}/ratings")
     @ResponseBody
-    public ResponseEntity<Void> editReview(@PathVariable Long id,
+    public ResponseEntity<ReviewDto> editReview(@PathVariable Long id,
                                            @RequestBody ReviewRequestDto reviewRequest) {
         if (reviewRequest.rating() < 0 || reviewRequest.rating() > 10) {
             return ResponseEntity.badRequest().build();
@@ -197,11 +195,9 @@ public class ProductController {
             .rating(reviewRequest.rating())
             .content(reviewRequest.content())
             .build();
-        boolean edited = productService.editReview(review);
-        if (edited) {
-            return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.badRequest().build();
+        Optional<ReviewDto> reviewOptional = productService.editReview(review);
+        return reviewOptional.map(reviewDto -> new ResponseEntity<>(reviewDto, HttpStatus.OK))
+            .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Operation(summary = "Delete product review",
@@ -213,7 +209,7 @@ public class ProductController {
         if (deleted) {
             return ResponseEntity.ok().build();
         }
-        return ResponseEntity.badRequest().build();
+        return ResponseEntity.notFound().build();
     }
 
     @Operation(summary = "Get product reviews",

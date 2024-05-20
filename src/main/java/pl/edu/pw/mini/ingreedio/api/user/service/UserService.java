@@ -3,12 +3,15 @@ package pl.edu.pw.mini.ingreedio.api.user.service;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.auth.model.AuthInfo;
 import pl.edu.pw.mini.ingreedio.api.auth.repository.AuthRepository;
+import pl.edu.pw.mini.ingreedio.api.product.dto.ReviewDto;
+import pl.edu.pw.mini.ingreedio.api.product.mapper.ReviewDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.product.model.Ingredient;
 import pl.edu.pw.mini.ingreedio.api.user.model.User;
 import pl.edu.pw.mini.ingreedio.api.user.repository.UserRepository;
@@ -18,6 +21,7 @@ import pl.edu.pw.mini.ingreedio.api.user.repository.UserRepository;
 public class UserService {
     private final UserRepository userRepository;
     private final AuthRepository authRepository;
+    private final ReviewDtoMapper reviewDtoMapper;
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
@@ -107,5 +111,13 @@ public class UserService {
         }
 
         userRepository.saveAll(users);
+    }
+
+    public List<ReviewDto> getUserRatings(User user) {
+        List<ReviewDto> reviewDtos = user.getReviews().stream()
+            .map(reviewDtoMapper)
+            .collect(Collectors.toList());
+
+        return reviewDtos;
     }
 }
