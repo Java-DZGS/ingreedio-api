@@ -3,6 +3,7 @@ package pl.edu.pw.mini.ingreedio.api.user;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import pl.edu.pw.mini.ingreedio.api.auth.dto.RegisterRequestDto;
 import pl.edu.pw.mini.ingreedio.api.auth.service.AuthService;
+import pl.edu.pw.mini.ingreedio.api.product.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.user.model.User;
 import pl.edu.pw.mini.ingreedio.api.user.service.UserService;
 
@@ -49,5 +51,14 @@ public class UserController {
     public ResponseEntity<User> getUsersById(@PathVariable Integer id) {
         return userService.getUserById(id).map(ResponseEntity::ok)
             .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    @Operation(security = {@SecurityRequirement(name = "Bearer Authentication")})
+    @GetMapping("/ratings")
+    public ResponseEntity<List<ReviewDto>> getUserRatings() {
+        Optional<User> userOptional = userService
+            .getUserByUsername(authService.getCurrentUsername());
+        return userOptional.map(user -> ResponseEntity.ok(userService.getUserRatings(user)))
+            .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

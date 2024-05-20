@@ -22,3 +22,6 @@ CREATE TABLE reviews
     content VARCHAR(512) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
+
+--changeset gitqueenzofia:add-date-column-to-reviews-table
+ALTER TABLE reviews ADD created_at TIMESTAMP NOT NULL;
