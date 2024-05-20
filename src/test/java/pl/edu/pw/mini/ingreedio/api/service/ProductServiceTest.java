@@ -654,12 +654,16 @@ public class ProductServiceTest extends IntegrationTest {
                 .build();
 
             // When
-            boolean added = productService.addReview(review);
+            Optional<ReviewDto> reviewOptional = productService.addReview(review);
             Optional<FullProductDto> reviewedProduct = productService
                 .getProductById(product.getId());
 
             // Then
-            assertThat(added).isTrue();
+            assertThat(reviewOptional.isPresent()).isTrue();
+            assertThat(reviewOptional.get().displayName()).isEqualTo("User");
+            assertThat(reviewOptional.get().content()).isEqualTo("testContent");
+            assertThat(reviewOptional.get().rating()).isEqualTo(5);
+
             assertThat(reviewedProduct.isPresent()).isTrue();
             assertThat(reviewedProduct.get().rating()).isEqualTo(5);
         }
@@ -675,10 +679,10 @@ public class ProductServiceTest extends IntegrationTest {
                 .build();
 
             // When
-            boolean added = productService.addReview(review);
+            Optional<ReviewDto> reviewOptional = productService.addReview(review);
 
             // Then
-            assertThat(added).isFalse();
+            assertThat(reviewOptional.isEmpty()).isTrue();
         }
 
         @Test
@@ -737,14 +741,17 @@ public class ProductServiceTest extends IntegrationTest {
 
             // When
             productService.addReview(review);
-            boolean edited = productService.editReview(editedReview);
+            Optional<ReviewDto> reviewOptional = productService.editReview(editedReview);
             Optional<List<ReviewDto>> reviews = productService
                 .getProductReviews(product.getId());
             Optional<FullProductDto> reviewedProduct = productService
                 .getProductById(product.getId());
 
             // Then
-            assertThat(edited).isTrue();
+            assertThat(reviewOptional.isPresent()).isTrue();
+            assertThat(reviewOptional.get().displayName()).isEqualTo("User");
+            assertThat(reviewOptional.get().content()).isEqualTo("edited");
+            assertThat(reviewOptional.get().rating()).isEqualTo(5);
             assertThat(reviews.isPresent()).isTrue();
             assertThat(reviews.get().size()).isEqualTo(1);
             assertThat(reviews.get().getFirst().rating()).isEqualTo(5);
@@ -766,10 +773,10 @@ public class ProductServiceTest extends IntegrationTest {
                 .build();
 
             // When
-            boolean edited = productService.editReview(editedReview);
+            Optional<ReviewDto> reviewOptional = productService.editReview(editedReview);
 
             // Then
-            assertThat(edited).isFalse();
+            assertThat(reviewOptional.isEmpty()).isTrue();
         }
 
         @Test
@@ -782,10 +789,10 @@ public class ProductServiceTest extends IntegrationTest {
                 .build();
 
             // When
-            boolean edited = productService.editReview(editedReview);
+            Optional<ReviewDto> reviewOptional = productService.editReview(editedReview);
 
             // Then
-            assertThat(edited).isFalse();
+            assertThat(reviewOptional.isEmpty()).isTrue();
         }
 
         @Test
@@ -814,7 +821,5 @@ public class ProductServiceTest extends IntegrationTest {
             assertThat(reviewsDeleted.isPresent()).isTrue();
             assertThat(reviewsDeleted.get().size()).isEqualTo(0);
         }
-
     }
-
 }

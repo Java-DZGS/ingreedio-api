@@ -203,25 +203,24 @@ public class ProductService {
         return true;
     }
 
-    public boolean addReview(Review review) {
+    public Optional<ReviewDto> addReview(Review review) {
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
         if (userOptional.isEmpty()) {
-            return false;
+            return Optional.empty();
         }
 
         Optional<Product> productOptional = productRepository.findById(review.getProductId());
         if (productOptional.isEmpty()) {
-            return false;
+            return Optional.empty();
         }
 
         User user = userOptional.get();
-        Long userId = user.getId();
         review.setUser(user);
 
-        Optional<Review> reviewOptional = reviewService.addReview(userId, review);
+        Optional<ReviewDto> reviewOptional = reviewService.addReview(user, review);
         if (reviewOptional.isEmpty()) {
-            return false;
+            return Optional.empty();
         }
 
         Product product = productOptional.get();
@@ -233,8 +232,9 @@ public class ProductService {
             ratingSum = 0;
         }
 
+        Long userId = user.getId();
         if (ratings.containsKey(userId)) {
-            return false;
+            return Optional.empty();
         }
 
         ratings.put(userId, review.getRating());
@@ -247,33 +247,33 @@ public class ProductService {
 
         productRepository.save(product);
 
-        return true;
+        return reviewOptional;
     }
 
-    public boolean editReview(Review review) {
+    public Optional<ReviewDto> editReview(Review review) {
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
         if (userOptional.isEmpty()) {
-            return false;
+            return Optional.empty();
         }
 
         Optional<Product> productOptional = productRepository.findById(review.getProductId());
         if (productOptional.isEmpty()) {
-            return false;
+            return Optional.empty();
         }
 
         User user = userOptional.get();
         Long userId = user.getId();
 
-        Optional<Review> reviewOptional = reviewService.editReview(userId, review);
+        Optional<ReviewDto> reviewOptional = reviewService.editReview(user, review);
         if (reviewOptional.isEmpty()) {
-            return false;
+            return Optional.empty();
         }
 
         Product product = productOptional.get();
         Map<Long, Integer> ratings = product.getRatings();
         if (ratings == null) {
-            return false;
+            return Optional.empty();
         }
         Integer ratingSum = product.getRatingSum();
         ratingSum = ratingSum - ratings.get(userId) + review.getRating();
@@ -287,7 +287,7 @@ public class ProductService {
 
         productRepository.save(product);
 
-        return true;
+        return reviewOptional;
     }
 
     public boolean deleteReview(Long productId) {
@@ -311,7 +311,7 @@ public class ProductService {
             return false;
         }
 
-        reviewService.deleteReview(userId, productId);
+        reviewService.deleteReview(user, productId);
 
         Integer ratingSum = product.getRatingSum();
         ratingSum = ratingSum - ratings.get(userId);
