@@ -34,10 +34,12 @@ public class UserService {
         return userOptional;
     }
 
+    @Transactional(readOnly = true)
     public Optional<User> getUserByUsername(String username) {
         return authRepository.findByUsername(username).map(AuthInfo::getUser);
     }
 
+    @Transactional
     public void likeIngredient(User user, Ingredient ingredient) {
         Set<Ingredient> likedIngredients = user.getLikedIngredients();
         likedIngredients.add(ingredient);
@@ -45,6 +47,7 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
     public void unlikeIngredient(User user, Ingredient ingredient) {
         Set<Ingredient> likedIngredients = user.getLikedIngredients();
         likedIngredients.remove(ingredient);
@@ -52,6 +55,7 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
     public void addAllergen(User user, Ingredient ingredient) {
         Set<Ingredient> allergens = user.getAllergens();
         allergens.add(ingredient);
@@ -59,6 +63,7 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
     public void removeAllergen(User user, Ingredient ingredient) {
         Set<Ingredient> allergens = user.getAllergens();
         allergens.remove(ingredient);
@@ -113,11 +118,10 @@ public class UserService {
         userRepository.saveAll(users);
     }
 
+    @Transactional
     public List<ReviewDto> getUserRatings(User user) {
-        List<ReviewDto> reviewDtos = user.getReviews().stream()
+        return user.getReviews().stream()
             .map(reviewDtoMapper)
             .collect(Collectors.toList());
-
-        return reviewDtos;
     }
 }
