@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import pl.edu.pw.mini.ingreedio.api.product.dto.IngredientDto;
+import pl.edu.pw.mini.ingreedio.api.product.exception.IngredientNotFoundException;
 import pl.edu.pw.mini.ingreedio.api.product.service.IngredientService;
 
 @RestController
@@ -35,6 +36,7 @@ public class IngredientController {
         if (matchingIngredients.size() > count) {
             matchingIngredients = matchingIngredients.subList(0, count);
         }
+
         return ResponseEntity.ok(matchingIngredients);
     }
 
@@ -70,10 +72,11 @@ public class IngredientController {
     @PostMapping("/{id}/likes")
     public ResponseEntity<Void> likeIngredient(@PathVariable Long id) {
         boolean likeSucceeded = ingredientService.likeIngredient(id);
-        if (likeSucceeded) {
-            return ResponseEntity.ok().build();
+        if (!likeSucceeded) {
+            throw new IngredientNotFoundException(id);
         }
-        return ResponseEntity.notFound().build();
+
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Unlike ingredient",
@@ -82,10 +85,11 @@ public class IngredientController {
     @DeleteMapping("/{id}/likes")
     public ResponseEntity<Void> unlikeIngredient(@PathVariable Long id) {
         boolean unlikeSucceeded = ingredientService.unlikeIngredient(id);
-        if (unlikeSucceeded) {
-            return ResponseEntity.ok().build();
+        if (!unlikeSucceeded) {
+            throw new IngredientNotFoundException(id);
         }
-        return ResponseEntity.notFound().build();
+
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Add allergen",
@@ -94,10 +98,11 @@ public class IngredientController {
     @PostMapping("/{id}/allergens")
     public ResponseEntity<Void> addAllergen(@PathVariable Long id) {
         boolean addAllergenSucceeded = ingredientService.addAllergen(id);
-        if (addAllergenSucceeded) {
-            return ResponseEntity.ok().build();
+        if (!addAllergenSucceeded) {
+            throw new IngredientNotFoundException(id);
         }
-        return ResponseEntity.notFound().build();
+
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Remove allergen",
@@ -106,9 +111,10 @@ public class IngredientController {
     @DeleteMapping("/{id}/allergens")
     public ResponseEntity<Void> removeAllergen(@PathVariable Long id) {
         boolean removeAllergenSucceeded = ingredientService.removeAllergen(id);
-        if (removeAllergenSucceeded) {
-            return ResponseEntity.ok().build();
+        if (!removeAllergenSucceeded) {
+            throw new IngredientNotFoundException(id);
         }
-        return ResponseEntity.notFound().build();
+
+        return ResponseEntity.ok().build();
     }
 }

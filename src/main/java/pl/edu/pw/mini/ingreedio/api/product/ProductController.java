@@ -3,6 +3,7 @@ package pl.edu.pw.mini.ingreedio.api.product;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -20,11 +21,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.zalando.problem.Problem;
+import org.zalando.problem.Status;
 import pl.edu.pw.mini.ingreedio.api.product.dto.FullProductDto;
 import pl.edu.pw.mini.ingreedio.api.product.dto.ProductListResponseDto;
 import pl.edu.pw.mini.ingreedio.api.product.dto.ProductRequestDto;
 import pl.edu.pw.mini.ingreedio.api.product.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.product.dto.ReviewRequestDto;
+import pl.edu.pw.mini.ingreedio.api.product.exception.ProductNotFoundException;
 import pl.edu.pw.mini.ingreedio.api.product.model.Product;
 import pl.edu.pw.mini.ingreedio.api.product.model.Review;
 import pl.edu.pw.mini.ingreedio.api.product.service.PaginationService;
@@ -52,7 +56,6 @@ public class ProductController {
         @RequestParam("phrase") Optional<String> phrase,
         @RequestParam("sort-by") Optional<List<String>> sortBy,
         @RequestParam("liked") Optional<Boolean> liked) {
-
         ProductListResponseDto products = productService.getProductsMatchingCriteria(
             productsCriteriaService.getProductsCriteria(
                 ingredientsToExclude,
@@ -75,7 +78,7 @@ public class ProductController {
     @GetMapping("/{id}")
     public ResponseEntity<FullProductDto> getProductById(@PathVariable Long id) {
         return productService.getProductById(id).map(ResponseEntity::ok)
-            .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+            .orElseThrow(() -> new ProductNotFoundException(id));
     }
 
     @Operation(summary = "Add a product to the database",
@@ -109,10 +112,10 @@ public class ProductController {
     @ResponseBody
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         boolean deleted = productService.deleteProduct(id);
-        if (deleted) {
-            return ResponseEntity.ok().build();
+        if (!deleted) {
+            throw new ProductNotFoundException(id);
         }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Edit product in the database",
@@ -123,11 +126,8 @@ public class ProductController {
     @ResponseBody
     public ResponseEntity<Product> editProduct(@PathVariable Long id,
                                                @RequestBody ProductRequestDto product) {
-        Optional<Product> editedProduct = productService.editProduct(id, product);
-        if (editedProduct.isPresent()) {
-            return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.notFound().build();
+        return productService.editProduct(id, product).map(ResponseEntity::ok)
+            .orElseThrow(() -> new ProductNotFoundException(id));
     }
 
     @Operation(summary = "",
@@ -137,11 +137,10 @@ public class ProductController {
     @ResponseBody
     public ResponseEntity<Void> likeProduct(@PathVariable Long id) {
         boolean likeSucceeded = productService.likeProduct(id);
-        if (likeSucceeded) {
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.notFound().build();
+        if (!likeSucceeded) {
+            throw new ProductNotFoundException(id);
         }
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Unlike product",
@@ -151,11 +150,10 @@ public class ProductController {
     @ResponseBody
     public ResponseEntity<Void> unlikeProduct(@PathVariable Long id) {
         boolean unlikeSucceeded = productService.unlikeProduct(id);
-        if (unlikeSucceeded) {
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.notFound().build();
+        if (!unlikeSucceeded) {
+            throw new ProductNotFoundException(id);
         }
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Add product review",
@@ -164,19 +162,16 @@ public class ProductController {
     @PostMapping("/{id}/ratings")
     @ResponseBody
     public ResponseEntity<ReviewDto> addReview(@PathVariable Long id,
-                                          @RequestBody ReviewRequestDto reviewRequest) {
-        if (reviewRequest.rating() < 0 || reviewRequest.rating() > 10) {
-            return ResponseEntity.badRequest().build();
-        }
-
+                                               @Valid @RequestBody ReviewRequestDto reviewRequest) {
         Review review = Review.builder()
             .productId(id)
             .rating(reviewRequest.rating())
             .content(reviewRequest.content())
             .build();
         Optional<ReviewDto> reviewOptional = productService.addReview(review);
+        //TODO: proper exceptions, requires refactor
         return reviewOptional.map(reviewDto -> new ResponseEntity<>(reviewDto, HttpStatus.CREATED))
-            .orElseGet(() -> ResponseEntity.notFound().build());
+            .orElseThrow(() -> Problem.valueOf(Status.BAD_REQUEST));
     }
 
     @Operation(summary = "Edit product review",
@@ -185,19 +180,17 @@ public class ProductController {
     @PutMapping("/{id}/ratings")
     @ResponseBody
     public ResponseEntity<ReviewDto> editReview(@PathVariable Long id,
-                                           @RequestBody ReviewRequestDto reviewRequest) {
-        if (reviewRequest.rating() < 0 || reviewRequest.rating() > 10) {
-            return ResponseEntity.badRequest().build();
-        }
-
+                                                @Valid @RequestBody
+                                                ReviewRequestDto reviewRequest) {
         Review review = Review.builder()
             .productId(id)
             .rating(reviewRequest.rating())
             .content(reviewRequest.content())
             .build();
         Optional<ReviewDto> reviewOptional = productService.editReview(review);
+        //TODO: proper exceptions, requires refactor
         return reviewOptional.map(reviewDto -> new ResponseEntity<>(reviewDto, HttpStatus.OK))
-            .orElseGet(() -> ResponseEntity.notFound().build());
+            .orElseThrow(() -> Problem.valueOf(Status.BAD_REQUEST));
     }
 
     @Operation(summary = "Delete product review",
@@ -206,10 +199,10 @@ public class ProductController {
     @DeleteMapping("/{id}/ratings")
     public ResponseEntity<Void> deleteReview(@PathVariable Long id) {
         boolean deleted = productService.deleteReview(id);
-        if (deleted) {
-            return ResponseEntity.ok().build();
+        if (!deleted) {
+            throw Problem.valueOf(Status.BAD_REQUEST); //TODO: proper exceptions, requires refactor
         }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Get product reviews",
@@ -218,8 +211,7 @@ public class ProductController {
     @GetMapping("/{id}/ratings")
     @ResponseBody
     public ResponseEntity<List<ReviewDto>> getProductReviews(@PathVariable Long id) {
-        Optional<List<ReviewDto>> reviewsOptional = productService.getProductReviews(id);
-        return reviewsOptional.map(ResponseEntity::ok)
-            .orElseGet(() -> ResponseEntity.notFound().build());
+        return productService.getProductReviews(id).map(ResponseEntity::ok)
+            .orElseThrow(() -> new ProductNotFoundException(id));
     }
 }
