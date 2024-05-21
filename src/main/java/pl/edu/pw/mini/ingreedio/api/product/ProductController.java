@@ -221,6 +221,6 @@ public class ProductController {
     public ResponseEntity<ReviewDto> getProductUserReview(@PathVariable Long id) {
         Optional<ReviewDto> reviewOptional = productService.getProductUserReview(id);
         return reviewOptional.map(ResponseEntity::ok)
-            .orElseGet(() -> ResponseEntity.notFound().build());
+            .orElseThrow(() -> new ProductNotFoundException(id));
     }
 }
