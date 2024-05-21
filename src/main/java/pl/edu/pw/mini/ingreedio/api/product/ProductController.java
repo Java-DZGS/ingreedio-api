@@ -34,6 +34,7 @@ import pl.edu.pw.mini.ingreedio.api.product.model.Review;
 import pl.edu.pw.mini.ingreedio.api.product.service.PaginationService;
 import pl.edu.pw.mini.ingreedio.api.product.service.ProductService;
 import pl.edu.pw.mini.ingreedio.api.product.service.ProductsCriteriaService;
+import pl.edu.pw.mini.ingreedio.api.user.model.User;
 
 @RestController
 @RequestMapping("/api/products")
@@ -213,5 +214,13 @@ public class ProductController {
     public ResponseEntity<List<ReviewDto>> getProductReviews(@PathVariable Long id) {
         return productService.getProductReviews(id).map(ResponseEntity::ok)
             .orElseThrow(() -> new ProductNotFoundException(id));
+    }
+
+    @Operation(security = {@SecurityRequirement(name = "Bearer Authentication")})
+    @GetMapping("{id}/rating")
+    public ResponseEntity<ReviewDto> getProductUserReview(@PathVariable Long id) {
+        Optional<ReviewDto> reviewOptional = productService.getProductUserReview(id);
+        return reviewOptional.map(ResponseEntity::ok)
+            .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

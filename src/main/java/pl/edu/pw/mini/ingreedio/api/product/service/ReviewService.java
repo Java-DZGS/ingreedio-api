@@ -2,6 +2,7 @@ package pl.edu.pw.mini.ingreedio.api.product.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -85,5 +86,11 @@ public class ReviewService {
             .stream()
             .map(reviewDtoMapper)
             .collect(Collectors.toList());
+    }
+
+    public Optional<ReviewDto> getProductUserReview(User user, Long productId) {
+        Optional<Review> reviewOptional = reviewRepository
+            .findByUserIdAndProductId(user.getId(), productId);
+        return reviewOptional.map(reviewDtoMapper);
     }
 }
