@@ -30,7 +30,7 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/refreshToken")
+    @PostMapping("/refresh-token")
     public ResponseEntity<JwtResponseDto> refreshToken(
         @RequestBody RefreshTokenRequestDto request) {
         try {
