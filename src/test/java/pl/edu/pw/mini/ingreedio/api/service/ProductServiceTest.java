@@ -821,5 +821,57 @@ public class ProductServiceTest extends IntegrationTest {
             assertThat(reviewsDeleted.isPresent()).isTrue();
             assertThat(reviewsDeleted.get().size()).isEqualTo(0);
         }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenProductId_whenGetProductUserReview_getProductUserReview() {
+            Product product = productService
+                .addProduct(Product.builder().name("testProduct").build());
+            Review review = Review.builder()
+                .productId(product.getId())
+                .content("review")
+                .rating(5)
+                .build();
+
+            // When
+            productService.addReview(review);
+            Optional<ReviewDto> productUserReview = productService
+                .getProductUserReview(product.getId());
+
+
+            // Then
+            assertThat(productUserReview.isPresent()).isTrue();
+            assertThat(productUserReview.get().productId()).isEqualTo(product.getId());
+            assertThat(productUserReview.get().displayName()).isEqualTo("User");
+            assertThat(productUserReview.get().rating()).isEqualTo(5);
+            assertThat(productUserReview.get().content()).isEqualTo("review");
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenProductId_whenGetNonExistingProductUserReview_getEmpty() {
+            Product product = productService
+                .addProduct(Product.builder().name("testProduct").build());
+
+            // When
+            Optional<ReviewDto> productUserReview = productService
+                .getProductUserReview(product.getId());
+
+            // Then
+            assertThat(productUserReview.isPresent()).isFalse();
+        }
+
+        @Test
+        public void givenProductId_whenUserNotLoggedIn_getEmptyProductUserReview() {
+            Product product = productService
+                .addProduct(Product.builder().name("testProduct").build());
+
+            // When
+            Optional<ReviewDto> productUserReview = productService
+                .getProductUserReview(product.getId());
+
+            // Then
+            assertThat(productUserReview.isPresent()).isFalse();
+        }
     }
 }
