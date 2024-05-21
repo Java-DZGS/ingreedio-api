@@ -23,13 +23,13 @@ import org.springframework.web.bind.annotation.RestController;
 import pl.edu.pw.mini.ingreedio.api.product.dto.FullProductDto;
 import pl.edu.pw.mini.ingreedio.api.product.dto.ProductListResponseDto;
 import pl.edu.pw.mini.ingreedio.api.product.dto.ProductRequestDto;
-import pl.edu.pw.mini.ingreedio.api.product.dto.ReviewDto;
-import pl.edu.pw.mini.ingreedio.api.product.dto.ReviewRequestDto;
 import pl.edu.pw.mini.ingreedio.api.product.model.Product;
-import pl.edu.pw.mini.ingreedio.api.product.model.Review;
 import pl.edu.pw.mini.ingreedio.api.product.service.PaginationService;
 import pl.edu.pw.mini.ingreedio.api.product.service.ProductService;
 import pl.edu.pw.mini.ingreedio.api.product.service.ProductsCriteriaService;
+import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
+import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewRequestDto;
+import pl.edu.pw.mini.ingreedio.api.review.model.Review;
 
 @RestController
 @RequestMapping("/api/products")

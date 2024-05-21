@@ -21,8 +21,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import pl.edu.pw.mini.ingreedio.api.product.model.Ingredient;
-import pl.edu.pw.mini.ingreedio.api.product.model.Review;
+import pl.edu.pw.mini.ingreedio.api.ingredient.model.Ingredient;
+import pl.edu.pw.mini.ingreedio.api.review.model.Review;
 
 @Data
 @Builder
@@ -67,5 +67,6 @@ public class User {
     private Set<Long> likedProducts = new HashSet<>();
 
     @OneToMany(mappedBy = "user")
+    @Builder.Default
     private List<Review> reviews = new ArrayList<>();
 }

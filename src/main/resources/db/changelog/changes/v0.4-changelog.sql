@@ -1,4 +1,4 @@
---liquidbase formatted sql
+--liquibase formatted sql
 
 --changeset gitqueenzofia:add-edit_product-permission
 INSERT INTO permissions (name, description)

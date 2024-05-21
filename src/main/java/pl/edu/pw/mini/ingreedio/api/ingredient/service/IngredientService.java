@@ -1,4 +1,4 @@
-package pl.edu.pw.mini.ingreedio.api.product.service;
+package pl.edu.pw.mini.ingreedio.api.ingredient.service;
 
 import java.util.List;
 import java.util.Optional;
@@ -8,10 +8,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.auth.service.AuthService;
-import pl.edu.pw.mini.ingreedio.api.product.dto.IngredientDto;
-import pl.edu.pw.mini.ingreedio.api.product.mapper.IngredientDtoMapper;
-import pl.edu.pw.mini.ingreedio.api.product.model.Ingredient;
-import pl.edu.pw.mini.ingreedio.api.product.repository.IngredientRepository;
+import pl.edu.pw.mini.ingreedio.api.ingredient.dto.IngredientDto;
+import pl.edu.pw.mini.ingreedio.api.ingredient.mapper.IngredientDtoMapper;
+import pl.edu.pw.mini.ingreedio.api.ingredient.model.Ingredient;
+import pl.edu.pw.mini.ingreedio.api.ingredient.repository.IngredientRepository;
 import pl.edu.pw.mini.ingreedio.api.user.model.User;
 import pl.edu.pw.mini.ingreedio.api.user.service.UserService;
 

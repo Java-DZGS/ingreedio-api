@@ -1,4 +1,4 @@
-package pl.edu.pw.mini.ingreedio.api.product.service;
+package pl.edu.pw.mini.ingreedio.api.review.service;
 
 import java.util.List;
 import java.util.Optional;
@@ -6,10 +6,10 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import pl.edu.pw.mini.ingreedio.api.product.dto.ReviewDto;
-import pl.edu.pw.mini.ingreedio.api.product.mapper.ReviewDtoMapper;
-import pl.edu.pw.mini.ingreedio.api.product.model.Review;
-import pl.edu.pw.mini.ingreedio.api.product.repository.ReviewRepository;
+import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
+import pl.edu.pw.mini.ingreedio.api.review.mapper.ReviewDtoMapper;
+import pl.edu.pw.mini.ingreedio.api.review.model.Review;
+import pl.edu.pw.mini.ingreedio.api.review.repository.ReviewRepository;
 import pl.edu.pw.mini.ingreedio.api.user.model.User;
 import pl.edu.pw.mini.ingreedio.api.user.repository.UserRepository;
 

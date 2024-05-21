@@ -1,4 +1,4 @@
-package pl.edu.pw.mini.ingreedio.api.product.dto;
+package pl.edu.pw.mini.ingreedio.api.review.dto;
 
 import java.sql.Timestamp;
 import lombok.Builder;
