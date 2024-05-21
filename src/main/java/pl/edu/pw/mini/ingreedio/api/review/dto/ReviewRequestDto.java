@@ -1,4 +1,4 @@
-package pl.edu.pw.mini.ingreedio.api.product.dto;
+package pl.edu.pw.mini.ingreedio.api.review.dto;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

@@ -1,4 +1,4 @@
-package pl.edu.pw.mini.ingreedio.api.product;
+package pl.edu.pw.mini.ingreedio.api.ingredient.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import pl.edu.pw.mini.ingreedio.api.product.dto.IngredientDto;
+import pl.edu.pw.mini.ingreedio.api.ingredient.dto.IngredientDto;
+import pl.edu.pw.mini.ingreedio.api.ingredient.service.IngredientService;
 import pl.edu.pw.mini.ingreedio.api.product.exception.IngredientNotFoundException;
-import pl.edu.pw.mini.ingreedio.api.product.service.IngredientService;
 
 @RestController
 @RequestMapping("/api/ingredients")

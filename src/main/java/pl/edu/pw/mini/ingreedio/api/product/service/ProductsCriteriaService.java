@@ -8,9 +8,10 @@ import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import pl.edu.pw.mini.ingreedio.api.ingredient.dto.IngredientDto;
+import pl.edu.pw.mini.ingreedio.api.ingredient.service.IngredientService;
 import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductCriteria;
 import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductsSortingCriteria;
-import pl.edu.pw.mini.ingreedio.api.product.dto.IngredientDto;
 
 @Service
 @AllArgsConstructor

@@ -1,4 +1,4 @@
-package pl.edu.pw.mini.ingreedio.api.product.model;
+package pl.edu.pw.mini.ingreedio.api.report.model;
 
 public class Report {
     private Long id;

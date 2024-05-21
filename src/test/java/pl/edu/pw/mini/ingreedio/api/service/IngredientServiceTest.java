@@ -9,9 +9,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.IntegrationTest;
-import pl.edu.pw.mini.ingreedio.api.product.dto.IngredientDto;
-import pl.edu.pw.mini.ingreedio.api.product.model.Ingredient;
-import pl.edu.pw.mini.ingreedio.api.product.service.IngredientService;
+import pl.edu.pw.mini.ingreedio.api.ingredient.dto.IngredientDto;
+import pl.edu.pw.mini.ingreedio.api.ingredient.model.Ingredient;
+import pl.edu.pw.mini.ingreedio.api.ingredient.service.IngredientService;
 
 @SpringBootTest
 @Transactional

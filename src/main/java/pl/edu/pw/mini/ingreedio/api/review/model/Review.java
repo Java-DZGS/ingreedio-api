@@ -1,4 +1,4 @@
-package pl.edu.pw.mini.ingreedio.api.product.model;
+package pl.edu.pw.mini.ingreedio.api.review.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

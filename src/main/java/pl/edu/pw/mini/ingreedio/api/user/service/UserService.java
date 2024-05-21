@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.auth.model.AuthInfo;
 import pl.edu.pw.mini.ingreedio.api.auth.repository.AuthRepository;
-import pl.edu.pw.mini.ingreedio.api.product.dto.ReviewDto;
-import pl.edu.pw.mini.ingreedio.api.product.mapper.ReviewDtoMapper;
-import pl.edu.pw.mini.ingreedio.api.product.model.Ingredient;
+import pl.edu.pw.mini.ingreedio.api.ingredient.model.Ingredient;
+import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
+import pl.edu.pw.mini.ingreedio.api.review.mapper.ReviewDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.user.model.User;
 import pl.edu.pw.mini.ingreedio.api.user.repository.UserRepository;
 

@@ -21,7 +21,7 @@ import pl.edu.pw.mini.ingreedio.api.auth.dto.RegisterRequestDto;
 import pl.edu.pw.mini.ingreedio.api.auth.exception.UserAlreadyExistsException;
 import pl.edu.pw.mini.ingreedio.api.auth.exception.UserNotFoundException;
 import pl.edu.pw.mini.ingreedio.api.auth.service.AuthService;
-import pl.edu.pw.mini.ingreedio.api.product.dto.ReviewDto;
+import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.user.model.User;
 import pl.edu.pw.mini.ingreedio.api.user.service.UserService;
 

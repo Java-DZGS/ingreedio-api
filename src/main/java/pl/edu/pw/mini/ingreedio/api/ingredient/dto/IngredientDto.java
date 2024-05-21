@@ -1,4 +1,4 @@
-package pl.edu.pw.mini.ingreedio.api.product.dto;
+package pl.edu.pw.mini.ingreedio.api.ingredient.dto;
 
 import lombok.Builder;
 

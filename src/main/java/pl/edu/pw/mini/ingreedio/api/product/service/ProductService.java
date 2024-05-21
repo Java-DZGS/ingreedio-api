@@ -17,12 +17,13 @@ import pl.edu.pw.mini.ingreedio.api.product.dto.FullProductDto;
 import pl.edu.pw.mini.ingreedio.api.product.dto.ProductDto;
 import pl.edu.pw.mini.ingreedio.api.product.dto.ProductListResponseDto;
 import pl.edu.pw.mini.ingreedio.api.product.dto.ProductRequestDto;
-import pl.edu.pw.mini.ingreedio.api.product.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.product.mapper.FullProductDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.product.mapper.ProductDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.product.model.Product;
-import pl.edu.pw.mini.ingreedio.api.product.model.Review;
 import pl.edu.pw.mini.ingreedio.api.product.repository.ProductRepository;
+import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
+import pl.edu.pw.mini.ingreedio.api.review.model.Review;
+import pl.edu.pw.mini.ingreedio.api.review.service.ReviewService;
 import pl.edu.pw.mini.ingreedio.api.user.model.User;
 import pl.edu.pw.mini.ingreedio.api.user.service.UserService;
 
