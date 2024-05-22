@@ -10,6 +10,7 @@ public class ReviewDtoMapper implements Function<Review, ReviewDto> {
     @Override
     public ReviewDto apply(Review review) {
         return ReviewDto.builder()
+            .reviewId(review.getId())
             .displayName(review.getUser().getDisplayName())
             .productId(review.getProductId())
             .rating(review.getRating())
