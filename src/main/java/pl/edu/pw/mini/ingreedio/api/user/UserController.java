@@ -71,7 +71,7 @@ public class UserController {
     }
 
     @Operation(security = {@SecurityRequirement(name = "Bearer Authentication")})
-    @GetMapping("/ratings")
+    @GetMapping("/reviews")
     public ResponseEntity<List<ReviewDto>> getUserRatings() {
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
