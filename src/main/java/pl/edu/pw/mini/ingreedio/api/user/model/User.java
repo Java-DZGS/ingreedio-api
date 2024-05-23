@@ -20,7 +20,9 @@ import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import pl.edu.pw.mini.ingreedio.api.ingredient.model.Ingredient;
 import pl.edu.pw.mini.ingreedio.api.review.model.Review;
 
@@ -68,5 +70,7 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     @Builder.Default
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<Review> reviews = new ArrayList<>();
 }
