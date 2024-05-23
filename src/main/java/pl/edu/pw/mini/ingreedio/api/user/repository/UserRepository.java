@@ -9,7 +9,7 @@ import pl.edu.pw.mini.ingreedio.api.user.model.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
-    Optional<User> findById(Integer id);
+    Optional<User> findById(Long id);
 
     @Query("SELECT u FROM User u WHERE :productId MEMBER OF u.likedProducts")
     List<User> findUsersByLikedProduct(Long productId);

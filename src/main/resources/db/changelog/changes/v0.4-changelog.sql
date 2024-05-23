@@ -25,3 +25,51 @@ CREATE TABLE reviews
 
 --changeset gitqueenzofia:add-date-column-to-reviews-table
 ALTER TABLE reviews ADD created_at TIMESTAMP NOT NULL;
+
+--changeset mslup:create-providers-table
+CREATE TABLE providers
+(
+    id   BIGSERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL
+);
+
+--changeset mslup:create-brands-table
+CREATE TABLE brands
+(
+    id   BIGSERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL
+);
+
+--changeset mslup:create-reports-table
+CREATE TABLE reports
+(
+    id        BIGSERIAL PRIMARY KEY,
+    user_id   BIGINT       NOT NULL,
+    review_id BIGINT       NOT NULL,
+    content   VARCHAR(512) NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    FOREIGN KEY (review_id) REFERENCES reviews (id)
+);
+
+--changeset mslup:add-report-review-permission
+INSERT INTO permissions (name, description)
+VALUES ('REPORT_REVIEW', 'Allows reporting reviews');
+
+--changeset mslup:add-report-review-permission-to-user
+INSERT INTO roles_permissions (role_id, permission_id)
+SELECT r.id, p.id
+FROM roles r
+         CROSS JOIN permissions p
+WHERE (r.name = 'USER' AND p.name = 'REPORT_REVIEW');
+
+--changeset mslup:add-report-management-permissions
+INSERT INTO permissions (name, description)
+VALUES ('GET_REPORTS', 'Allows getting reports'),
+       ('DELETE_REPORT', 'Allows deleting a report');
+
+-- changeset mslup:add-report-management-permissions-to-moderator
+INSERT INTO roles_permissions (role_id, permission_id)
+SELECT r.id, p.id
+FROM roles r
+         CROSS JOIN permissions p
+WHERE (r.name = 'MODERATOR' AND p.name IN ('GET_REPORTS', 'DELETE_REPORT'));

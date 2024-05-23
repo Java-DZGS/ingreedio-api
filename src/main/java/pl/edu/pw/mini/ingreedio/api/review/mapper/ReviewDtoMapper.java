@@ -19,4 +19,5 @@ public class ReviewDtoMapper implements Function<Review, ReviewDto> {
             .userId(review.getUser().getId())
             .build();
     }
+
 }

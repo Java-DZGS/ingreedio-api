@@ -1,4 +1,4 @@
-package pl.edu.pw.mini.ingreedio.api.report.model;
+package pl.edu.pw.mini.ingreedio.api.review.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,7 +12,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import pl.edu.pw.mini.ingreedio.api.review.model.Review;
 import pl.edu.pw.mini.ingreedio.api.user.model.User;
 
 @Data

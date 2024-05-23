@@ -1,4 +1,4 @@
-package pl.edu.pw.mini.ingreedio.api.report.dto;
+package pl.edu.pw.mini.ingreedio.api.review.dto;
 
 import lombok.Builder;
 
