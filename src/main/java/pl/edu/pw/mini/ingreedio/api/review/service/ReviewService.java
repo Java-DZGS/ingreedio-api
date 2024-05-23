@@ -6,9 +6,15 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.edu.pw.mini.ingreedio.api.review.dto.ReportDto;
 import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
+import pl.edu.pw.mini.ingreedio.api.review.exception.ReportEmptyReviewAttemptException;
+import pl.edu.pw.mini.ingreedio.api.review.exception.ReviewNotFoundException;
+import pl.edu.pw.mini.ingreedio.api.review.mapper.ReportDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.review.mapper.ReviewDtoMapper;
+import pl.edu.pw.mini.ingreedio.api.review.model.Report;
 import pl.edu.pw.mini.ingreedio.api.review.model.Review;
+import pl.edu.pw.mini.ingreedio.api.review.repository.ReportRepository;
 import pl.edu.pw.mini.ingreedio.api.review.repository.ReviewRepository;
 import pl.edu.pw.mini.ingreedio.api.user.model.User;
 import pl.edu.pw.mini.ingreedio.api.user.repository.UserRepository;
@@ -18,12 +24,36 @@ import pl.edu.pw.mini.ingreedio.api.user.repository.UserRepository;
 public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final ReviewDtoMapper reviewDtoMapper;
+    private final ReportRepository reportRepository;
+    private final ReportDtoMapper reportDtoMapper;
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public Optional<ReviewDto> getReviewById(Long id) {
         return reviewRepository.findById(id)
             .map(reviewDtoMapper);
+    }
+
+    @Transactional
+    public ReportDto reportReview(Long reviewId, Long userId, String content)
+        throws ReportEmptyReviewAttemptException, ReviewNotFoundException {
+        Optional<Review> optionalReview = reviewRepository.findById(reviewId);
+
+        if (optionalReview.isEmpty()) {
+            throw new ReviewNotFoundException(reviewId);
+        }
+
+        if (optionalReview.get().getContent().isEmpty()) {
+            throw new ReportEmptyReviewAttemptException();
+        }
+
+        Report report = Report.builder()
+            .review(optionalReview.get())
+            .user(userRepository.findById(userId).get())
+            .content(content)
+            .build();
+
+        return reportDtoMapper.apply(reportRepository.save(report));
     }
 
     @Transactional
@@ -87,6 +117,7 @@ public class ReviewService {
             .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public Optional<ReviewDto> getProductUserReview(User user, Long productId) {
         Optional<Review> reviewOptional = reviewRepository
             .findByUserIdAndProductId(user.getId(), productId);

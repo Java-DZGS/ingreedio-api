@@ -5,8 +5,10 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 import pl.edu.pw.mini.ingreedio.api.review.model.Review;
 
+@Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
     Optional<Review> findById(Long id);
 
@@ -16,4 +18,5 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     @Query("SELECT r FROM Review r WHERE r.productId = :productId")
     List<Review> getProductReviews(@Param("productId") Long productId);
+
 }

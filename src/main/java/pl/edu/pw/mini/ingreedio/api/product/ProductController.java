@@ -159,7 +159,7 @@ public class ProductController {
     @Operation(summary = "Add product review",
         description = "Add product review",
         security = {@SecurityRequirement(name = "Bearer Authentication")})
-    @PostMapping("/{id}/ratings")
+    @PostMapping("/{id}/reviews")
     @ResponseBody
     public ResponseEntity<ReviewDto> addReview(@PathVariable Long id,
                                                @Valid @RequestBody ReviewRequestDto reviewRequest) {
@@ -177,7 +177,7 @@ public class ProductController {
     @Operation(summary = "Edit product review",
         description = "Edit product review",
         security = {@SecurityRequirement(name = "Bearer Authentication")})
-    @PutMapping("/{id}/ratings")
+    @PutMapping("/{id}/reviews")
     @ResponseBody
     public ResponseEntity<ReviewDto> editReview(@PathVariable Long id,
                                                 @Valid @RequestBody
@@ -196,7 +196,7 @@ public class ProductController {
     @Operation(summary = "Delete product review",
         description = "Delete product review",
         security = {@SecurityRequirement(name = "Bearer Authentication")})
-    @DeleteMapping("/{id}/ratings")
+    @DeleteMapping("/{id}/reviews")
     public ResponseEntity<Void> deleteReview(@PathVariable Long id) {
         boolean deleted = productService.deleteReview(id);
         if (!deleted) {
@@ -208,7 +208,7 @@ public class ProductController {
     @Operation(summary = "Get product reviews",
         description = "Get product reviews",
         security = {@SecurityRequirement(name = "Bearer Authentication")})
-    @GetMapping("/{id}/ratings")
+    @GetMapping("/{id}/reviews")
     @ResponseBody
     public ResponseEntity<List<ReviewDto>> getProductReviews(@PathVariable Long id) {
         return productService.getProductReviews(id).map(ResponseEntity::ok)
@@ -216,7 +216,7 @@ public class ProductController {
     }
 
     @Operation(security = {@SecurityRequirement(name = "Bearer Authentication")})
-    @GetMapping("{id}/rating")
+    @GetMapping("{id}/review")
     public ResponseEntity<ReviewDto> getProductUserReview(@PathVariable Long id) {
         Optional<ReviewDto> reviewOptional = productService.getProductUserReview(id);
         return reviewOptional.map(ResponseEntity::ok)

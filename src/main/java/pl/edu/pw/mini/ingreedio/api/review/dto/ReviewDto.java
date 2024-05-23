@@ -4,7 +4,8 @@ import java.sql.Timestamp;
 import lombok.Builder;
 
 @Builder
-public record ReviewDto(Long userId,
+public record ReviewDto(Long reviewId,
+                        Long userId,
                         String displayName,
                         Long productId,
                         Integer rating,

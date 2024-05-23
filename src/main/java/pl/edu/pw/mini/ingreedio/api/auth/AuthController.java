@@ -1,5 +1,6 @@
 package pl.edu.pw.mini.ingreedio.api.auth;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +17,7 @@ import pl.edu.pw.mini.ingreedio.api.auth.service.AuthService;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Tag(name = "Authorization")
 public class AuthController {
 
     private final AuthService service;
