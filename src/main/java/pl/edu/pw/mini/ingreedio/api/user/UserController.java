@@ -1,6 +1,11 @@
 package pl.edu.pw.mini.ingreedio.api.user;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
@@ -36,7 +41,17 @@ public class UserController {
     private final AuthService authService;
     private final UserDtoMapper userDtoMapper;
 
-    @Operation(security = {@SecurityRequirement(name = "Bearer Authentication")})
+    @Operation(summary = "Get user data",
+        description = "Fetches user information based on authentication or provided username. "
+            + "Moderators can fetch information for any user, "
+            + "while regular users can only fetch their own information.",
+        security = {@SecurityRequirement(name = "Bearer Authentication")}
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User information retrieved successfully",
+            content = @Content(schema = @Schema(implementation = UserDto.class))),
+        @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
+    })
     @GetMapping
     public ResponseEntity<UserDto> getUserInfo(Authentication authentication,
                                                @RequestParam Optional<String> username) {
@@ -60,6 +75,14 @@ public class UserController {
             .orElseThrow(() -> new UserNotFoundException(user));
     }
 
+    @Operation(summary = "Register a new user",
+        description = "Registers a new user with the provided details."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User registered successfully",
+            content = @Content(schema = @Schema(implementation = UserDto.class))),
+        @ApiResponse(responseCode = "409", description = "User already exists", content = @Content)
+    })
     @PostMapping
     public ResponseEntity<UserDto> register(@RequestBody RegisterRequestDto request) {
         try {
@@ -69,7 +92,16 @@ public class UserController {
         }
     }
 
-    @Operation(security = {@SecurityRequirement(name = "Bearer Authentication")})
+    @Operation(summary = "Get user by ID",
+        description = "Fetches user information based on the provided user ID. "
+            + "Available only for moderators",
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User information retrieved successfully",
+            content = @Content(schema = @Schema(implementation = UserDto.class))),
+        @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
+    })
     @PreAuthorize("hasAuthority('ROLE_MODERATOR')") // TODO: change this in S5
     @GetMapping("/{id}")
     public ResponseEntity<UserDto> getUserById(@PathVariable Integer id) {
@@ -79,7 +111,17 @@ public class UserController {
             .orElseThrow(() -> new UserNotFoundException(id));
     }
 
-    @Operation(security = {@SecurityRequirement(name = "Bearer Authentication")})
+    @Operation(summary = "Get user ratings",
+        description = "Fetches the ratings/reviews associated with logged in user.",
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User ratings retrieved successfully",
+            content = @Content(
+                array = @ArraySchema(schema = @Schema(implementation = ReviewDto.class))
+            )),
+        @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
+    })
     @GetMapping("/reviews")
     public ResponseEntity<List<ReviewDto>> getUserRatings() {
         Optional<User> userOptional = userService
