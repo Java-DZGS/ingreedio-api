@@ -1,6 +1,10 @@
 package pl.edu.pw.mini.ingreedio.api.review;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Optional;
@@ -29,7 +33,7 @@ public class ReviewController {
     private final UserService userService;
     private final AuthService authService;
 
-    // todo: issue #100
+    /* todo: issue #100
     @PostMapping("/{id}/likes")
     public ResponseEntity<Void> likeReview(@PathVariable Long id) {
         return ResponseEntity.ok().build();
@@ -39,12 +43,20 @@ public class ReviewController {
     public ResponseEntity<Void> dislikeReview(@PathVariable Long id) {
         return ResponseEntity.ok().build();
     }
+    */
 
-    @PostMapping("/{id}/reports")
-    @Operation(summary = "Report review",
-        description = "Report a user written (non-empty) review of a product.",
-        security = {@SecurityRequirement(name = "Bearer Authentication")})
+    @Operation(summary = "Report a review",
+        description = "Reports a user written (non-empty) review based on the provided review ID. "
+            + "Requires the 'REPORT_REVIEW' authority.",
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Review reported successfully",
+            content = @Content(schema = @Schema(implementation = ReportDto.class))),
+        @ApiResponse(responseCode = "404", description = "Review not found", content = @Content)
+    })
     @PreAuthorize("hasAuthority('REPORT_REVIEW')")
+    @PostMapping("/{id}/reports")
     public ReportDto reportReview(@PathVariable Long id,
                                   @RequestBody String content) {
         Optional<User> userOptional = userService
