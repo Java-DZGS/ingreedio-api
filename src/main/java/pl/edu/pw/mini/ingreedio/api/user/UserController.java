@@ -22,6 +22,8 @@ import pl.edu.pw.mini.ingreedio.api.auth.exception.UserAlreadyExistsException;
 import pl.edu.pw.mini.ingreedio.api.auth.exception.UserNotFoundException;
 import pl.edu.pw.mini.ingreedio.api.auth.service.AuthService;
 import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
+import pl.edu.pw.mini.ingreedio.api.user.dto.UserDto;
+import pl.edu.pw.mini.ingreedio.api.user.mapper.UserDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.user.model.User;
 import pl.edu.pw.mini.ingreedio.api.user.service.UserService;
 
@@ -32,15 +34,18 @@ import pl.edu.pw.mini.ingreedio.api.user.service.UserService;
 public class UserController {
     private final UserService userService;
     private final AuthService authService;
+    private final UserDtoMapper userDtoMapper;
 
     @Operation(security = {@SecurityRequirement(name = "Bearer Authentication")})
     @GetMapping
-    public ResponseEntity<User> getUserInfo(Authentication authentication,
-                                            @RequestParam Optional<String> username) {
+    public ResponseEntity<UserDto> getUserInfo(Authentication authentication,
+                                               @RequestParam Optional<String> username) {
         if (authentication.getAuthorities().stream() // TODO: change this in S5
             .anyMatch(authority -> authority.getAuthority().equals("ROLE_MODERATOR"))) {
             String user = username.orElseGet(authentication::getName);
-            return userService.getUserByUsername(user).map(ResponseEntity::ok)
+            return userService.getUserByUsername(user)
+                .map(userDtoMapper)
+                .map(ResponseEntity::ok)
                 .orElseThrow(() -> new UserNotFoundException(user));
         }
 
@@ -49,14 +54,16 @@ public class UserController {
         }
 
         String user = authentication.getName();
-        return userService.getUserByUsername(user).map(ResponseEntity::ok)
+        return userService.getUserByUsername(user)
+            .map(userDtoMapper)
+            .map(ResponseEntity::ok)
             .orElseThrow(() -> new UserNotFoundException(user));
     }
 
     @PostMapping
-    public ResponseEntity<User> register(@RequestBody RegisterRequestDto request) {
+    public ResponseEntity<UserDto> register(@RequestBody RegisterRequestDto request) {
         try {
-            return ResponseEntity.ok(authService.register(request));
+            return ResponseEntity.ok(userDtoMapper.apply(authService.register(request)));
         } catch (DataIntegrityViolationException ex) {
             throw new UserAlreadyExistsException();
         }
@@ -65,8 +72,10 @@ public class UserController {
     @Operation(security = {@SecurityRequirement(name = "Bearer Authentication")})
     @PreAuthorize("hasAuthority('ROLE_MODERATOR')") // TODO: change this in S5
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Integer id) {
-        return userService.getUserById(id).map(ResponseEntity::ok)
+    public ResponseEntity<UserDto> getUserById(@PathVariable Integer id) {
+        return userService.getUserById(id)
+            .map(userDtoMapper)
+            .map(ResponseEntity::ok)
             .orElseThrow(() -> new UserNotFoundException(id));
     }
 
