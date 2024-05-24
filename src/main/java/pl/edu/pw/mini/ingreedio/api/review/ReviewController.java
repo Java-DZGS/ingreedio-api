@@ -46,8 +46,7 @@ public class ReviewController {
     */
 
     @Operation(summary = "Report a review",
-        description = "Reports a user written (non-empty) review based on the provided review ID. "
-            + "Requires the 'REPORT_REVIEW' authority.",
+        description = "Reports a user written (non-empty) review based on the provided review ID.",
         security = @SecurityRequirement(name = "Bearer Authentication")
     )
     @ApiResponses(value = {

@@ -99,7 +99,7 @@ public class ProductController {
     }
 
     @Operation(summary = "Add a new product",
-        description = "Adds a new product to the inventory. Requires the 'ADD_PRODUCT' authority.",
+        description = "Adds a new product to the inventory.",
         security = @SecurityRequirement(name = "Bearer Authentication")
     )
     @ApiResponses(value = {
@@ -126,8 +126,7 @@ public class ProductController {
     }
 
     @Operation(summary = "Delete a product",
-        description = "Deletes a product from the inventory based on the provided product ID. "
-            + "Requires the 'REMOVE_PRODUCT' authority.",
+        description = "Deletes a product from the inventory based on the provided product ID.",
         security = @SecurityRequirement(name = "Bearer Authentication")
     )
     @ApiResponses(value = {
@@ -148,7 +147,7 @@ public class ProductController {
 
     @Operation(summary = "Edit a product",
         description = "Edits a product in the inventory based on the provided product ID and new "
-            + "product details. Requires the 'EDIT_PRODUCT' authority.",
+            + "product details.",
         security = @SecurityRequirement(name = "Bearer Authentication")
     )
     @ApiResponses(value = {

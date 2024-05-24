@@ -93,8 +93,7 @@ public class UserController {
     }
 
     @Operation(summary = "Get user by ID",
-        description = "Fetches user information based on the provided user ID. "
-            + "Available only for moderators",
+        description = "Fetches user information based on the provided user ID.",
         security = @SecurityRequirement(name = "Bearer Authentication")
     )
     @ApiResponses(value = {
