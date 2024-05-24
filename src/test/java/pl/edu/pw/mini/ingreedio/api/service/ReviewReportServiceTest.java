@@ -15,7 +15,6 @@ import pl.edu.pw.mini.ingreedio.api.product.service.ProductService;
 import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.review.exception.ReportEmptyReviewAttemptException;
 import pl.edu.pw.mini.ingreedio.api.review.model.Review;
-import pl.edu.pw.mini.ingreedio.api.review.repository.ReviewRepository;
 import pl.edu.pw.mini.ingreedio.api.review.service.ReportService;
 import pl.edu.pw.mini.ingreedio.api.review.service.ReviewService;
 import pl.edu.pw.mini.ingreedio.api.user.model.User;
@@ -25,9 +24,6 @@ public class ReviewReportServiceTest extends IntegrationTest {
 
     @Autowired
     private ReviewService reviewService;
-
-    @Autowired
-    private ReviewRepository reviewRepository;
 
     @Autowired
     private ReportService reportService;
@@ -115,8 +111,8 @@ public class ReviewReportServiceTest extends IntegrationTest {
                 .build();
             Optional<ReviewDto> reviewDto = productService.addReview(review);
             assertThat(reviewDto).isPresent();
-            int likesCount = reviewDto.get().likesCount();
-            int dislikesCount = reviewDto.get().dislikesCount();
+            final int likesCount = reviewDto.get().likesCount();
+            final int dislikesCount = reviewDto.get().dislikesCount();
 
             // When
             long reviewId = reviewDto.get().reviewId();
@@ -142,8 +138,8 @@ public class ReviewReportServiceTest extends IntegrationTest {
                 .build();
             Optional<ReviewDto> reviewDto = productService.addReview(review);
             assertThat(reviewDto).isPresent();
-            int likesCount = reviewDto.get().likesCount();
-            int dislikesCount = reviewDto.get().dislikesCount();
+            final int likesCount = reviewDto.get().likesCount();
+            final int dislikesCount = reviewDto.get().dislikesCount();
 
             // When
             long reviewId = reviewDto.get().reviewId();
@@ -170,8 +166,7 @@ public class ReviewReportServiceTest extends IntegrationTest {
                 .build();
             Optional<ReviewDto> reviewDto = productService.addReview(review);
             assertThat(reviewDto).isPresent();
-            int likesCount = reviewDto.get().likesCount();
-            int dislikesCount = reviewDto.get().dislikesCount();
+            final int likesCount = reviewDto.get().likesCount();
 
             // When
             long reviewId = reviewDto.get().reviewId();
@@ -197,8 +192,8 @@ public class ReviewReportServiceTest extends IntegrationTest {
                 .build();
             Optional<ReviewDto> reviewDto = productService.addReview(review);
             assertThat(reviewDto).isPresent();
-            int likesCount = reviewDto.get().likesCount();
-            int dislikesCount = reviewDto.get().dislikesCount();
+            final int likesCount = reviewDto.get().likesCount();
+            final int dislikesCount = reviewDto.get().dislikesCount();
 
             // When
             long reviewId = reviewDto.get().reviewId();
@@ -224,8 +219,8 @@ public class ReviewReportServiceTest extends IntegrationTest {
                 .build();
             Optional<ReviewDto> reviewDto = productService.addReview(review);
             assertThat(reviewDto).isPresent();
-            int likesCount = reviewDto.get().likesCount();
-            int dislikesCount = reviewDto.get().dislikesCount();
+            final int likesCount = reviewDto.get().likesCount();
+            final int dislikesCount = reviewDto.get().dislikesCount();
 
             // When
             long reviewId = reviewDto.get().reviewId();
@@ -252,8 +247,7 @@ public class ReviewReportServiceTest extends IntegrationTest {
                 .build();
             Optional<ReviewDto> reviewDto = productService.addReview(review);
             assertThat(reviewDto).isPresent();
-            int likesCount = reviewDto.get().likesCount();
-            int dislikesCount = reviewDto.get().dislikesCount();
+            final int dislikesCount = reviewDto.get().dislikesCount();
 
             // When
             long reviewId = reviewDto.get().reviewId();
@@ -279,8 +273,8 @@ public class ReviewReportServiceTest extends IntegrationTest {
                 .build();
             Optional<ReviewDto> reviewDto = productService.addReview(review);
             assertThat(reviewDto).isPresent();
-            int likesCount = reviewDto.get().likesCount();
-            int dislikesCount = reviewDto.get().dislikesCount();
+            final int likesCount = reviewDto.get().likesCount();
+            final int dislikesCount = reviewDto.get().dislikesCount();
 
             // When
             long reviewId = reviewDto.get().reviewId();
@@ -307,8 +301,8 @@ public class ReviewReportServiceTest extends IntegrationTest {
                 .build();
             Optional<ReviewDto> reviewDto = productService.addReview(review);
             assertThat(reviewDto).isPresent();
-            int likesCount = reviewDto.get().likesCount();
-            int dislikesCount = reviewDto.get().dislikesCount();
+            final int likesCount = reviewDto.get().likesCount();
+            final int dislikesCount = reviewDto.get().dislikesCount();
 
             // When
             long reviewId = reviewDto.get().reviewId();
