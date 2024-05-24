@@ -10,5 +10,7 @@ public record ReviewDto(Long reviewId,
                         Long productId,
                         Integer rating,
                         String content,
-                        Timestamp createdAt) {
+                        Timestamp createdAt,
+                        Integer likesCount,
+                        Integer dislikesCount) {
 }

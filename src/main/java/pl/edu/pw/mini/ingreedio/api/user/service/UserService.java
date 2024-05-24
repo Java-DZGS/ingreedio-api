@@ -13,6 +13,7 @@ import pl.edu.pw.mini.ingreedio.api.auth.repository.AuthRepository;
 import pl.edu.pw.mini.ingreedio.api.ingredient.model.Ingredient;
 import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.review.mapper.ReviewDtoMapper;
+import pl.edu.pw.mini.ingreedio.api.review.model.Review;
 import pl.edu.pw.mini.ingreedio.api.user.model.User;
 import pl.edu.pw.mini.ingreedio.api.user.repository.UserRepository;
 
@@ -68,6 +69,44 @@ public class UserService {
         Set<Ingredient> allergens = user.getAllergens();
         allergens.remove(ingredient);
         user.setAllergens(allergens);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void likeReview(User user, Review review) {
+        Set<Review> likedReviews = user.getLikedReviews();
+        Set<Review> dislikedReviews = user.getDislikedReviews();
+        likedReviews.add(review);
+        dislikedReviews.remove(review);
+        user.setLikedReviews(likedReviews);
+        user.setDislikedReviews(dislikedReviews);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void unlikeReview(User user, Review review) {
+        Set<Review> likedReviews = user.getLikedReviews();
+        likedReviews.remove(review);
+        user.setLikedReviews(likedReviews);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void dislikeReview(User user, Review review) {
+        Set<Review> dislikedReviews = user.getDislikedReviews();
+        Set<Review> likedReviews = user.getLikedReviews();
+        dislikedReviews.add(review);
+        likedReviews.remove(review);
+        user.setDislikedReviews(dislikedReviews);
+        user.setLikedReviews(likedReviews);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void undislikeReview(User user, Review review) {
+        Set<Review> dislikedReviews = user.getDislikedReviews();
+        dislikedReviews.remove(review);
+        user.setDislikedReviews(dislikedReviews);
         userRepository.save(user);
     }
 
