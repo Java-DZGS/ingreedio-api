@@ -1,6 +1,11 @@
 package pl.edu.pw.mini.ingreedio.api.product;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -19,7 +24,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.zalando.problem.Problem;
 import org.zalando.problem.Status;
@@ -38,15 +42,22 @@ import pl.edu.pw.mini.ingreedio.api.review.model.Review;
 @RestController
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
-@Tag(name = "Products" /*, description = "..."*/)
+@Tag(name = "Products")
 public class ProductController {
     private final ProductService productService;
     private final PaginationService paginationService;
     private final ProductsCriteriaService productsCriteriaService;
 
     @Operation(summary = "Get matching products",
-        description = "Get matching products",
-        security = {@SecurityRequirement(name = "Bearer Authentication")})
+        description = "Fetches a list of products based on various search criteria such as "
+            + "ingredients, rating, phrase, and sorting options. If authenticated, user gets "
+            + "additional info about whether the product is liked.",
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Products retrieved successfully",
+            content = @Content(schema = @Schema(implementation = ProductListResponseDto.class)))
+    })
     @GetMapping
     public ResponseEntity<ProductListResponseDto> getProducts(
         @RequestParam("page-number") Optional<Integer> pageNumber,
@@ -73,20 +84,30 @@ public class ProductController {
     }
 
     @Operation(summary = "Get info of a specific product",
-        description = "Get info of a specific product",
-        security = {@SecurityRequirement(name = "Bearer Authentication")})
+        description = "Fetches detailed information of a product based on the provided product ID.",
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Product retrieved successfully",
+            content = @Content(schema = @Schema(implementation = FullProductDto.class))),
+        @ApiResponse(responseCode = "404", description = "Product not found", content = @Content)
+    })
     @GetMapping("/{id}")
     public ResponseEntity<FullProductDto> getProductById(@PathVariable Long id) {
         return productService.getProductById(id).map(ResponseEntity::ok)
             .orElseThrow(() -> new ProductNotFoundException(id));
     }
 
-    @Operation(summary = "Add a product to the database",
-        description = "Add a product to the database",
-        security = {@SecurityRequirement(name = "Bearer Authentication")})
+    @Operation(summary = "Add a new product",
+        description = "Adds a new product to the inventory.",
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Product added successfully",
+            content = @Content(schema = @Schema(implementation = Product.class)))
+    })
     @PreAuthorize("hasAuthority('ADD_PRODUCT')")
     @PostMapping
-    @ResponseBody
     public ResponseEntity<Product> addProduct(@RequestBody ProductRequestDto productRequest) {
         Product product = Product.builder()
             .name(productRequest.name())
@@ -104,12 +125,18 @@ public class ProductController {
         return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
     }
 
-    @Operation(summary = "Delete product from the database",
-        description = "Delete product from the database",
-        security = {@SecurityRequirement(name = "Bearer Authentication")})
+    @Operation(summary = "Delete a product",
+        description = "Deletes a product from the inventory based on the provided product ID.",
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Product deleted successfully",
+            content = @Content),
+        @ApiResponse(responseCode = "404", description = "Product not found",
+            content = @Content)
+    })
     @PreAuthorize("hasAuthority('REMOVE_PRODUCT')")
     @DeleteMapping("/{id}")
-    @ResponseBody
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         boolean deleted = productService.deleteProduct(id);
         if (!deleted) {
@@ -118,23 +145,34 @@ public class ProductController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "Edit product in the database",
-        description = "Edit product in the database",
-        security = {@SecurityRequirement(name = "Bearer Authentication")})
+    @Operation(summary = "Edit a product",
+        description = "Edits a product in the inventory based on the provided product ID and new "
+            + "product details.",
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Product edited successfully",
+            content = @Content(schema = @Schema(implementation = Product.class))),
+        @ApiResponse(responseCode = "404", description = "Product not found", content = @Content)
+    })
     @PreAuthorize("hasAuthority('EDIT_PRODUCT')")
     @PutMapping("/{id}")
-    @ResponseBody
     public ResponseEntity<Product> editProduct(@PathVariable Long id,
                                                @RequestBody ProductRequestDto product) {
         return productService.editProduct(id, product).map(ResponseEntity::ok)
             .orElseThrow(() -> new ProductNotFoundException(id));
     }
 
-    @Operation(summary = "",
-        description = "",
-        security = {@SecurityRequirement(name = "Bearer Authentication")})
+    @Operation(summary = "Like a product",
+        description = "Likes a product based on the provided product ID.",
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Product liked successfully",
+            content = @Content),
+        @ApiResponse(responseCode = "404", description = "Product not found", content = @Content)
+    })
     @PostMapping("/{id}/likes")
-    @ResponseBody
     public ResponseEntity<Void> likeProduct(@PathVariable Long id) {
         boolean likeSucceeded = productService.likeProduct(id);
         if (!likeSucceeded) {
@@ -143,11 +181,16 @@ public class ProductController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "Unlike product",
-        description = "Unlike product",
-        security = {@SecurityRequirement(name = "Bearer Authentication")})
+    @Operation(summary = "Unlike a product",
+        description = "Unlikes a product based on the provided product ID.",
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Product unliked successfully",
+            content = @Content),
+        @ApiResponse(responseCode = "404", description = "Product not found", content = @Content)
+    })
     @DeleteMapping("/{id}/likes")
-    @ResponseBody
     public ResponseEntity<Void> unlikeProduct(@PathVariable Long id) {
         boolean unlikeSucceeded = productService.unlikeProduct(id);
         if (!unlikeSucceeded) {
@@ -156,11 +199,16 @@ public class ProductController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "Add product review",
-        description = "Add product review",
-        security = {@SecurityRequirement(name = "Bearer Authentication")})
+    @Operation(summary = "Add a review",
+        description = "Adds a review to a product based on the provided product ID "
+            + "and review details.",
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Review added successfully",
+            content = @Content(schema = @Schema(implementation = ReviewDto.class)))
+    })
     @PostMapping("/{id}/reviews")
-    @ResponseBody
     public ResponseEntity<ReviewDto> addReview(@PathVariable Long id,
                                                @Valid @RequestBody ReviewRequestDto reviewRequest) {
         Review review = Review.builder()
@@ -174,11 +222,16 @@ public class ProductController {
             .orElseThrow(() -> Problem.valueOf(Status.BAD_REQUEST));
     }
 
-    @Operation(summary = "Edit product review",
-        description = "Edit product review",
-        security = {@SecurityRequirement(name = "Bearer Authentication")})
+    @Operation(summary = "Edit a review",
+        description = "Edits a review for a product based on the provided product ID "
+            + "and review details.",
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Review edited successfully",
+            content = @Content(schema = @Schema(implementation = ReviewDto.class)))
+    })
     @PutMapping("/{id}/reviews")
-    @ResponseBody
     public ResponseEntity<ReviewDto> editReview(@PathVariable Long id,
                                                 @Valid @RequestBody
                                                 ReviewRequestDto reviewRequest) {
@@ -193,9 +246,14 @@ public class ProductController {
             .orElseThrow(() -> Problem.valueOf(Status.BAD_REQUEST));
     }
 
-    @Operation(summary = "Delete product review",
-        description = "Delete product review",
-        security = {@SecurityRequirement(name = "Bearer Authentication")})
+    @Operation(summary = "Delete a review",
+        description = "Deletes a review for a product based on the provided product ID.",
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Review deleted successfully",
+            content = @Content)
+    })
     @DeleteMapping("/{id}/reviews")
     public ResponseEntity<Void> deleteReview(@PathVariable Long id) {
         boolean deleted = productService.deleteReview(id);
@@ -206,17 +264,30 @@ public class ProductController {
     }
 
     @Operation(summary = "Get product reviews",
-        description = "Get product reviews",
-        security = {@SecurityRequirement(name = "Bearer Authentication")})
+        description = "Fetches a list of reviews for a product based on the provided product ID.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Reviews retrieved successfully",
+            content = @Content(
+                array = @ArraySchema(schema = @Schema(implementation = ReviewDto.class))
+            )),
+        @ApiResponse(responseCode = "404", description = "Product not found", content = @Content)
+    })
     @GetMapping("/{id}/reviews")
-    @ResponseBody
     public ResponseEntity<List<ReviewDto>> getProductReviews(@PathVariable Long id) {
         return productService.getProductReviews(id).map(ResponseEntity::ok)
             .orElseThrow(() -> new ProductNotFoundException(id));
     }
 
-    @Operation(security = {@SecurityRequirement(name = "Bearer Authentication")})
-    @GetMapping("{id}/review")
+    @Operation(summary = "Get user review for a product",
+        description = "Fetches the review submitted by the authenticated user for a specific "
+            + "product based on the provided product ID.",
+        security = @SecurityRequirement(name = "Bearer Authentication"))
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User review retrieved successfully",
+            content = @Content(schema = @Schema(implementation = ReviewDto.class))),
+        @ApiResponse(responseCode = "404", description = "Product not found", content = @Content)
+    })
+    @GetMapping("/{id}/review")
     public ResponseEntity<ReviewDto> getProductUserReview(@PathVariable Long id) {
         Optional<ReviewDto> reviewOptional = productService.getProductUserReview(id);
         return reviewOptional.map(ResponseEntity::ok)

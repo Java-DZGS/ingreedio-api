@@ -1,6 +1,11 @@
 package pl.edu.pw.mini.ingreedio.api.review;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
@@ -24,8 +29,14 @@ public class ReportController {
 
     @Operation(summary = "Get all reports",
         description = "Get all reports raised by users for all reviews of all products.",
-        security = {@SecurityRequirement(name = "Bearer Authentication")})
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
     @PreAuthorize("hasAuthority('GET_REPORTS')")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Reports retrieved successfully",
+            content = @Content(
+                array = @ArraySchema(schema = @Schema(implementation = ReportDto.class))))
+    })
     @GetMapping
     public ResponseEntity<List<ReportDto>> getReports() {
         return ResponseEntity.ok(reportService.getReports());
@@ -33,7 +44,13 @@ public class ReportController {
 
     @Operation(summary = "Get report by id",
         description = "Get reports identified by a specific id.",
-        security = {@SecurityRequirement(name = "Bearer Authentication")})
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Report retrieved successfully",
+            content = @Content(schema = @Schema(implementation = ReportDto.class))),
+        @ApiResponse(responseCode = "404", description = "Report not found", content = @Content)
+    })
     @PreAuthorize("hasAuthority('GET_REPORTS')")
     @GetMapping("/{id}")
     public ResponseEntity<ReportDto> getReport(@PathVariable Long id) {
@@ -43,7 +60,12 @@ public class ReportController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a report",
         description = "Delete a report identified by a specific id.",
-        security = {@SecurityRequirement(name = "Bearer Authentication")})
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Report deleted successfully",
+            content = @Content)
+    })
     @PreAuthorize("hasAuthority('DELETE_REPORT')")
     public ResponseEntity<Void> deleteReport(@PathVariable Long id) {
         reportService.deleteReport(id);
