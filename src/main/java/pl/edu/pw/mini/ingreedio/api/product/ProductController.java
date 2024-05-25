@@ -66,7 +66,11 @@ public class ProductController {
         @RequestParam("min-rating") Optional<Integer> minRating,
         @RequestParam("phrase") Optional<String> phrase,
         @RequestParam("sort-by") Optional<List<String>> sortBy,
-        @RequestParam("liked") Optional<Boolean> liked) {
+        @RequestParam("liked") Optional<Boolean> liked,
+        @RequestParam("brands-exclude") Optional<Set<Long>> brandsToExclude,
+        @RequestParam("brands-include") Optional<Set<Long>> brandsToInclude,
+        @RequestParam("providers") Optional<Set<Long>> providers,
+        @RequestParam("categories") Optional<Set<Long>> categories) {
         ProductListResponseDto products = productService.getProductsMatchingCriteria(
             productsCriteriaService.getProductsCriteria(
                 ingredientsToExclude,
@@ -74,8 +78,11 @@ public class ProductController {
                 minRating,
                 phrase,
                 sortBy,
-                liked
-                // TODO: provider, brand, category
+                liked,
+                providers,
+                brandsToExclude,
+                brandsToInclude,
+                categories
             ),
             paginationService.getPageRequest(pageNumber)
         );
