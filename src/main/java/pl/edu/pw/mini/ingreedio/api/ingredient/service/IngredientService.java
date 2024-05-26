@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.auth.service.AuthService;
@@ -36,11 +37,18 @@ public class IngredientService {
     }
 
     @Transactional(readOnly = true)
-    public List<IngredientDto> getIngredients(String query) {
-        List<Ingredient> ingredients = ingredientRepository
-            .findByNameContainingIgnoreCase(query);
-        return ingredients.stream().map(ingredientDtoMapper)
-                .collect(Collectors.toList());
+    public List<IngredientDto> getIngredients(int count, String queryString, User user,
+                                              boolean skipAllergens) {
+        String[] query = queryString.split("\\s+");
+        return ingredientRepository.findIngredientsMatchingQuery(PageRequest.of(0, count),
+            query, user, skipAllergens).map(ingredientDtoMapper).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<IngredientDto> getIngredients(int count, String queryString) {
+        String[] query = queryString.split("\\s+");
+        return ingredientRepository.findIngredientsMatchingQuery(PageRequest.of(0, count), query)
+            .map(ingredientDtoMapper).toList();
     }
 
     @Transactional

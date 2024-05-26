@@ -73,3 +73,14 @@ SELECT r.id, p.id
 FROM roles r
          CROSS JOIN permissions p
 WHERE (r.name = 'MODERATOR' AND p.name IN ('GET_REPORTS', 'DELETE_REPORT'));
+
+-- changeset kuzu:add-string-matches-query-function
+CREATE OR REPLACE FUNCTION string_matches_query(string text, query text[]) RETURNS bigint
+AS $$
+BEGIN
+    RETURN (
+        SELECT count(*) FROM (SELECT unnest(query) AS token) AS tokens
+        WHERE string like token || '%' OR string like '% ' || token || '%'
+    );
+END
+$$ LANGUAGE plpgsql;

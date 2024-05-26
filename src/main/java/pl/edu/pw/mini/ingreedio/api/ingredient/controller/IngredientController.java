@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import pl.edu.pw.mini.ingreedio.api.auth.model.AuthInfo;
 import pl.edu.pw.mini.ingreedio.api.ingredient.dto.IngredientDto;
 import pl.edu.pw.mini.ingreedio.api.ingredient.service.IngredientService;
 import pl.edu.pw.mini.ingreedio.api.product.exception.IngredientNotFoundException;
@@ -32,7 +34,8 @@ public class IngredientController {
 
     @Operation(summary = "Search ingredients",
         description = "Fetches a list of ingredients based on the provided query and limits "
-            + "the results to the specified count."
+                      + "the results to the specified count.",
+        security = @SecurityRequirement(name = "Bearer Authentication")
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Ingredients retrieved successfully",
@@ -40,15 +43,17 @@ public class IngredientController {
     })
     @GetMapping
     public ResponseEntity<List<IngredientDto>> getIngredients(
-        @RequestParam int count,
-        @RequestParam(required = false) String query) {
-        String name = query != null ? query : "";
-        List<IngredientDto> matchingIngredients = ingredientService.getIngredients(name);
-        if (matchingIngredients.size() > count) {
-            matchingIngredients = matchingIngredients.subList(0, count);
+        Authentication authentication,
+        @RequestParam(defaultValue = "10") int count,
+        @RequestParam(defaultValue = "") String query,
+        @RequestParam(defaultValue = "true") Boolean skipAllergens) {
+        if (authentication != null && authentication.isAuthenticated()) {
+            return ResponseEntity.ok(
+                ingredientService.getIngredients(count, query,
+                    ((AuthInfo) authentication.getPrincipal()).getUser(), skipAllergens));
         }
 
-        return ResponseEntity.ok(matchingIngredients);
+        return ResponseEntity.ok(ingredientService.getIngredients(count, query));
     }
 
     @Operation(summary = "Get ingredients by IDs",
