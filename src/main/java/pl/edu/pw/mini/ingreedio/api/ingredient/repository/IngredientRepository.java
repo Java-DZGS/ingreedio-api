@@ -38,7 +38,7 @@ public interface IngredientRepository extends JpaRepository<Ingredient, Long> {
                     select allergens from User u
                     join u.allergens allergens
                     where u = :user
-                )) then 1 else 0 end,
+                )) then 1 else 0 end asc,
                 case when (i in (
                     select likes from User u
                     join u.likedIngredients likes
