@@ -3,21 +3,30 @@ package pl.edu.pw.mini.ingreedio.api.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.IntegrationTest;
+import pl.edu.pw.mini.ingreedio.api.auth.service.AuthService;
 import pl.edu.pw.mini.ingreedio.api.ingredient.dto.IngredientDto;
 import pl.edu.pw.mini.ingreedio.api.ingredient.model.Ingredient;
 import pl.edu.pw.mini.ingreedio.api.ingredient.service.IngredientService;
+import pl.edu.pw.mini.ingreedio.api.user.model.User;
+import pl.edu.pw.mini.ingreedio.api.user.service.UserService;
 
 @SpringBootTest
 @Transactional
 public class IngredientServiceTest extends IntegrationTest {
     @Autowired
     private IngredientService ingredientService;
+    @Autowired
+    private AuthService authService;
+    @Autowired
+    private UserService userService;
 
     @Test
     public void givenIngredientObject_whenSaveIngredient_thenReturnIngredientObject() {
@@ -163,4 +172,61 @@ public class IngredientServiceTest extends IntegrationTest {
         assertThat(allergens.containsAll(List.of(1L, 2L, 3L))).isTrue();
         assertThat(allergens.contains(4L)).isFalse();
     }
+
+    @Test
+    public void givenQuery_whenSearch_thenCorrectResult() {
+        // Given
+        String query = "LAU SUL";
+        int count = 10;
+
+        // When
+        List<IngredientDto> ingredients = ingredientService.getIngredients(count, query);
+
+        // Then
+        assertThat(ingredients.size()).isLessThanOrEqualTo(count);
+        assertThat(ingredients.getFirst().id()).isEqualTo(3050L);
+    }
+
+    @Test
+    @WithMockUser(username = "user", password = "user")
+    public void givenLiked_whenSearch_thenLikedArePromoted() {
+        // Given
+        String query = "LAU SUL";
+        int count = 10;
+        long liked = 2945L;
+        ingredientService.likeIngredient(liked);
+        User user = userService.getUserByUsername(authService.getCurrentUsername()).orElseThrow();
+
+        // When
+        List<IngredientDto> ingredients =
+            ingredientService.getIngredients(count, query, user, true);
+
+        // Then
+        assertThat(ingredients.size()).isLessThanOrEqualTo(count);
+        assertThat(ingredients.getFirst().id()).isEqualTo(liked);
+    }
+
+    @Test
+    @WithMockUser(username = "user", password = "user")
+    public void givenAllergens_whenSearch_thenAllergensAreSkipped() {
+        // Given
+        String query = "LAU SUL";
+        int count = 10;
+        Set<Long> allergens = Set.of(3050L, 1899L, 2945L);
+        allergens.forEach(ingredientService::addAllergen);
+        User user = userService.getUserByUsername(authService.getCurrentUsername()).orElseThrow();
+
+        // When
+        List<IngredientDto> ingredients =
+            ingredientService.getIngredients(count, query, user, true);
+
+        // Then
+        assertThat(ingredients.size()).isLessThanOrEqualTo(count);
+        assertThat(ingredients).doesNotContainAnyElementsOf(
+            allergens.stream()
+                .map(ingredientService::getIngredientById)
+                .map(Optional::orElseThrow)
+                .toList());
+    }
+
 }

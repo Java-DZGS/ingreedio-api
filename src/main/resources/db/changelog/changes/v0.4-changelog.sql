@@ -67,7 +67,7 @@ INSERT INTO permissions (name, description)
 VALUES ('GET_REPORTS', 'Allows getting reports'),
        ('DELETE_REPORT', 'Allows deleting a report');
 
--- changeset mslup:add-report-management-permissions-to-moderator
+--changeset mslup:add-report-management-permissions-to-moderator
 INSERT INTO roles_permissions (role_id, permission_id)
 SELECT r.id, p.id
 FROM roles r
@@ -110,9 +110,20 @@ ALTER TABLE reviews
     ADD COLUMN likes_count INT NOT NULL DEFAULT 0,
     ADD COLUMN dislikes_count INT NOT NULL DEFAULT 0;
 
--- changeset mslup:add-like-review-permissions-to-moderator
+--changeset mslup:add-like-review-permissions-to-moderator
 INSERT INTO roles_permissions (role_id, permission_id)
 SELECT r.id, p.id
 FROM roles r
          CROSS JOIN permissions p
 WHERE (r.name = 'MODERATOR' AND p.name = 'LIKE_REVIEW');
+
+--changeset kubazuch:add-string-matches-query-function
+CREATE OR REPLACE FUNCTION string_matches_query(string text, query text[]) RETURNS bigint
+AS $$
+BEGIN
+    RETURN (
+        SELECT count(*) FROM (SELECT unnest(query) AS token) AS tokens
+        WHERE string like token || '%' OR string like '% ' || token || '%'
+    );
+END
+$$ LANGUAGE plpgsql;
