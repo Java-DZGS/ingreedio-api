@@ -33,17 +33,50 @@ public class ReviewController {
     private final UserService userService;
     private final AuthService authService;
 
-    /* todo: issue #100
+    @Operation(summary = "Like a review",
+        description = "Likes a user written (non-empty) review based on the provided review ID.",
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @PreAuthorize("hasAuthority('LIKE_REVIEW')")
     @PostMapping("/{id}/likes")
     public ResponseEntity<Void> likeReview(@PathVariable Long id) {
+        reviewService.likeReview(id);
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "Unlikes a review",
+        description = "Unlikes a user written (non-empty) review based on the provided review ID.",
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @PreAuthorize("hasAuthority('LIKE_REVIEW')")
     @DeleteMapping("/{id}/likes")
-    public ResponseEntity<Void> dislikeReview(@PathVariable Long id) {
+    public ResponseEntity<Void> unlikeReview(@PathVariable Long id) {
+        reviewService.unlikeReview(id);
         return ResponseEntity.ok().build();
     }
-    */
+
+    @Operation(summary = "Dislike a review",
+        description = "Dislikes a user written (non-empty) review based on the provided review ID.",
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @PreAuthorize("hasAuthority('LIKE_REVIEW')")
+    @PostMapping("/{id}/dislikes")
+    public ResponseEntity<Void> dislikeReview(@PathVariable Long id) {
+        reviewService.dislikeReview(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Undislikes a review",
+        description = "Undislikes a user written (non-empty) review "
+            + "based on the provided review ID.",
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @PreAuthorize("hasAuthority('LIKE_REVIEW')")
+    @DeleteMapping("/{id}/dislikes")
+    public ResponseEntity<Void> undislikeReview(@PathVariable Long id) {
+        reviewService.undislikeReview(id);
+        return ResponseEntity.ok().build();
+    }
 
     @Operation(summary = "Report a review",
         description = "Reports a user written (non-empty) review based on the provided review ID.",
