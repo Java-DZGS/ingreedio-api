@@ -117,7 +117,7 @@ FROM roles r
          CROSS JOIN permissions p
 WHERE (r.name = 'MODERATOR' AND p.name = 'LIKE_REVIEW');
 
---changeset kuzu:add-string-matches-query-function
+--changeset kubazuch:add-string-matches-query-function
 CREATE OR REPLACE FUNCTION string_matches_query(string text, query text[]) RETURNS bigint
 AS $$
 BEGIN
