@@ -6,10 +6,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 @SpringBootTest
+@Transactional
 public class IntegrationTest {
     private static final String POSTGRES_NAME = "postgres_1";
     private static final int POSTGRES_PORT = 5432;
@@ -24,8 +26,8 @@ public class IntegrationTest {
     private static final String MONGO_USERNAME = "compose-mongo";
     private static final String MONGO_PASSWORD = "compose-mongo";
 
-    public static DockerComposeContainer environment =
-        new DockerComposeContainer(new File("src/test/resources/compose-test.yml"))
+    public static DockerComposeContainer<?> environment =
+        new DockerComposeContainer<>(new File("src/test/resources/compose-test.yml"))
             .withExposedService(POSTGRES_NAME, POSTGRES_PORT,
                 Wait.forListeningPort().withStartupTimeout(
                     Duration.ofSeconds(30)))

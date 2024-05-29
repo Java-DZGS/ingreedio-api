@@ -10,7 +10,8 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
-import pl.edu.pw.mini.ingreedio.api.security.JwtUserClaims;
+import pl.edu.pw.mini.ingreedio.api.auth.security.JwtUserClaims;
+import pl.edu.pw.mini.ingreedio.api.auth.service.JwtService;
 
 public class JwtServiceTest {
     JwtService jwtService;
@@ -27,9 +28,7 @@ public class JwtServiceTest {
     @Test
     void givenUsername_whenGeneratingToken_thenTokenShouldBeGenerated() {
         // Given
-        JwtUserClaims jwtUserClaimsDto = JwtUserClaims.builder()
-            .username("testUser")
-            .build();
+        JwtUserClaims jwtUserClaimsDto = JwtUserClaims.builder().username("testUser").build();
 
         // When
         String token = jwtService.generateToken(jwtUserClaimsDto);
@@ -41,11 +40,8 @@ public class JwtServiceTest {
     @Test
     void givenUsernameRolesPermissions_whenGeneratingToken_thenTokenShouldBeGenerated() {
         // Given
-        JwtUserClaims jwtUserClaimsDto = JwtUserClaims.builder()
-            .username("testUser")
-            .roles(Set.of("MODERATOR", "USER"))
-            .permissions(Set.of("CAN_REMOVE_OPINION"))
-            .build();
+        JwtUserClaims jwtUserClaimsDto = JwtUserClaims.builder().username("testUser")
+            .roles(Set.of("MODERATOR", "USER")).permissions(Set.of("CAN_REMOVE_OPINION")).build();
 
         // When
         String token = jwtService.generateToken(jwtUserClaimsDto);
@@ -57,10 +53,7 @@ public class JwtServiceTest {
     @Test
     void givenValidToken_whenExtractingUsername_thenUsernameShouldBeReturned() {
         // Given
-        JwtUserClaims jwtUserClaimsDto = JwtUserClaims.builder()
-            .username("testUser")
-            .build();
-
+        JwtUserClaims jwtUserClaimsDto = JwtUserClaims.builder().username("testUser").build();
         String token = jwtService.generateToken(jwtUserClaimsDto);
 
         // When
@@ -73,10 +66,7 @@ public class JwtServiceTest {
     @Test
     void givenValidToken_whenExtractingExpiration_thenExpirationDateShouldBeReturned() {
         // Given
-        JwtUserClaims jwtUserClaimsDto = JwtUserClaims.builder()
-            .username("testUser")
-            .build();
-
+        JwtUserClaims jwtUserClaimsDto = JwtUserClaims.builder().username("testUser").build();
         String token = jwtService.generateToken(jwtUserClaimsDto);
 
         // When
@@ -89,10 +79,7 @@ public class JwtServiceTest {
     @Test
     void givenValidToken_whenExtractingClaim_thenClaimShouldBeReturned() {
         // Given
-        JwtUserClaims jwtUserClaimsDto = JwtUserClaims.builder()
-            .username("testUser")
-            .build();
-
+        JwtUserClaims jwtUserClaimsDto = JwtUserClaims.builder().username("testUser").build();
         String token = jwtService.generateToken(jwtUserClaimsDto);
 
         // When
@@ -105,12 +92,9 @@ public class JwtServiceTest {
     @Test
     void givenValidToken_whenValidatingToken_thenTokenShouldBeValid() {
         // Given
-        JwtUserClaims jwtUserClaimsDto = JwtUserClaims.builder()
-            .username("testUser")
-            .roles(Set.of("MODERATOR", "USER"))
-            .permissions(Set.of("CAN_REMOVE_OPINION"))
+        JwtUserClaims jwtUserClaimsDto = JwtUserClaims.builder().username("testUser")
+            .roles(Set.of("MODERATOR", "USER")).permissions(Set.of("CAN_REMOVE_OPINION"))
             .build();
-
         String token = jwtService.generateToken(jwtUserClaimsDto);
 
         // When
@@ -123,12 +107,9 @@ public class JwtServiceTest {
     @Test
     void givenValidToken_whenExtractingRolesClaim_thenClaimShouldBeReturned() {
         // Given
-        JwtUserClaims jwtUserClaimsDto = JwtUserClaims.builder()
-            .username("testUser")
-            .roles(Set.of("MODERATOR", "USER"))
-            .permissions(Set.of("CAN_REMOVE_OPINION"))
+        JwtUserClaims jwtUserClaimsDto = JwtUserClaims.builder().username("testUser")
+            .roles(Set.of("MODERATOR", "USER")).permissions(Set.of("CAN_REMOVE_OPINION"))
             .build();
-
         String token = jwtService.generateToken(jwtUserClaimsDto);
 
         // When
@@ -141,12 +122,9 @@ public class JwtServiceTest {
     @Test
     void givenValidToken_whenExtractingPermissionClaim_thenClaimShouldBeReturned() {
         // Given
-        JwtUserClaims jwtUserClaimsDto = JwtUserClaims.builder()
-            .username("testUser")
-            .roles(Set.of("MODERATOR", "USER"))
-            .permissions(Set.of("CAN_REMOVE_OPINION"))
+        JwtUserClaims jwtUserClaimsDto = JwtUserClaims.builder().username("testUser")
+            .roles(Set.of("MODERATOR", "USER")).permissions(Set.of("CAN_REMOVE_OPINION"))
             .build();
-
         String token = jwtService.generateToken(jwtUserClaimsDto);
 
         // When

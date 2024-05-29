@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -12,20 +11,23 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.IntegrationTest;
-import pl.edu.pw.mini.ingreedio.api.criteria.ProductCriteria;
-import pl.edu.pw.mini.ingreedio.api.criteria.ProductsSortingCriteria;
-import pl.edu.pw.mini.ingreedio.api.dto.FullProductDto;
-import pl.edu.pw.mini.ingreedio.api.dto.ProductDto;
-import pl.edu.pw.mini.ingreedio.api.dto.ProductListResponseDto;
-import pl.edu.pw.mini.ingreedio.api.model.Product;
-import pl.edu.pw.mini.ingreedio.api.repository.ProductRepository;
+import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductCriteria;
+import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductsSortingCriteria;
+import pl.edu.pw.mini.ingreedio.api.product.dto.FullProductDto;
+import pl.edu.pw.mini.ingreedio.api.product.dto.ProductDto;
+import pl.edu.pw.mini.ingreedio.api.product.dto.ProductListResponseDto;
+import pl.edu.pw.mini.ingreedio.api.product.dto.ProductRequestDto;
+import pl.edu.pw.mini.ingreedio.api.product.model.Product;
+import pl.edu.pw.mini.ingreedio.api.product.repository.ProductRepository;
+import pl.edu.pw.mini.ingreedio.api.product.service.ProductService;
+import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
+import pl.edu.pw.mini.ingreedio.api.review.model.Review;
 
-@SpringBootTest
 public class ProductServiceTest extends IntegrationTest {
 
     @Autowired
@@ -34,12 +36,16 @@ public class ProductServiceTest extends IntegrationTest {
     @Autowired
     private ProductRepository productRepository;
 
+    /**
+     * Please refer to <a href="https://github.com/Java-DZGS/ingreedio-api/pull/81#issuecomment-2115445411">this</a> PR comment.
+     */
     @AfterEach
     void clearProducts() {
         productRepository.deleteAll();
     }
 
     @Nested
+    @Transactional
     class AddAndGetTests {
         @Test
         public void givenProductObject_whenSaveProduct_thenReturnProductObject() {
@@ -86,6 +92,7 @@ public class ProductServiceTest extends IntegrationTest {
     }
 
     @Nested
+    @Transactional
     class FilteringTests {
         @Test
         public void givenNoCriteria_whenMatch_thenReturnAllProducts() {
@@ -161,15 +168,15 @@ public class ProductServiceTest extends IntegrationTest {
         public void givenIngredientsIncludeCriteria_whenFilter_thenReturnCorrectProducts() {
             // Given
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("potato", "carrot", "beet")).build());
+                .ingredients(List.of("potato", "carrot", "beet")).build());
             productService.addProduct(Product.builder().brand("carfour")
                 .ingredients(List.of("beet")).build());
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("potato", "carrot")).build());
+                .ingredients(List.of("potato", "carrot")).build());
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("carrot", "beet")).build());
+                .ingredients(List.of("carrot", "beet")).build());
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("potato", "beet")).build());
+                .ingredients(List.of("potato", "beet")).build());
 
             var criteria1 = ProductCriteria.builder()
                 .ingredientsNamesToInclude(Set.of("potato", "beet")).build();
@@ -207,15 +214,15 @@ public class ProductServiceTest extends IntegrationTest {
         public void givenIngredientsExcludeCriteria_whenFilter_thenReturnCorrectProducts() {
             // Given
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("potato", "carrot", "beet")).build());
+                .ingredients(List.of("potato", "carrot", "beet")).build());
             productService.addProduct(Product.builder().brand("carfour")
                 .ingredients(List.of("beet", "tomato")).build());
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("potato", "carrot")).build());
+                .ingredients(List.of("potato", "carrot")).build());
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("carrot", "beet")).build());
+                .ingredients(List.of("carrot", "beet")).build());
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("potato", "beet")).build());
+                .ingredients(List.of("potato", "beet")).build());
 
             var criteria1 = ProductCriteria.builder()
                 .ingredientsNamesToExclude(Set.of("potato", "beet")).build();
@@ -258,21 +265,21 @@ public class ProductServiceTest extends IntegrationTest {
         public void givenRatingIngredientsCriteria_whenFilter_thenReturnCorrectProducts() {
             // Given
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("potato", "carrot", "beet")).build());
+                .ingredients(List.of("potato", "carrot", "beet")).build());
             productService.addProduct(Product.builder().brand("carfour")
                 .ingredients(List.of("beet", "tomato")).build());
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("potato", "carrot")).build());
+                .ingredients(List.of("potato", "carrot")).build());
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("carrot", "beet")).build());
+                .ingredients(List.of("carrot", "beet")).build());
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("potato")).rating(6).build());
+                .ingredients(List.of("potato")).rating(6).build());
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("potato", "beet")).rating(7).build());
+                .ingredients(List.of("potato", "beet")).rating(7).build());
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("beet")).rating(10).build());
+                .ingredients(List.of("beet")).rating(10).build());
             productService.addProduct(Product.builder().brand("carfour")
-                .ingredients(Arrays.asList("potato", "beet")).rating(10).build());
+                .ingredients(List.of("potato", "beet")).rating(10).build());
 
             var criteria = ProductCriteria.builder()
                 .ingredientsNamesToInclude(Set.of("potato"))
@@ -305,14 +312,14 @@ public class ProductServiceTest extends IntegrationTest {
                     .name("pasta do zębów")
                     .brand("karfur")
                     .provider("żapka")
-                    .ingredients(Arrays.asList("polietylen", "guma guar", "metanol"))
+                    .ingredients(List.of("polietylen", "guma guar", "metanol"))
                     .build());
             productService.addProduct(
                 Product.builder()
                     .name("poper")
                     .brand("karfur")
                     .provider("żapka")
-                    .ingredients(Arrays.asList("rak", "guma", "metanol"))
+                    .ingredients(List.of("rak", "guma", "metanol"))
                     .build());
 
             // Red herrings
@@ -352,10 +359,10 @@ public class ProductServiceTest extends IntegrationTest {
                     .build());
 
             var criteria = ProductCriteria.builder()
-                    .brandsNamesToInclude(Set.of("karfur"))
-                    .providersNames(Set.of("żapka"))
-                    .ingredientsNamesToInclude(Set.of("metanol"))
-                    .build();
+                .brandsNamesToInclude(Set.of("karfur"))
+                .providersNames(Set.of("żapka"))
+                .ingredientsNamesToInclude(Set.of("metanol"))
+                .build();
 
             // When
             var kerfurZabkaPage = productService.getProductsMatchingCriteria(
@@ -377,6 +384,7 @@ public class ProductServiceTest extends IntegrationTest {
     }
 
     @Nested
+    @Transactional
     class PhraseAndSortingTests {
         @Test
         public void givenProducts_whenMatchSort_thenProductWithGreaterMatchScoreIsFirst() {
@@ -393,7 +401,7 @@ public class ProductServiceTest extends IntegrationTest {
             var criteria = ProductCriteria.builder()
                 .phraseKeywords(Set.of("krem"))
                 .hasMatchScoreSortCriteria(true)
-                .sortingCriteria(Arrays.asList(sortingCriteria))
+                .sortingCriteria(List.of(sortingCriteria))
                 .build();
 
             // When
@@ -426,11 +434,12 @@ public class ProductServiceTest extends IntegrationTest {
 
             // Then
             assertThat(result.products().size()).isEqualTo(1);
-            assertThat(result.products().get(0).name()).isEqualTo("SErEk");
+            assertThat(result.products().getFirst().name()).isEqualTo("SErEk");
         }
     }
 
     @Nested
+    @Transactional
     class ProductsLikingTests {
         @Test
         @WithMockUser(username = "user", password = "user", roles = {})
@@ -446,6 +455,7 @@ public class ProductServiceTest extends IntegrationTest {
 
             // Then
             assertTrue(result);
+            assertTrue(updatedProduct.isPresent());
             assertTrue(updatedProduct.get().isLiked());
         }
 
@@ -476,6 +486,7 @@ public class ProductServiceTest extends IntegrationTest {
 
             // Then
             assertTrue(result);
+            assertTrue(updatedProduct.isPresent());
             assertFalse(updatedProduct.get().isLiked());
         }
 
@@ -527,7 +538,340 @@ public class ProductServiceTest extends IntegrationTest {
             Optional<FullProductDto> result = productService.getProductById(product.getId());
 
             // Then
+            assertTrue(result.isPresent());
             assertThat(result.get().isLiked()).isTrue();
+        }
+    }
+
+    @Nested
+    @Transactional
+    class EditAndDeleteTest {
+        @Test
+        public void givenProductId_whenEditProduct_thenProductIsDeleted() {
+            Product productToEdit = productService.addProduct(Product.builder()
+                .name("productToEdit")
+                .smallImageUrl("oldSmallImageUrl")
+                .largeImageUrl("oldLargeImageUrl")
+                .provider("oldProvider")
+                .brand("oldBrand")
+                .shortDescription("oldShortDescription")
+                .longDescription("oldLongDescription")
+                .volume("oldVolume")
+                .ingredients(List.of("oldIngredient1", "oldIngredient2"))
+                .build());
+
+            ProductRequestDto productEdited = ProductRequestDto.builder()
+                .name("productEdited")
+                .smallImageUrl("newSmallImageUrl")
+                .largeImageUrl("newLargeImageUrl")
+                .provider("newProvider")
+                .brand("newBrand")
+                .shortDescription("newShortDescription")
+                .longDescription("newLongDescription")
+                .volume("newVolume")
+                .ingredients(List.of("newIngredient1", "newIngredient2"))
+                .build();
+
+            // When
+            Optional<Product> editedProduct = productService
+                .editProduct(productToEdit.getId(), productEdited);
+
+            // Then
+            assertThat(editedProduct.isPresent()).isTrue();
+            assertThat(editedProduct.get().getId()).isEqualTo(productToEdit.getId());
+            assertThat(editedProduct.get().getName()).isEqualTo("productEdited");
+            assertThat(editedProduct.get().getSmallImageUrl())
+                .isEqualTo("newSmallImageUrl");
+            assertThat(editedProduct.get().getLargeImageUrl())
+                .isEqualTo("newLargeImageUrl");
+            assertThat(editedProduct.get().getProvider()).isEqualTo("newProvider");
+            assertThat(editedProduct.get().getBrand()).isEqualTo("newBrand");
+            assertThat(editedProduct.get().getShortDescription())
+                .isEqualTo("newShortDescription");
+            assertThat(editedProduct.get().getLongDescription())
+                .isEqualTo("newLongDescription");
+            assertThat(editedProduct.get().getVolume()).isEqualTo("newVolume");
+            assertThat(editedProduct.get().getIngredients())
+                .containsExactly("newIngredient1", "newIngredient2");
+        }
+
+        @Test
+        public void givenProductId_whenEditNonExistingProduct_thenReturnFalse() {
+            // Given
+            productService.addProduct(Product.builder().name("edited").build());
+
+            ProductRequestDto productRequest = ProductRequestDto.builder()
+                .name("edited")
+                .build();
+            // When
+            Optional<Product> edited = productService.editProduct(1000L, productRequest);
+            Optional<FullProductDto> result = productService.getProductById(1000L);
+
+            // Then
+            assertThat(edited.isPresent()).isFalse();
+            assertThat(result.isPresent()).isFalse();
+        }
+
+        @Test
+        public void givenProductId_whenDeleteProduct_thenProductIsDeleted() {
+            // Given
+            Product product = productService
+                .addProduct(Product.builder().name("productToDelete").build());
+
+            // When
+            boolean deleted = productService.deleteProduct(product.getId());
+            Optional<FullProductDto> result = productService.getProductById(product.getId());
+
+            // Then
+            assertThat(deleted).isTrue();
+            assertThat(result.isPresent()).isFalse();
+        }
+
+        @Test
+        public void givenProductId_whenDeleteNonExistingProduct_thenReturnFalse() {
+            // Given
+
+            // When
+            boolean deleted = productService.deleteProduct(1000L);
+
+            // Then
+            assertThat(deleted).isFalse();
+        }
+    }
+
+    @Nested
+    class ReviewTest {
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenProductId_whenAddReview_reviewIsAdded() {
+            // Given
+            Product product = productService
+                .addProduct(Product.builder().name("testProduct").build());
+            Review review = Review.builder()
+                .productId(product.getId())
+                .content("testContent")
+                .rating(5)
+                .build();
+
+            // When
+            Optional<ReviewDto> reviewOptional = productService.addReview(review);
+            Optional<FullProductDto> reviewedProduct = productService
+                .getProductById(product.getId());
+
+            // Then
+            assertThat(reviewOptional.isPresent()).isTrue();
+            assertThat(reviewOptional.get().displayName()).isEqualTo("User");
+            assertThat(reviewOptional.get().content()).isEqualTo("testContent");
+            assertThat(reviewOptional.get().rating()).isEqualTo(5);
+
+            assertThat(reviewedProduct.isPresent()).isTrue();
+            assertThat(reviewedProduct.get().rating()).isEqualTo(5);
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenNonExistingProductId_whenAddReview_reviewIsNotAdded() {
+            // Given
+            Review review = Review.builder()
+                .productId(1000L)
+                .content("testContent")
+                .rating(5)
+                .build();
+
+            // When
+            Optional<ReviewDto> reviewOptional = productService.addReview(review);
+
+            // Then
+            assertThat(reviewOptional.isEmpty()).isTrue();
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenProductId_whenGetReviews_thenGetProductReviews() {
+            // Given
+            Product product = productService
+                .addProduct(Product.builder().name("testProduct").build());
+            Review review = Review.builder()
+                .productId(product.getId())
+                .content("testContent")
+                .rating(1)
+                .build();
+
+            // When
+            productService.addReview(review);
+            Optional<List<ReviewDto>> reviews = productService
+                .getProductReviews(product.getId());
+
+            // Then
+            assertThat(reviews.isPresent()).isTrue();
+            assertThat(reviews.get().size()).isEqualTo(1);
+            assertThat(reviews.get().getFirst().rating()).isEqualTo(1);
+            assertThat(reviews.get().getFirst().content()).isEqualTo("testContent");
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenNonExistingProductId_whenGetReviews_thenGetEmptyResponse() {
+            // Given
+
+            // When
+            Optional<List<ReviewDto>> reviews = productService
+                .getProductReviews(1000L);
+
+            // Then
+            assertThat(reviews.isEmpty()).isTrue();
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenProductId_whenEditReview_reviewIsEdited() {
+            Product product = productService
+                .addProduct(Product.builder().name("testProduct").build());
+            Review review = Review.builder()
+                .productId(product.getId())
+                .content("testContent")
+                .rating(1)
+                .build();
+
+            Review editedReview = Review.builder()
+                .productId(product.getId())
+                .content("edited")
+                .rating(5)
+                .build();
+
+            // When
+            productService.addReview(review);
+            Optional<ReviewDto> reviewOptional = productService.editReview(editedReview);
+            Optional<List<ReviewDto>> reviews = productService
+                .getProductReviews(product.getId());
+            Optional<FullProductDto> reviewedProduct = productService
+                .getProductById(product.getId());
+
+            // Then
+            assertThat(reviewOptional.isPresent()).isTrue();
+            assertThat(reviewOptional.get().displayName()).isEqualTo("User");
+            assertThat(reviewOptional.get().content()).isEqualTo("edited");
+            assertThat(reviewOptional.get().rating()).isEqualTo(5);
+            assertThat(reviews.isPresent()).isTrue();
+            assertThat(reviews.get().size()).isEqualTo(1);
+            assertThat(reviews.get().getFirst().rating()).isEqualTo(5);
+            assertThat(reviews.get().getFirst().content()).isEqualTo("edited");
+
+            assertThat(reviewedProduct.isPresent()).isTrue();
+            assertThat(reviewedProduct.get().rating()).isEqualTo(5);
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenNonExistingProductId_whenEditReview_reviewIsNotEdited() {
+            Product product = productService
+                .addProduct(Product.builder().name("testProduct").build());
+            Review editedReview = Review.builder()
+                .productId(product.getId())
+                .content("edited")
+                .rating(5)
+                .build();
+
+            // When
+            Optional<ReviewDto> reviewOptional = productService.editReview(editedReview);
+
+            // Then
+            assertThat(reviewOptional.isEmpty()).isTrue();
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenProductId_whenEditNonExistingReview_reviewIsNotEdited() {
+            Review editedReview = Review.builder()
+                .productId(1000L)
+                .content("edited")
+                .rating(5)
+                .build();
+
+            // When
+            Optional<ReviewDto> reviewOptional = productService.editReview(editedReview);
+
+            // Then
+            assertThat(reviewOptional.isEmpty()).isTrue();
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenProductId_whenDeleteReview_reviewIsDeleted() {
+            Product product = productService
+                .addProduct(Product.builder().name("testProduct").build());
+            Review review = Review.builder()
+                .productId(product.getId())
+                .content("review")
+                .rating(5)
+                .build();
+
+            // When
+            productService.addReview(review);
+            Optional<List<ReviewDto>> reviews = productService
+                .getProductReviews(product.getId());
+
+            productService.deleteReview(product.getId());
+            Optional<List<ReviewDto>> reviewsDeleted = productService
+                .getProductReviews(product.getId());
+
+            // Then
+            assertThat(reviews.isPresent()).isTrue();
+            assertThat(reviews.get().size()).isEqualTo(1);
+            assertThat(reviewsDeleted.isPresent()).isTrue();
+            assertThat(reviewsDeleted.get().size()).isEqualTo(0);
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenProductId_whenGetProductUserReview_getProductUserReview() {
+            Product product = productService
+                .addProduct(Product.builder().name("testProduct").build());
+            Review review = Review.builder()
+                .productId(product.getId())
+                .content("review")
+                .rating(5)
+                .build();
+
+            // When
+            productService.addReview(review);
+            Optional<ReviewDto> productUserReview = productService
+                .getProductUserReview(product.getId());
+
+
+            // Then
+            assertThat(productUserReview.isPresent()).isTrue();
+            assertThat(productUserReview.get().productId()).isEqualTo(product.getId());
+            assertThat(productUserReview.get().displayName()).isEqualTo("User");
+            assertThat(productUserReview.get().rating()).isEqualTo(5);
+            assertThat(productUserReview.get().content()).isEqualTo("review");
+        }
+
+        @Test
+        @WithMockUser(username = "user", password = "user", roles = {})
+        public void givenProductId_whenGetNonExistingProductUserReview_getEmpty() {
+            Product product = productService
+                .addProduct(Product.builder().name("testProduct").build());
+
+            // When
+            Optional<ReviewDto> productUserReview = productService
+                .getProductUserReview(product.getId());
+
+            // Then
+            assertThat(productUserReview.isPresent()).isFalse();
+        }
+
+        @Test
+        public void givenProductId_whenUserNotLoggedIn_getEmptyProductUserReview() {
+            Product product = productService
+                .addProduct(Product.builder().name("testProduct").build());
+
+            // When
+            Optional<ReviewDto> productUserReview = productService
+                .getProductUserReview(product.getId());
+
+            // Then
+            assertThat(productUserReview.isPresent()).isFalse();
         }
     }
 }

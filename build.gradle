@@ -2,10 +2,11 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.2.3'
     id 'io.spring.dependency-management' version '1.1.4'
+    id 'idea'
 }
 
 group = 'pl.edu.pw.mini.ingreedio'
-version = 'v0.4'
+version = 'v0.5'
 
 java {
     sourceCompatibility = '21'
@@ -24,6 +25,7 @@ dependencies {
     implementation 'org.springframework.data:spring-data-commons:3.2.3'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.postgresql:postgresql'
     implementation 'org.liquibase:liquibase-core'
 
@@ -35,9 +37,13 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
 
+    implementation 'org.zalando:problem-spring-web-starter:0.29.1'
+
     implementation 'com.google.cloud.sql:postgres-socket-factory:1.18.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.testcontainers:testcontainers'
+    testImplementation 'org.testcontainers:mongodb'
+    testImplementation 'org.testcontainers:postgresql'
 
     testImplementation 'org.springframework.security:spring-security-test'
 }
@@ -54,4 +60,11 @@ test {
 
 jar {
     enabled = false
+}
+
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
 }
