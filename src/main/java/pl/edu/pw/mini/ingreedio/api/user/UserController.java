@@ -56,7 +56,7 @@ public class UserController {
     public ResponseEntity<UserDto> getUserInfo(Authentication authentication,
                                                @RequestParam Optional<String> username) {
         if (authentication.getAuthorities().stream() // TODO: change this in S5
-            .anyMatch(authority -> authority.getAuthority().equals("ROLE_MODERATOR"))) {
+            .anyMatch(authority -> authority.getAuthority().equals("GET_USER_INFO"))) {
             String user = username.orElseGet(authentication::getName);
             return userService.getUserByUsername(user)
                 .map(userDtoMapper)
@@ -101,7 +101,7 @@ public class UserController {
             content = @Content(schema = @Schema(implementation = UserDto.class))),
         @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
     })
-    @PreAuthorize("hasAuthority('ROLE_MODERATOR')") // TODO: change this in S5
+    @PreAuthorize("hasAuthority('GET_USER_INFO')")
     @GetMapping("/{id}")
     public ResponseEntity<UserDto> getUserById(@PathVariable Integer id) {
         return userService.getUserById(id)
