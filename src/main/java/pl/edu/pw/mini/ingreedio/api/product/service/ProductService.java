@@ -134,16 +134,9 @@ public class ProductService {
 
         List<ProductDto> productDtos = productsPage.getContent().stream()
             .map(product -> {
-                Boolean isLiked =
+                boolean isLiked =
                     product.getLikedBy() != null && product.getLikedBy().contains(userId);
-                return ProductDto.builder()
-                    .id(product.getId())
-                    .name(product.getName())
-                    .smallImageUrl(product.getSmallImageUrl())
-                    .provider(product.getProvider())
-                    .shortDescription(product.getShortDescription())
-                    .isLiked(isLiked)
-                    .build();
+                return productDtoMapper.applyWithIsLiked(product, isLiked);
             })
             .collect(Collectors.toList());
 

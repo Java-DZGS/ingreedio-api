@@ -67,14 +67,57 @@ INSERT INTO permissions (name, description)
 VALUES ('GET_REPORTS', 'Allows getting reports'),
        ('DELETE_REPORT', 'Allows deleting a report');
 
--- changeset mslup:add-report-management-permissions-to-moderator
+--changeset mslup:add-report-management-permissions-to-moderator
 INSERT INTO roles_permissions (role_id, permission_id)
 SELECT r.id, p.id
 FROM roles r
          CROSS JOIN permissions p
 WHERE (r.name = 'MODERATOR' AND p.name IN ('GET_REPORTS', 'DELETE_REPORT'));
 
--- changeset kuzu:add-string-matches-query-function
+--changeset mslup:add-like-review-permissions
+INSERT INTO permissions (name, description)
+VALUES ('LIKE_REVIEW', 'Allows liking reviews');
+
+-- changeset mslup:add-like-review-permissions-to-user
+INSERT INTO roles_permissions (role_id, permission_id)
+SELECT r.id, p.id
+FROM roles r
+         CROSS JOIN permissions p
+WHERE (r.name = 'USER' AND p.name = 'LIKE_REVIEW');
+
+--changeset mslup:create-users-liked-reviews-table
+CREATE TABLE users_liked_reviews
+(
+    id        BIGSERIAL PRIMARY KEY,
+    user_id   BIGINT NOT NULL,
+    review_id BIGINT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    FOREIGN KEY (review_id) REFERENCES reviews (id)
+);
+
+--changeset mslup:create-users-disliked-reviews-table
+CREATE TABLE users_disliked_reviews
+(
+    id        BIGSERIAL PRIMARY KEY,
+    user_id   BIGINT NOT NULL,
+    review_id BIGINT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    FOREIGN KEY (review_id) REFERENCES reviews (id)
+);
+
+--changeset mslup:add-like-and-dislike-column-to-reviews-table
+ALTER TABLE reviews
+    ADD COLUMN likes_count INT NOT NULL DEFAULT 0,
+    ADD COLUMN dislikes_count INT NOT NULL DEFAULT 0;
+
+--changeset mslup:add-like-review-permissions-to-moderator
+INSERT INTO roles_permissions (role_id, permission_id)
+SELECT r.id, p.id
+FROM roles r
+         CROSS JOIN permissions p
+WHERE (r.name = 'MODERATOR' AND p.name = 'LIKE_REVIEW');
+
+--changeset kubazuch:add-string-matches-query-function
 CREATE OR REPLACE FUNCTION string_matches_query(string text, query text[]) RETURNS bigint
 AS $$
 BEGIN

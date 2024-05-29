@@ -19,4 +19,17 @@ public class ProductDtoMapper implements Function<Product, ProductDto> {
             .shortDescription(product.getShortDescription())
             .build();
     }
+
+    public ProductDto applyWithIsLiked(Product product, boolean isLiked) {
+        return ProductDto.builder()
+            .id(product.getId())
+            .name(product.getName())
+            .brand(product.getBrand())
+            .rating(product.getRating())
+            .smallImageUrl(product.getSmallImageUrl())
+            .provider(product.getProvider())
+            .shortDescription(product.getShortDescription())
+            .isLiked(isLiked)
+            .build();
+    }
 }
