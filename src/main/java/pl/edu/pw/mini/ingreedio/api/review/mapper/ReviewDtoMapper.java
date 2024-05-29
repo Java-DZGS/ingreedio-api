@@ -17,6 +17,8 @@ public class ReviewDtoMapper implements Function<Review, ReviewDto> {
             .content(review.getContent())
             .createdAt(review.getCreatedAt())
             .userId(review.getUser().getId())
+            .likesCount(review.getLikingUsers().size())
+            .dislikesCount(review.getDislikingUsers().size())
             .build();
     }
 
