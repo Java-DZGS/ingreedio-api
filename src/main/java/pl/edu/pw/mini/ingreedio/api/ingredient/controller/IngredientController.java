@@ -53,7 +53,7 @@ public class IngredientController {
                     ((AuthInfo) authentication.getPrincipal()).getUser(), skipAllergens));
         }
 
-        return ResponseEntity.ok(ingredientService.getIngredients(count, query));
+        return ResponseEntity.ok(ingredientService.getIngredients(count, query.toUpperCase()));
     }
 
     @Operation(summary = "Get ingredients by IDs",
