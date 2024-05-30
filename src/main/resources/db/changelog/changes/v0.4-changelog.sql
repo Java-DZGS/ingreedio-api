@@ -135,3 +135,4 @@ INSERT INTO roles_permissions (role_id, permission_id)
 SELECT r.id, p.id
 FROM roles r CROSS JOIN permissions p
 WHERE (r.name = 'MODERATOR' AND p.name = 'GET_USER_INFO');
+
