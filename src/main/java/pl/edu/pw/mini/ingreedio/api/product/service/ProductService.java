@@ -344,6 +344,16 @@ public class ProductService {
         return Optional.of(reviewService.getProductReviews(productId));
     }
 
+    @Transactional(readOnly = true)
+    public Optional<List<ReviewDto>> getProductReviews(Long productId, User user) {
+        Optional<Product> productOptional = productRepository.findById(productId);
+        if (productOptional.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(reviewService.getProductReviews(productId, user));
+    }
+
     public Optional<ReviewDto> getProductUserReview(Long id) {
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());

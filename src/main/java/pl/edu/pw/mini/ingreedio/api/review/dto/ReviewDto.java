@@ -12,5 +12,8 @@ public record ReviewDto(Long reviewId,
                         String content,
                         Timestamp createdAt,
                         Integer likesCount,
-                        Integer dislikesCount) {
+                        Integer dislikesCount,
+                        Boolean isCurrentUser,
+                        Boolean isLiked,
+                        Boolean isDisliked) {
 }
