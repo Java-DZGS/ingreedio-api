@@ -127,7 +127,8 @@ public class ReviewService {
     public List<ReviewDto> getProductReviews(Long productId, User user) {
         return reviewRepository.getProductReviews(productId)
             .stream()
-            .sorted((first, second) -> -Boolean.compare(first.getUser().getId().equals(user.getId()),
+            .sorted((first, second) -> -Boolean.compare(
+                first.getUser().getId().equals(user.getId()),
                 second.getUser().getId().equals(user.getId())))
             .map(review -> reviewDtoMapper.apply(review, user))
             .collect(Collectors.toList());
