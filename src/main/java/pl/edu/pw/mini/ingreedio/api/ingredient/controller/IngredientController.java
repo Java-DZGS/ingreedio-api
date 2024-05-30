@@ -46,10 +46,10 @@ public class IngredientController {
         Authentication authentication,
         @RequestParam(defaultValue = "10") int count,
         @RequestParam(defaultValue = "") String query,
-        @RequestParam(defaultValue = "true") Boolean skipAllergens) {
+        @RequestParam(name = "skip-allergens", defaultValue = "true") Boolean skipAllergens) {
         if (authentication != null && authentication.isAuthenticated()) {
             return ResponseEntity.ok(
-                ingredientService.getIngredients(count, query,
+                ingredientService.getIngredients(count, query.toUpperCase(),
                     ((AuthInfo) authentication.getPrincipal()).getUser(), skipAllergens));
         }
 
