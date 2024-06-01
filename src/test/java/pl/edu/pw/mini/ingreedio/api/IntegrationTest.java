@@ -13,7 +13,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 @SpringBootTest
 @Transactional
 public class IntegrationTest {
-    private static final String POSTGRES_NAME = "postgres _1";
+    private static final String POSTGRES_NAME = "postgres_1";
     private static final int POSTGRES_PORT = 5432;
     private static final String POSTGRES_JDBC = "jdbc:postgresql://%s:%s/%s";
     private static final String POSTGRES_DB = "ingreedio";
