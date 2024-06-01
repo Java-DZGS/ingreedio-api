@@ -76,7 +76,7 @@ public class ReviewService {
 
         userRepository.save(addedReview.getUser());
 
-        return Optional.of(reviewDtoMapper.apply(addedReview));
+        return Optional.of(reviewDtoMapper.apply(addedReview, user));
     }
 
     @Transactional
@@ -120,6 +120,17 @@ public class ReviewService {
         return reviewRepository.getProductReviews(productId)
             .stream()
             .map(reviewDtoMapper)
+            .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReviewDto> getProductReviews(Long productId, User user) {
+        return reviewRepository.getProductReviews(productId)
+            .stream()
+            .sorted((first, second) -> -Boolean.compare(
+                first.getUser().getId().equals(user.getId()),
+                second.getUser().getId().equals(user.getId())))
+            .map(review -> reviewDtoMapper.apply(review, user))
             .collect(Collectors.toList());
     }
 

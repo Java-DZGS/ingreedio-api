@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.zalando.problem.Problem;
 import org.zalando.problem.Status;
+import pl.edu.pw.mini.ingreedio.api.auth.model.AuthInfo;
 import pl.edu.pw.mini.ingreedio.api.product.dto.FullProductDto;
 import pl.edu.pw.mini.ingreedio.api.product.dto.ProductListResponseDto;
 import pl.edu.pw.mini.ingreedio.api.product.dto.ProductRequestDto;
@@ -271,7 +273,8 @@ public class ProductController {
     }
 
     @Operation(summary = "Get product reviews",
-        description = "Fetches a list of reviews for a product based on the provided product ID.")
+        description = "Fetches a list of reviews for a product based on the provided product ID.",
+        security = @SecurityRequirement(name = "Bearer Authentication"))
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Reviews retrieved successfully",
             content = @Content(
@@ -280,7 +283,15 @@ public class ProductController {
         @ApiResponse(responseCode = "404", description = "Product not found", content = @Content)
     })
     @GetMapping("/{id}/reviews")
-    public ResponseEntity<List<ReviewDto>> getProductReviews(@PathVariable Long id) {
+    public ResponseEntity<List<ReviewDto>> getProductReviews(Authentication authentication,
+                                                             @PathVariable Long id) {
+        if (authentication != null && authentication.isAuthenticated()) {
+            return productService.getProductReviews(id,
+                ((AuthInfo) authentication.getPrincipal()).getUser())
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new ProductNotFoundException(id));
+        }
+
         return productService.getProductReviews(id).map(ResponseEntity::ok)
             .orElseThrow(() -> new ProductNotFoundException(id));
     }
