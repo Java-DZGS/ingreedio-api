@@ -1,5 +1,16 @@
 databaseChangeLog:
-  - includeAll:
-      path: db/changelog/changes
-#  - includeAll:
-#      path: db/changelog/test-changes
+  - include:
+      file: changes/v0.1-changelog.sql
+      relativeToChangelogFile: true
+  - include:
+      file: changes/v0.2-changelog.sql
+      relativeToChangelogFile: true
+  - include:
+     file: changes/v0.3-changelog.sql
+     relativeToChangelogFile: true
+  - include:
+      file: mock/v0.3-mocked-users.sql
+      relativeToChangelogFile: true
+  - include:
+      file: changes/v0.4-changelog.sql
+      relativeToChangelogFile: true

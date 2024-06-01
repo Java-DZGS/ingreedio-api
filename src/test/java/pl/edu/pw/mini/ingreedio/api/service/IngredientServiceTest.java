@@ -3,8 +3,6 @@ package pl.edu.pw.mini.ingreedio.api.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,23 +29,25 @@ public class IngredientServiceTest extends IntegrationTest {
     @Test
     public void givenIngredientObject_whenSaveIngredient_thenReturnIngredientObject() {
         // Given
-        Ingredient ingredient = Ingredient.builder().name("testIngredient").build();
+        Ingredient ingredient = Ingredient.builder().name("ingredient1").build();
 
         // When
         Ingredient savedIngredient = ingredientService.addIngredient(ingredient);
 
         // Then
         assertThat(savedIngredient).isNotNull();
-        assertThat(savedIngredient.getName()).isEqualTo("testIngredient");
+        assertThat(savedIngredient.getName()).isEqualTo("ingredient1");
     }
 
     @Test
     @WithMockUser(username = "user", password = "user")
     public void givenIngredientId_whenLikeIngredient_thenSuccess() {
         // Given
+        Long ingredientId = ingredientService.addIngredient(
+            Ingredient.builder().name("ingredient1").build()).getId();
 
         // When
-        boolean result = ingredientService.likeIngredient(1L);
+        boolean result = ingredientService.likeIngredient(ingredientId);
 
         // Then
         assertThat(result).isTrue();
@@ -69,9 +69,12 @@ public class IngredientServiceTest extends IntegrationTest {
     @WithMockUser(username = "user", password = "user")
     public void givenIngredientId_whenUnLikeIngredient_thenSuccess() {
         // Given
+        Long ingredientId = ingredientService.addIngredient(
+            Ingredient.builder().name("ingredient1").build()).getId();
+        ingredientService.likeIngredient(ingredientId);
 
         // When
-        boolean result = ingredientService.unlikeIngredient(1L);
+        boolean result = ingredientService.unlikeIngredient(ingredientId);
 
         // Then
         assertThat(result).isTrue();
@@ -93,9 +96,18 @@ public class IngredientServiceTest extends IntegrationTest {
     @WithMockUser(username = "user", password = "user")
     public void givenUser_whenLikeIngredients_thenGetLikedIngredients() {
         // Given
-        ingredientService.likeIngredient(1L);
-        ingredientService.likeIngredient(2L);
-        ingredientService.likeIngredient(3L);
+        final Long ingredient1Id = ingredientService.addIngredient(
+            Ingredient.builder().name("ingredient1").build()).getId();
+        final Long ingredient2Id = ingredientService.addIngredient(
+            Ingredient.builder().name("ingredient2").build()).getId();
+        final Long ingredient3Id = ingredientService.addIngredient(
+            Ingredient.builder().name("ingredient3").build()).getId();
+        final Long ingredient4Id = ingredientService.addIngredient(
+            Ingredient.builder().name("ingredient4").build()).getId();
+
+        ingredientService.likeIngredient(ingredient1Id);
+        ingredientService.likeIngredient(ingredient2Id);
+        ingredientService.likeIngredient(ingredient3Id);
 
         // When
         List<Long> likedIngredients = ingredientService.getLikedIngredients().stream()
@@ -103,17 +115,20 @@ public class IngredientServiceTest extends IntegrationTest {
 
         // Then
         assertThat(likedIngredients.size()).isEqualTo(3);
-        assertThat(likedIngredients.containsAll(List.of(1L, 2L, 3L))).isTrue();
-        assertThat(likedIngredients.contains(4L)).isFalse();
+        assertThat(likedIngredients.containsAll(
+            List.of(ingredient1Id, ingredient2Id, ingredient1Id))).isTrue();
+        assertThat(likedIngredients.contains(ingredient4Id)).isFalse();
     }
 
     @Test
     @WithMockUser(username = "user", password = "user")
     public void givenIngredientId_whenAddAllergen_thenSuccess() {
         // Given
+        Long ingredient1Id = ingredientService.addIngredient(
+            Ingredient.builder().name("ingredient1").build()).getId();
 
         // When
-        boolean result = ingredientService.addAllergen(1L);
+        boolean result = ingredientService.addAllergen(ingredient1Id);
 
         // Then
         assertThat(result).isTrue();
@@ -132,12 +147,16 @@ public class IngredientServiceTest extends IntegrationTest {
     }
 
     @Test
+    @Transactional
     @WithMockUser(username = "user", password = "user")
     public void givenIngredientId_whenRemoveAllergen_thenSuccess() {
         // Given
+        Long ingredientId = ingredientService.addIngredient(
+            Ingredient.builder().name("ingredient1").build()).getId();
+        ingredientService.addAllergen(ingredientId);
 
         // When
-        boolean result = ingredientService.removeAllergen(1L);
+        boolean result = ingredientService.removeAllergen(ingredientId);
 
         // Then
         assertThat(result).isTrue();
@@ -159,9 +178,18 @@ public class IngredientServiceTest extends IntegrationTest {
     @WithMockUser(username = "user", password = "user")
     public void givenUser_whenAddAllergens_thenGetAllergens() {
         // Given
-        ingredientService.addAllergen(1L);
-        ingredientService.addAllergen(2L);
-        ingredientService.addAllergen(3L);
+        final Long ingredient1Id = ingredientService.addIngredient(
+            Ingredient.builder().name("ingredient1").build()).getId();
+        final Long ingredient2Id = ingredientService.addIngredient(
+            Ingredient.builder().name("ingredient2").build()).getId();
+        final Long ingredient3Id = ingredientService.addIngredient(
+            Ingredient.builder().name("ingredient3").build()).getId();
+        final Long ingredient4Id = ingredientService.addIngredient(
+            Ingredient.builder().name("ingredient4").build()).getId();
+
+        ingredientService.addAllergen(ingredient1Id);
+        ingredientService.addAllergen(ingredient2Id);
+        ingredientService.addAllergen(ingredient3Id);
 
         // When
         List<Long> allergens = ingredientService.getAllergens().stream()
@@ -169,64 +197,94 @@ public class IngredientServiceTest extends IntegrationTest {
 
         // Then
         assertThat(allergens.size()).isEqualTo(3);
-        assertThat(allergens.containsAll(List.of(1L, 2L, 3L))).isTrue();
-        assertThat(allergens.contains(4L)).isFalse();
+        assertThat(allergens.containsAll(
+            List.of(ingredient1Id, ingredient2Id, ingredient3Id))).isTrue();
+        assertThat(allergens.contains(ingredient4Id)).isFalse();
     }
 
     @Test
     public void givenQuery_whenSearch_thenCorrectResult() {
         // Given
+        final Long ingredient1Id = ingredientService.addIngredient(
+            Ingredient.builder().name("LAURKA DLA MAMY").build()).getId();
+        final Long ingredient2Id = ingredientService.addIngredient(
+            Ingredient.builder().name("SULFUR").build()).getId();
+        final Long ingredient3Id = ingredientService.addIngredient(
+            Ingredient.builder().name("LAURYL SULFATE").build()).getId();
+        final Long ingredient4Id = ingredientService.addIngredient(
+            Ingredient.builder().name("KLAU FSUL").build()).getId();
+        final Long ingredient5Id = ingredientService.addIngredient(
+            Ingredient.builder().name("LAURYL SULFIDE").build()).getId();
+
         String query = "LAU SUL";
-        int count = 10;
 
         // When
-        List<IngredientDto> ingredients = ingredientService.getIngredients(count, query);
+        List<IngredientDto> ingredients = ingredientService.getIngredients(10, query);
 
         // Then
-        assertThat(ingredients.size()).isLessThanOrEqualTo(count);
-        assertThat(ingredients.getFirst().id()).isEqualTo(3050L);
+        assertThat(ingredients.size()).isEqualTo(4);
+        assertThat(ingredients.getFirst().id()).isEqualTo(ingredient3Id);
+        assertThat(ingredients).map(IngredientDto::id).containsAll(
+            List.of(ingredient1Id, ingredient2Id, ingredient3Id, ingredient5Id)
+        );
+        assertThat(ingredients).map(IngredientDto::id).doesNotContain(ingredient4Id);
     }
 
     @Test
     @WithMockUser(username = "user", password = "user")
     public void givenLiked_whenSearch_thenLikedArePromoted() {
         // Given
+        final Long ingredient1Id = ingredientService.addIngredient(
+            Ingredient.builder().name("LAURKA DLA MAMY").build()).getId();
+        final Long ingredient2Id = ingredientService.addIngredient(
+            Ingredient.builder().name("SULFUR").build()).getId();
+        final Long ingredient3Id = ingredientService.addIngredient(
+            Ingredient.builder().name("LAURYL SULFATE").build()).getId();
+        final Long ingredient4Id = ingredientService.addIngredient(
+            Ingredient.builder().name("LAURYL SULFIDE").build()).getId();
+
         String query = "LAU SUL";
-        int count = 10;
-        long liked = 2945L;
-        ingredientService.likeIngredient(liked);
+        ingredientService.likeIngredient(ingredient4Id);
         User user = userService.getUserByUsername(authService.getCurrentUsername()).orElseThrow();
 
         // When
         List<IngredientDto> ingredients =
-            ingredientService.getIngredients(count, query, user, true);
+            ingredientService.getIngredients(10, query, user, true);
 
         // Then
-        assertThat(ingredients.size()).isLessThanOrEqualTo(count);
-        assertThat(ingredients.getFirst().id()).isEqualTo(liked);
+        assertThat(ingredients.size()).isEqualTo(4);
+        assertThat(ingredients.getFirst().id()).isEqualTo(ingredient4Id);
+        assertThat(ingredients).map(IngredientDto::id).containsAll(
+            List.of(ingredient1Id, ingredient2Id, ingredient3Id, ingredient4Id)
+        );
     }
 
     @Test
     @WithMockUser(username = "user", password = "user")
     public void givenAllergens_whenSearch_thenAllergensAreSkipped() {
         // Given
+        final Long ingredient1Id = ingredientService.addIngredient(
+            Ingredient.builder().name("LAURKA DLA MAMY").build()).getId();
+        final Long ingredient2Id = ingredientService.addIngredient(
+            Ingredient.builder().name("SULFUR").build()).getId();
+        final Long ingredient3Id = ingredientService.addIngredient(
+            Ingredient.builder().name("LAURYL SULFATE").build()).getId();
+        final Long ingredient4Id = ingredientService.addIngredient(
+            Ingredient.builder().name("LAURYL SULFIDE").build()).getId();
+
         String query = "LAU SUL";
-        int count = 10;
-        Set<Long> allergens = Set.of(3050L, 1899L, 2945L);
-        allergens.forEach(ingredientService::addAllergen);
+        ingredientService.addAllergen(ingredient3Id);
         User user = userService.getUserByUsername(authService.getCurrentUsername()).orElseThrow();
 
         // When
         List<IngredientDto> ingredients =
-            ingredientService.getIngredients(count, query, user, true);
+            ingredientService.getIngredients(10, query, user, true);
 
         // Then
-        assertThat(ingredients.size()).isLessThanOrEqualTo(count);
-        assertThat(ingredients).doesNotContainAnyElementsOf(
-            allergens.stream()
-                .map(ingredientService::getIngredientById)
-                .map(Optional::orElseThrow)
-                .toList());
+        assertThat(ingredients.size()).isEqualTo(3);
+        assertThat(ingredients).map(IngredientDto::id).doesNotContain(ingredient3Id);
+        assertThat(ingredients).map(IngredientDto::id).containsAll(
+            List.of(ingredient1Id, ingredient2Id, ingredient4Id)
+        );
     }
-
 }
