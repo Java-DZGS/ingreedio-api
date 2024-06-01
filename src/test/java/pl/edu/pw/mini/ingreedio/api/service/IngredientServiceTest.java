@@ -96,13 +96,13 @@ public class IngredientServiceTest extends IntegrationTest {
     @WithMockUser(username = "user", password = "user")
     public void givenUser_whenLikeIngredients_thenGetLikedIngredients() {
         // Given
-        Long ingredient1Id = ingredientService.addIngredient(
+        final Long ingredient1Id = ingredientService.addIngredient(
             Ingredient.builder().name("ingredient1").build()).getId();
-        Long ingredient2Id = ingredientService.addIngredient(
+        final Long ingredient2Id = ingredientService.addIngredient(
             Ingredient.builder().name("ingredient2").build()).getId();
-        Long ingredient3Id = ingredientService.addIngredient(
+        final Long ingredient3Id = ingredientService.addIngredient(
             Ingredient.builder().name("ingredient3").build()).getId();
-        Long ingredient4Id = ingredientService.addIngredient(
+        final Long ingredient4Id = ingredientService.addIngredient(
             Ingredient.builder().name("ingredient4").build()).getId();
 
         ingredientService.likeIngredient(ingredient1Id);
@@ -178,13 +178,13 @@ public class IngredientServiceTest extends IntegrationTest {
     @WithMockUser(username = "user", password = "user")
     public void givenUser_whenAddAllergens_thenGetAllergens() {
         // Given
-        Long ingredient1Id = ingredientService.addIngredient(
+        final Long ingredient1Id = ingredientService.addIngredient(
             Ingredient.builder().name("ingredient1").build()).getId();
-        Long ingredient2Id = ingredientService.addIngredient(
+        final Long ingredient2Id = ingredientService.addIngredient(
             Ingredient.builder().name("ingredient2").build()).getId();
-        Long ingredient3Id = ingredientService.addIngredient(
+        final Long ingredient3Id = ingredientService.addIngredient(
             Ingredient.builder().name("ingredient3").build()).getId();
-        Long ingredient4Id = ingredientService.addIngredient(
+        final Long ingredient4Id = ingredientService.addIngredient(
             Ingredient.builder().name("ingredient4").build()).getId();
 
         ingredientService.addAllergen(ingredient1Id);
@@ -205,15 +205,15 @@ public class IngredientServiceTest extends IntegrationTest {
     @Test
     public void givenQuery_whenSearch_thenCorrectResult() {
         // Given
-        Long ingredient1Id = ingredientService.addIngredient(
+        final Long ingredient1Id = ingredientService.addIngredient(
             Ingredient.builder().name("LAURKA DLA MAMY").build()).getId();
-        Long ingredient2Id = ingredientService.addIngredient(
+        final Long ingredient2Id = ingredientService.addIngredient(
             Ingredient.builder().name("SULFUR").build()).getId();
-        Long ingredient3Id = ingredientService.addIngredient(
+        final Long ingredient3Id = ingredientService.addIngredient(
             Ingredient.builder().name("LAURYL SULFATE").build()).getId();
-        Long ingredient4Id = ingredientService.addIngredient(
+        final Long ingredient4Id = ingredientService.addIngredient(
             Ingredient.builder().name("KLAU FSUL").build()).getId();
-        Long ingredient5Id = ingredientService.addIngredient(
+        final Long ingredient5Id = ingredientService.addIngredient(
             Ingredient.builder().name("LAURYL SULFIDE").build()).getId();
 
         String query = "LAU SUL";
@@ -234,13 +234,13 @@ public class IngredientServiceTest extends IntegrationTest {
     @WithMockUser(username = "user", password = "user")
     public void givenLiked_whenSearch_thenLikedArePromoted() {
         // Given
-        Long ingredient1Id = ingredientService.addIngredient(
+        final Long ingredient1Id = ingredientService.addIngredient(
             Ingredient.builder().name("LAURKA DLA MAMY").build()).getId();
-        Long ingredient2Id = ingredientService.addIngredient(
+        final Long ingredient2Id = ingredientService.addIngredient(
             Ingredient.builder().name("SULFUR").build()).getId();
-        Long ingredient3Id = ingredientService.addIngredient(
+        final Long ingredient3Id = ingredientService.addIngredient(
             Ingredient.builder().name("LAURYL SULFATE").build()).getId();
-        Long ingredient4Id = ingredientService.addIngredient(
+        final Long ingredient4Id = ingredientService.addIngredient(
             Ingredient.builder().name("LAURYL SULFIDE").build()).getId();
 
         String query = "LAU SUL";
@@ -263,13 +263,13 @@ public class IngredientServiceTest extends IntegrationTest {
     @WithMockUser(username = "user", password = "user")
     public void givenAllergens_whenSearch_thenAllergensAreSkipped() {
         // Given
-        Long ingredient1Id = ingredientService.addIngredient(
+        final Long ingredient1Id = ingredientService.addIngredient(
             Ingredient.builder().name("LAURKA DLA MAMY").build()).getId();
-        Long ingredient2Id = ingredientService.addIngredient(
+        final Long ingredient2Id = ingredientService.addIngredient(
             Ingredient.builder().name("SULFUR").build()).getId();
-        Long ingredient3Id = ingredientService.addIngredient(
+        final Long ingredient3Id = ingredientService.addIngredient(
             Ingredient.builder().name("LAURYL SULFATE").build()).getId();
-        Long ingredient4Id = ingredientService.addIngredient(
+        final Long ingredient4Id = ingredientService.addIngredient(
             Ingredient.builder().name("LAURYL SULFIDE").build()).getId();
 
         String query = "LAU SUL";
