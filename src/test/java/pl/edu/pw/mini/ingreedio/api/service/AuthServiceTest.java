@@ -169,7 +169,7 @@ public class AuthServiceTest extends IntegrationTest {
     @Test
     public void givenUser_whenGrantingRole_thenRoleIsGranted() {
         // Given
-        User user = userService.createUser("Dummy", "dummy@example.com");
+        User user = dummyUser;
         AuthInfo authInfo = authService.register("test_user", "pass", user);
 
         Role newUserRole = assertRoleExist("TEST");
