@@ -92,6 +92,7 @@ public class AuthService {
 
     /**
      * Gets username of currently logged-in user.
+     *
      * @deprecated this method should not be ever used. If it's used, the code needs refactor.
      */
     @Transactional(readOnly = true)
@@ -106,7 +107,8 @@ public class AuthService {
     }
 
     /**
-     * Gets AuthInfo of user by their username
+     * Gets AuthInfo of user by their username.
+     *
      * @deprecated this method should not be ever used. If it's used, the code needs refactor.
      */
     @Transactional(readOnly = true)
