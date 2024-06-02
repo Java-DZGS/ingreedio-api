@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.auth.exception.UserAlreadyExistsException;
 import pl.edu.pw.mini.ingreedio.api.auth.model.AuthInfo;
-import pl.edu.pw.mini.ingreedio.api.auth.repository.AuthInfoRepository;
+import pl.edu.pw.mini.ingreedio.api.auth.service.AuthInfoMangerService;
 import pl.edu.pw.mini.ingreedio.api.ingredient.model.Ingredient;
 import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.review.mapper.ReviewDtoMapper;
@@ -23,7 +23,7 @@ import pl.edu.pw.mini.ingreedio.api.user.repository.UserRepository;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-    private final AuthInfoRepository authRepository;
+    private final AuthInfoMangerService authInfoMangerService;
     private final ReviewDtoMapper reviewDtoMapper;
 
     public User createUser(String displayName, String email) {
@@ -49,7 +49,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Optional<User> getUserByUsername(String username) {
-        return authRepository.findByUsername(username).map(AuthInfo::getUser);
+        return authInfoMangerService.getByUsername(username).map(AuthInfo::getUser);
     }
 
     @Transactional

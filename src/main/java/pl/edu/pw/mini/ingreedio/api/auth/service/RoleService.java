@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.auth.exception.RoleNotFoundException;
 import pl.edu.pw.mini.ingreedio.api.auth.model.Permission;
 import pl.edu.pw.mini.ingreedio.api.auth.model.Role;
-import pl.edu.pw.mini.ingreedio.api.auth.repository.AuthInfoRepository;
 import pl.edu.pw.mini.ingreedio.api.auth.repository.RoleRepository;
 
 @Service

@@ -1,7 +1,6 @@
 package pl.edu.pw.mini.ingreedio.api.auth.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -28,8 +27,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
 
-    private final AuthInfoRepository authInfoRepository;
-
+    private final AuthInfoMangerService authInfoMangerService;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
     private final JwtClaimsService jwtClaimsService;
@@ -45,13 +43,7 @@ public class AuthService {
             .roles(roleService.getDefaultUserRoles())
             .build();
 
-        try {
-            authInfoRepository.save(authInfo);
-        } catch (DataIntegrityViolationException ex) {
-            throw new UserAlreadyExistsException();
-        }
-
-        return authInfo;
+        return authInfoMangerService.save(authInfo);
     }
 
     @Transactional
@@ -86,9 +78,8 @@ public class AuthService {
     @Transactional
     public void grantRole(AuthInfo userAuthInfo, Role role) {
         userAuthInfo.getRoles().add(role);
-        authInfoRepository.save(userAuthInfo);
+        authInfoMangerService.save(userAuthInfo);
     }
-
 
     /**
      * Gets username of currently logged-in user.
@@ -105,6 +96,8 @@ public class AuthService {
 
         return null;
     }
+
+    private final AuthInfoRepository authInfoRepository; // TODO: remove after refactoring
 
     /**
      * Gets AuthInfo of user by their username.
