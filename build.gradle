@@ -40,6 +40,9 @@ dependencies {
 
     implementation 'org.zalando:problem-spring-web-starter:0.29.1'
 
+    implementation 'org.modelmapper:modelmapper:3.2.0'
+    implementation 'org.modelmapper:modelmapper-module-record:1.0.0'
+
     implementation 'com.google.cloud.sql:postgres-socket-factory:1.18.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.testcontainers:testcontainers'

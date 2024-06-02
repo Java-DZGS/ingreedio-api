@@ -1,4 +1,4 @@
-package pl.edu.pw.mini.ingreedio.api.config;
+package pl.edu.pw.mini.ingreedio.api.common.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

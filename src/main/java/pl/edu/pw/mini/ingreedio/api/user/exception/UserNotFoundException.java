@@ -1,4 +1,4 @@
-package pl.edu.pw.mini.ingreedio.api.auth.exception;
+package pl.edu.pw.mini.ingreedio.api.user.exception;
 
 import org.zalando.problem.AbstractThrowableProblem;
 import org.zalando.problem.Status;

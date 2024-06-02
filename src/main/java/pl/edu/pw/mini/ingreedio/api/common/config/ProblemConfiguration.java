@@ -1,4 +1,4 @@
-package pl.edu.pw.mini.ingreedio.api.config;
+package pl.edu.pw.mini.ingreedio.api.common.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
