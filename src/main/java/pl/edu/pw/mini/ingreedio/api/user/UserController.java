@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -23,11 +22,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import pl.edu.pw.mini.ingreedio.api.auth.dto.RegisterRequestDto;
-import pl.edu.pw.mini.ingreedio.api.auth.exception.UserAlreadyExistsException;
-import pl.edu.pw.mini.ingreedio.api.auth.exception.UserNotFoundException;
 import pl.edu.pw.mini.ingreedio.api.auth.service.AuthService;
 import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.user.dto.UserDto;
+import pl.edu.pw.mini.ingreedio.api.user.exception.UserNotFoundException;
 import pl.edu.pw.mini.ingreedio.api.user.mapper.UserDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.user.model.User;
 import pl.edu.pw.mini.ingreedio.api.user.service.UserService;
@@ -43,8 +41,8 @@ public class UserController {
 
     @Operation(summary = "Get user data",
         description = "Fetches user information based on authentication or provided username. "
-            + "Moderators can fetch information for any user, "
-            + "while regular users can only fetch their own information.",
+                      + "Moderators can fetch information for any user, "
+                      + "while regular users can only fetch their own information.",
         security = {@SecurityRequirement(name = "Bearer Authentication")}
     )
     @ApiResponses(value = {
@@ -84,12 +82,11 @@ public class UserController {
         @ApiResponse(responseCode = "409", description = "User already exists", content = @Content)
     })
     @PostMapping
-    public ResponseEntity<UserDto> register(@RequestBody RegisterRequestDto request) {
-        try {
-            return ResponseEntity.ok(userDtoMapper.apply(authService.register(request)));
-        } catch (DataIntegrityViolationException ex) {
-            throw new UserAlreadyExistsException();
-        }
+    public ResponseEntity<Void> register(@RequestBody RegisterRequestDto request) {
+        User user = userService.createUser(request.displayName(), request.email());
+        authService.register(request.username(), request.password(), user);
+
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Get user by ID",

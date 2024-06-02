@@ -7,42 +7,45 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.zalando.problem.Problem;
-import org.zalando.problem.Status;
 import pl.edu.pw.mini.ingreedio.api.auth.dto.AuthRequestDto;
-import pl.edu.pw.mini.ingreedio.api.auth.dto.JwtResponseDto;
+import pl.edu.pw.mini.ingreedio.api.auth.dto.JwtAuthTokensDto;
 import pl.edu.pw.mini.ingreedio.api.auth.dto.RefreshTokenRequestDto;
+import pl.edu.pw.mini.ingreedio.api.auth.model.RefreshToken;
+import pl.edu.pw.mini.ingreedio.api.auth.security.JwtAuthTokens;
 import pl.edu.pw.mini.ingreedio.api.auth.service.AuthService;
+import pl.edu.pw.mini.ingreedio.api.auth.service.RefreshTokenService;
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Tag(name = "Authentication")
 public class AuthController {
-    private final AuthService service;
+    private final AuthService authService;
+    private final RefreshTokenService refreshTokenService;
+
+    private final ModelMapper mapper;
 
     @Operation(summary = "Authenticate user and get token",
         description = "Authenticates a user with the provided credentials and returns a JWT token "
-            + "if successful."
-    )
+                      + "if successful.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully authenticated",
-            content = @Content(schema = @Schema(implementation = JwtResponseDto.class))),
+            content = @Content(schema = @Schema(implementation = JwtAuthTokensDto.class))),
         @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
     @PostMapping("/login")
-    public ResponseEntity<JwtResponseDto> authenticateAndGetToken(
+    public ResponseEntity<JwtAuthTokensDto> authenticateAndGetToken(
         @RequestBody AuthRequestDto request) {
-        try {
-            return ResponseEntity.ok(service.login(request));
-        } catch (Exception e) {
-            throw Problem.valueOf(Status.UNAUTHORIZED);
-        }
+        return ResponseEntity.ok(mapper.map(
+            authService.login(request.username(), request.password()),
+            JwtAuthTokensDto.JwtAuthTokensDtoBuilder.class
+        ).build());
     }
 
     @Operation(summary = "Refresh JWT token",
@@ -50,16 +53,17 @@ public class AuthController {
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully refreshed the token",
-            content = @Content(schema = @Schema(implementation = JwtResponseDto.class))),
+            content = @Content(schema = @Schema(implementation = JwtAuthTokensDto.class))),
         @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
     @PostMapping("/refresh-token")
-    public ResponseEntity<JwtResponseDto> refreshToken(
+    public ResponseEntity<JwtAuthTokensDto> refreshToken(
         @RequestBody RefreshTokenRequestDto request) {
-        try {
-            return ResponseEntity.ok(service.refresh(request));
-        } catch (RuntimeException ex) {
-            throw Problem.valueOf(Status.UNAUTHORIZED);
-        }
+        RefreshToken token = refreshTokenService.getToken(request.refreshToken());
+        JwtAuthTokens newTokens = authService.refresh(token);
+        return ResponseEntity.ok(mapper.map(
+            newTokens,
+            JwtAuthTokensDto.JwtAuthTokensDtoBuilder.class
+        ).build());
     }
 }

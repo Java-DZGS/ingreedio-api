@@ -48,9 +48,9 @@ public class AuthInfo implements UserDetails {
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-            name = "auth_infos_roles",
-            joinColumns = @JoinColumn(name = "auth_info_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
+        name = "auth_infos_roles",
+        joinColumns = @JoinColumn(name = "auth_info_id"),
+        inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles;
 
@@ -58,7 +58,7 @@ public class AuthInfo implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // Authorities allow using `hasAuthority` function,
         // for example: if user has CAN_ACCESS_SETTINGS authority,
-        // than `hasAuthority("CAN_ACCESS_SETTINGS")` will authorize the user.
+        // then `hasAuthority("CAN_ACCESS_SETTINGS")` will authorize the user.
         Set<GrantedAuthority> userPermissions = roles.stream()
             .map(Role::getPermissions)
             .flatMap(Set::stream)
@@ -66,7 +66,7 @@ public class AuthInfo implements UserDetails {
             .collect(Collectors.toSet());
 
         // Authorities prefixed with ROLE_ allow using `hasRole` function, for example:
-        // if user has ROLE_USER authority, than `hasRole("USER")` will authorize the user.
+        // if user has ROLE_USER authority, then `hasRole("USER")` will authorize the user.
         // `hasRole("USER")` is equivalent of calling `hasAuthority("ROLE_USER")`
         Set<GrantedAuthority> authorities = roles.stream()
             .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))

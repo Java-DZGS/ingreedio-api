@@ -6,10 +6,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.edu.pw.mini.ingreedio.api.auth.exception.UserAlreadyExistsException;
 import pl.edu.pw.mini.ingreedio.api.auth.model.AuthInfo;
-import pl.edu.pw.mini.ingreedio.api.auth.repository.AuthRepository;
+import pl.edu.pw.mini.ingreedio.api.auth.repository.AuthInfoRepository;
 import pl.edu.pw.mini.ingreedio.api.ingredient.model.Ingredient;
 import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.review.mapper.ReviewDtoMapper;
@@ -21,8 +23,18 @@ import pl.edu.pw.mini.ingreedio.api.user.repository.UserRepository;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-    private final AuthRepository authRepository;
+    private final AuthInfoRepository authRepository;
     private final ReviewDtoMapper reviewDtoMapper;
+
+    public User createUser(String displayName, String email) {
+        User user = User.builder().displayName(displayName).email(email).build();
+
+        try {
+            return userRepository.save(user);
+        } catch (DataIntegrityViolationException ex) {
+            throw new UserAlreadyExistsException();
+        }
+    }
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
@@ -116,7 +128,7 @@ public class UserService {
         if (userOptional.isEmpty()) {
             return false;
         }
-        
+
         User user = userOptional.get();
         Hibernate.initialize(user.getLikedProducts());
         Set<Long> likedProducts = user.getLikedProducts();
@@ -134,7 +146,7 @@ public class UserService {
         if (userOptional.isEmpty()) {
             return false;
         }
-        
+
         User user = userOptional.get();
         Hibernate.initialize(user.getLikedProducts());
         Set<Long> likedProducts = user.getLikedProducts();

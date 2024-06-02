@@ -11,12 +11,12 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import pl.edu.pw.mini.ingreedio.api.auth.repository.AuthRepository;
+import pl.edu.pw.mini.ingreedio.api.auth.repository.AuthInfoRepository;
 
 @Configuration
 @RequiredArgsConstructor
 public class AuthConfig {
-    private final AuthRepository authRepository;
+    private final AuthInfoRepository authRepository;
 
     @Bean
     public UserDetailsService userDetailsService() {

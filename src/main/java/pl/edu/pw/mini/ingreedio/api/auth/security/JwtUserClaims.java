@@ -8,4 +8,5 @@ public record JwtUserClaims(
     String username,
     Set<String> roles,
     Set<String> permissions
-) { }
+) {
+}

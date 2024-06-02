@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import pl.edu.pw.mini.ingreedio.api.auth.model.AuthInfo;
 
 @Repository
-public interface AuthRepository extends JpaRepository<AuthInfo, Long> {
+public interface AuthInfoRepository extends JpaRepository<AuthInfo, Long> {
     Optional<AuthInfo> findByUsername(String username);
 }
