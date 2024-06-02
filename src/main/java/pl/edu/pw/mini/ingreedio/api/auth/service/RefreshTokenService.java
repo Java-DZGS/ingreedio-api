@@ -23,6 +23,7 @@ public class RefreshTokenService {
 
     @Transactional
     public RefreshToken refreshToken(RefreshToken token) {
+        verifyExpirationOfToken(token);
         token.setToken(UUID.randomUUID().toString());
         token.setExpirationDate(Instant.now().plusMillis(refreshTokenLifetime));
         return refreshTokenRepository.save(token);
