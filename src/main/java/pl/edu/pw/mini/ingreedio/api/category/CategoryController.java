@@ -5,7 +5,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import pl.edu.pw.mini.ingreedio.api.category.model.Category;
 import pl.edu.pw.mini.ingreedio.api.category.service.CategoryService;
 
@@ -24,7 +28,8 @@ public class CategoryController {
 
     @Operation(summary = "Get categories by ids", description = "Get categories by ids")
     @GetMapping("/get-by")
-    public ResponseEntity<Set<Category>> getCategoriesByIds(@RequestParam("ids") Set<Long> categoryIds) {
+    public ResponseEntity<Set<Category>> getCategoriesByIds(
+        @RequestParam("ids") Set<Long> categoryIds) {
         return ResponseEntity.ok(categoryService.getCategoriesByIds(categoryIds));
     }
 }

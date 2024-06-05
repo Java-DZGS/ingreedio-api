@@ -5,6 +5,7 @@ import org.zalando.problem.Status;
 
 public class ProviderNotFoundException extends AbstractThrowableProblem {
     public ProviderNotFoundException(long id) {
-        super(null, "Provider not found", Status.NOT_FOUND, "Provider not found: %d.".formatted(id));
+        super(null, "Provider not found", Status.NOT_FOUND,
+            "Provider not found: %d.".formatted(id));
     }
 }

@@ -1,7 +1,6 @@
 package pl.edu.pw.mini.ingreedio.api.category.service;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

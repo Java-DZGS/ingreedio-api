@@ -5,6 +5,7 @@ import org.zalando.problem.Status;
 
 public class CategoryNotFoundException extends AbstractThrowableProblem {
     public CategoryNotFoundException(long id) {
-        super(null, "Category not found", Status.NOT_FOUND, "Category not found: %d.".formatted(id));
+        super(null, "Category not found", Status.NOT_FOUND,
+            "Category not found: %d.".formatted(id));
     }
 }
