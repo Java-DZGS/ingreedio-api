@@ -1,4 +1,4 @@
-package pl.edu.pw.mini.ingreedio.api.category.controller;
+package pl.edu.pw.mini.ingreedio.api.category;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -6,6 +6,7 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,8 +20,13 @@ import pl.edu.pw.mini.ingreedio.api.category.service.CategoryService;
 public class CategoryController {
     private final CategoryService categoryService;
 
-    @Operation(summary = "Get categories by ids",
-        description = "Get categories by ids")
+    @Operation(summary = "Get category by ID", description = "Get category by ID")
+    @GetMapping("/{id}")
+    public ResponseEntity<Category> getCategoryById(@PathVariable long id) {
+        return ResponseEntity.ok(categoryService.getCategoryById(id));
+    }
+
+    @Operation(summary = "Get categories by IDs", description = "Get categories by IDs")
     @GetMapping("/get-by")
     public ResponseEntity<Set<Category>> getCategoriesByIds(
         @RequestParam("ids") Set<Long> categoryIds) {

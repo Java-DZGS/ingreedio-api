@@ -9,7 +9,7 @@ import pl.edu.pw.mini.ingreedio.api.category.model.Category;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
-    Optional<Category> findById(Long id);
+    Optional<Category> findById(long id);
 
     List<Category> findAllByIdIn(Set<Long> ids);
 }
