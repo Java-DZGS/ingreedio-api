@@ -20,13 +20,13 @@ import pl.edu.pw.mini.ingreedio.api.brand.service.BrandService;
 public class BrandController {
     private final BrandService brandService;
 
-    @Operation(summary = "Get brand by id", description = "Get brand by id")
+    @Operation(summary = "Get brand by ID", description = "Get brand by ID")
     @GetMapping("/{id}")
     public ResponseEntity<Brand> getBrandsByIds(@PathVariable long id) {
         return ResponseEntity.ok(brandService.getBrandById(id));
     }
 
-    @Operation(summary = "Get brands by ids", description = "Get brands by ids")
+    @Operation(summary = "Get brands by IDs", description = "Get brands by IDs")
     @GetMapping("/get-by")
     public ResponseEntity<Set<Brand>> getBrandsByIds(@RequestParam("ids") Set<Long> brandIds) {
         return ResponseEntity.ok(brandService.getBrandsByIds(brandIds));

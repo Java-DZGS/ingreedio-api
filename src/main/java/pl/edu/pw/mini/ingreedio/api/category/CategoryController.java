@@ -20,13 +20,13 @@ import pl.edu.pw.mini.ingreedio.api.category.service.CategoryService;
 public class CategoryController {
     private final CategoryService categoryService;
 
-    @Operation(summary = "Get category by id", description = "Get category by id")
+    @Operation(summary = "Get category by ID", description = "Get category by ID")
     @GetMapping("/{id}")
     public ResponseEntity<Category> getCategoryById(@PathVariable long id) {
         return ResponseEntity.ok(categoryService.getCategoryById(id));
     }
 
-    @Operation(summary = "Get categories by ids", description = "Get categories by ids")
+    @Operation(summary = "Get categories by IDs", description = "Get categories by IDs")
     @GetMapping("/get-by")
     public ResponseEntity<Set<Category>> getCategoriesByIds(
         @RequestParam("ids") Set<Long> categoryIds) {

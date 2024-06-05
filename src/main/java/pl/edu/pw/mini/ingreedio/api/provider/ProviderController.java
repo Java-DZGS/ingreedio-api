@@ -20,13 +20,13 @@ import pl.edu.pw.mini.ingreedio.api.provider.service.ProviderService;
 public class ProviderController {
     private final ProviderService providerService;
 
-    @Operation(summary = "Get provider by id", description = "Get provider by id")
+    @Operation(summary = "Get provider by ID", description = "Get provider by ID")
     @GetMapping("/{id}")
     public ResponseEntity<Provider> getProvidersByIds(@PathVariable long id) {
         return ResponseEntity.ok(providerService.getProviderById(id));
     }
 
-    @Operation(summary = "Get providers by ids", description = "Get providers by ids")
+    @Operation(summary = "Get providers by IDs", description = "Get providers by IDs")
     @GetMapping("/get-by")
     public ResponseEntity<Set<Provider>> getProvidersByIds(
         @RequestParam("ids") Set<Long> providerIds) {
