@@ -1,25 +1,22 @@
 package pl.edu.pw.mini.ingreedio.api.auth.service;
 
 import jakarta.annotation.PostConstruct;
-import java.util.HashSet;
 import java.util.Set;
-import javax.management.relation.RoleNotFoundException;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import pl.edu.pw.mini.ingreedio.api.auth.model.AuthInfo;
+import pl.edu.pw.mini.ingreedio.api.auth.exception.RoleNotFoundException;
 import pl.edu.pw.mini.ingreedio.api.auth.model.Permission;
 import pl.edu.pw.mini.ingreedio.api.auth.model.Role;
-import pl.edu.pw.mini.ingreedio.api.auth.repository.AuthRepository;
 import pl.edu.pw.mini.ingreedio.api.auth.repository.RoleRepository;
 
 @Service
 @RequiredArgsConstructor
 public class RoleService {
     private final RoleRepository roleRepository;
-    private final AuthRepository authRepository;
 
     @Value("${security.default-user-roles}")
     @Getter
@@ -29,38 +26,29 @@ public class RoleService {
     private Set<Role> defaultUserRoles;
 
     @PostConstruct
-    private void initDefaultUserRoles() throws RoleNotFoundException {
+    @Transactional(readOnly = true)
+    protected void initDefaultUserRoles() {
         defaultUserRoles = getRolesByRolesNames(defaultUserRolesNames);
     }
 
     @Transactional(readOnly = true)
     public Set<Role> getRolesByRolesNames(Set<String> rolesNames) throws RoleNotFoundException {
-        HashSet<Role> result = new HashSet<>();
+        Set<Role> roles = roleRepository.findAllByNameIn(rolesNames);
 
-        for (var roleName : rolesNames) {
-            var role = roleRepository.findByName(roleName);
-            if (role.isEmpty()) {
-                throw new RoleNotFoundException("Role '" + roleName + "' not found!");
-            }
-            result.add(role.get());
+        if (roles.size() < rolesNames.size()) {
+            rolesNames.removeAll(roles.stream().map(Role::getName).collect(Collectors.toSet()));
+
+            //noinspection OptionalGetWithoutIsPresent
+            throw new RoleNotFoundException(rolesNames.stream().findAny().get());
         }
 
-        return result;
-    }
-
-    @Transactional
-    public void grantRole(AuthInfo userAuthInfo, Role role) {
-        Set<Role> roles = userAuthInfo.getRoles();
-        roles.add(role);
-        userAuthInfo.setRoles(roles);
-
-        authRepository.save(userAuthInfo);
+        return roles;
     }
 
     @Transactional(readOnly = true)
     public Role getRoleByName(String roleName) throws RoleNotFoundException {
         return roleRepository.findByName(roleName).orElseThrow(
-            () -> new RoleNotFoundException("User '" + roleName + "' not found!"));
+            () -> new RoleNotFoundException(roleName));
     }
 
     @Transactional

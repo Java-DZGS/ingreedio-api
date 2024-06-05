@@ -11,17 +11,17 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import pl.edu.pw.mini.ingreedio.api.auth.repository.AuthRepository;
+import pl.edu.pw.mini.ingreedio.api.auth.service.AuthInfoMangerService;
 
 @Configuration
 @RequiredArgsConstructor
 public class AuthConfig {
-    private final AuthRepository authRepository;
+    private final AuthInfoMangerService authInfoMangerService;
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> authRepository.findByUsername(username).orElseThrow(
-            () -> new UsernameNotFoundException("Could not find user `" + username + "`"));
+        return username -> authInfoMangerService.getByUsername(username)
+            .orElseThrow(() -> new UsernameNotFoundException("User '" + username + "' not found!"));
     }
 
     @Bean
