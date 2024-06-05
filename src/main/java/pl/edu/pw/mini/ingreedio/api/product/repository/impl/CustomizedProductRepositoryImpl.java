@@ -84,8 +84,8 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
         Criteria ratingFilteringCriteria = productCriteria.minRating() != null
             ? Criteria.where("rating").gte(productCriteria.minRating())
             : new Criteria();
-        Criteria phraseFilteringCriteria = new Criteria();
 
+        Criteria phraseFilteringCriteria = new Criteria();
         if (phraseKeywordsRegExp != null) {
             phraseFilteringCriteria = new Criteria().orOperator(
                 Criteria.where("name").regex(phraseKeywordsRegExp),
@@ -115,7 +115,8 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
 
             try {
                 String queryString = String.format(
-                    createMatchScoreQueryResource.getContentAsString(UTF_8), phraseKeywordsRegExp);
+                    createMatchScoreQueryResource.getContentAsString(UTF_8), phraseKeywordsRegExp
+                        .toString().replaceAll("\\\\", "\\\\\\\\"));
 
                 finalQueryOperations.add(new CustomQueryAggregationOperation(queryString));
             } catch (IOException exception) {
