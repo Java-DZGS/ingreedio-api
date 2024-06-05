@@ -6,6 +6,7 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.edu.pw.mini.ingreedio.api.brand.exception.BrandNotFoundException;
 import pl.edu.pw.mini.ingreedio.api.brand.model.Brand;
 import pl.edu.pw.mini.ingreedio.api.brand.repository.BrandRepository;
 
@@ -15,8 +16,8 @@ import pl.edu.pw.mini.ingreedio.api.brand.repository.BrandRepository;
 public class BrandService {
     private final BrandRepository brandRepository;
 
-    public Optional<Brand> getBrandById(Long id) {
-        return brandRepository.findById(id);
+    public Brand getBrandById(long id) {
+        return brandRepository.findById(id).orElseThrow(() -> new BrandNotFoundException(id));
     }
 
     public Set<Brand> getBrandsByIds(Set<Long> ids) {
