@@ -13,7 +13,7 @@ import pl.edu.pw.mini.ingreedio.api.user.model.User;
 
 @Repository
 public interface IngredientRepository extends JpaRepository<Ingredient, Long> {
-    Optional<Ingredient> findById(Long id);
+    Optional<Ingredient> findById(long id);
 
     List<Ingredient> findAllByIdIn(Set<Long> ids);
 
