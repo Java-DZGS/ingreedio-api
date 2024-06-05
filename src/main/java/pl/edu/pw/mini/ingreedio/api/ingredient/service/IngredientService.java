@@ -64,32 +64,28 @@ public class IngredientService {
 
     @Transactional
     public void likeIngredient(long id, User user) throws IngredientNotFoundException {
-        Ingredient ingredient = ingredientRepository.findById(id)
-            .orElseThrow(() -> new IngredientNotFoundException(id));
+        Ingredient ingredient = this.getIngredientById(id);
 
         userService.likeIngredient(user, ingredient);
     }
 
     @Transactional
     public void unlikeIngredient(long id, User user) throws IngredientNotFoundException {
-        Ingredient ingredient = ingredientRepository.findById(id)
-            .orElseThrow(() -> new IngredientNotFoundException(id));
+        Ingredient ingredient = this.getIngredientById(id);
 
         userService.unlikeIngredient(user, ingredient);
     }
 
     @Transactional
     public void addAllergen(long id, User user) throws IngredientNotFoundException {
-        Ingredient ingredient = ingredientRepository.findById(id)
-            .orElseThrow(() -> new IngredientNotFoundException(id));
+        Ingredient ingredient = this.getIngredientById(id);
 
         userService.addAllergen(user, ingredient);
     }
 
     @Transactional
     public void removeAllergen(long id, User user) throws IngredientNotFoundException {
-        Ingredient ingredient = ingredientRepository.findById(id)
-            .orElseThrow(() -> new IngredientNotFoundException(id));
+        Ingredient ingredient = this.getIngredientById(id);
 
         userService.removeAllergen(user, ingredient);
     }
