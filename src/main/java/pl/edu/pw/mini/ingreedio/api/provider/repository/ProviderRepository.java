@@ -9,7 +9,7 @@ import pl.edu.pw.mini.ingreedio.api.provider.model.Provider;
 
 @Repository
 public interface ProviderRepository extends JpaRepository<Provider, Long> {
-    Optional<Provider> findById(Long id);
+    Optional<Provider> findById(long id);
 
     List<Provider> findAllByIdIn(Set<Long> ids);
 }
