@@ -14,12 +14,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.IntegrationTest;
 import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductCriteria;
-import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductsSortingCriteria;
 import pl.edu.pw.mini.ingreedio.api.product.exception.ProductNotFoundException;
 import pl.edu.pw.mini.ingreedio.api.product.model.BrandDocument;
 import pl.edu.pw.mini.ingreedio.api.product.model.CategoryDocument;
@@ -27,6 +25,7 @@ import pl.edu.pw.mini.ingreedio.api.product.model.IngredientDocument;
 import pl.edu.pw.mini.ingreedio.api.product.model.ProductDocument;
 import pl.edu.pw.mini.ingreedio.api.product.model.ProviderDocument;
 import pl.edu.pw.mini.ingreedio.api.product.repository.ProductRepository;
+import pl.edu.pw.mini.ingreedio.api.product.service.ProductCriteriaService;
 import pl.edu.pw.mini.ingreedio.api.product.service.ProductService;
 import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.review.model.Review;
@@ -37,6 +36,9 @@ public class ProductServiceTest extends IntegrationTest {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private ProductCriteriaService productCriteriaService;
 
     @Autowired
     private ProductRepository productRepository;
@@ -340,6 +342,112 @@ public class ProductServiceTest extends IntegrationTest {
                 assertThat(product.getRating()).isGreaterThanOrEqualTo(7);
             }
         }
+
+        @Test
+        public void givenMultiCriteria_whenFilter_thenReturnCorrectProducts() {
+            // Given
+            BrandDocument nivea = BrandDocument.builder().id(1L).name("nivea").build();
+            BrandDocument grycan = BrandDocument.builder().id(2L).name("grycan").build();
+            BrandDocument sniker = BrandDocument.builder().id(3L).name("sniker").build();
+            BrandDocument ogrodek = BrandDocument.builder().id(4L).name("ogrodek").build();
+            BrandDocument golibroda = BrandDocument.builder().id(5L).name("golibroda").build();
+            BrandDocument kolgat = BrandDocument.builder().id(6L).name("kolgat").build();
+            BrandDocument elmech = BrandDocument.builder().id(7L).name("elmech").build();
+            BrandDocument akufresz = BrandDocument.builder().id(8L).name("elmech").build();
+
+            IngredientDocument guma = IngredientDocument
+                .builder().id(2L).name("guma").build();
+            IngredientDocument rak = IngredientDocument
+                .builder().id(3L).name("rak").build();
+            IngredientDocument polietylen = IngredientDocument
+                .builder().id(4L).name("polietylen").build();
+            IngredientDocument gumaGuar = IngredientDocument
+                .builder().id(5L).name("guma guar").build();
+            IngredientDocument metanol = IngredientDocument
+                .builder().id(6L).name("metanol").build();
+
+
+            ProviderDocument zapka = ProviderDocument.builder().id(1L).name("żapka").build();
+            ProviderDocument rosman = ProviderDocument.builder().id(2L).name("rosman").build();
+            ProviderDocument karfur = ProviderDocument.builder().id(3L).name("karfur")
+                .build();
+
+            // Proper
+            productService.addProduct(
+                ProductDocument.builder()
+                    .name("pasta do zębów")
+                    .brand(nivea)
+                    .provider(zapka)
+                    .ingredients(Set.of(polietylen, gumaGuar, metanol))
+                    .build());
+
+            productService.addProduct(
+                ProductDocument.builder()
+                    .name("poper")
+                    .brand(nivea)
+                    .provider(zapka)
+                    .ingredients(Set.of(rak, guma, metanol))
+                    .build());
+
+            // Red herrings
+            productService.addProduct(
+                ProductDocument.builder().name("ziemniak").brand(nivea).provider(zapka)
+                    .build());
+            productService.addProduct(
+                ProductDocument.builder().name("obrazek").brand(nivea).provider(zapka)
+                    .build());
+            productService.addProduct(
+                ProductDocument.builder().name("szampą").brand(nivea).provider(karfur)
+                    .build());
+            productService.addProduct(
+                ProductDocument.builder().name("szamka").brand(grycan).provider(zapka)
+                    .build());
+            productService.addProduct(
+                ProductDocument.builder().name("baton").brand(sniker).provider(zapka).build());
+            productService.addProduct(
+                ProductDocument.builder().name("marchew").brand(ogrodek).provider(karfur)
+                    .build());
+            productService.addProduct(
+                ProductDocument.builder().name("pianka do golenia").brand(golibroda)
+                .provider(rosman)
+                    .build());
+            productService.addProduct(
+                ProductDocument.builder().name("pasta do zębów").brand(kolgat)
+                .provider(rosman)
+                    .build());
+            productService.addProduct(
+                ProductDocument.builder().name("pasta do zębów").brand(elmech)
+                .provider(rosman)
+                    .build());
+            productService.addProduct(
+                ProductDocument.builder().name("pasta do zębów").brand(akufresz)
+                .provider(rosman)
+                    .build());
+
+            var criteria = ProductCriteria.builder()
+                .brandsNamesToInclude(Set.of("nivea"))
+                .providersNames(Set.of("żapka"))
+                .ingredientsNamesToInclude(Set.of("metanol"))
+                .build();
+
+            // When
+            Page<ProductDocument> kerfurZabkaPage = productService.getProductsMatchingCriteria(
+                criteria, PageRequest.of(0, 30));
+
+            List<ProductDocument> karfurZapkaProducts = kerfurZabkaPage.getContent();
+
+            // Then
+            assertThat(karfurZapkaProducts.size()).isEqualTo(2);
+
+            for (ProductDocument product : karfurZapkaProducts) {
+                assertThat(product.getProvider().getName()).isEqualTo("żapka");
+                assertThat(product.getBrand().getName()).isEqualTo("nivea");
+                assertThat(product.getIngredients()
+                    .stream()
+                    .map(IngredientDocument::getName).toList())
+                    .contains("metanol");
+            }
+        }
     }
 
     @Nested
@@ -355,8 +463,9 @@ public class ProductServiceTest extends IntegrationTest {
             productService.addProduct(ProductDocument.builder().name("serek")
                 .shortDescription("krem do stóp").build());
 
-            var sortingCriteria =
-                new ProductsSortingCriteria(Sort.Direction.DESC, "matchScore");
+            var sortingCriteria = productCriteriaService
+                .getProductsSortingCriteria("d-match-score");
+
             var criteria = ProductCriteria.builder()
                 .phraseKeywords(Set.of("krem"))
                 .hasMatchScoreSortCriteria(true)

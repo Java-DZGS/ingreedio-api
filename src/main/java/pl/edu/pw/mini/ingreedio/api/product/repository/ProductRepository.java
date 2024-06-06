@@ -8,7 +8,7 @@ import pl.edu.pw.mini.ingreedio.api.product.model.ProductDocument;
 @Repository
 public interface ProductRepository
     extends MongoRepository<ProductDocument, Long>, CustomizedProductRepository {
-    Optional<ProductDocument> findById(Long id);
+    Optional<ProductDocument> findById(long id);
 
     void deleteAll();
 }

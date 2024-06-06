@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.brand.exception.BrandNotFoundException;
 import pl.edu.pw.mini.ingreedio.api.brand.model.Brand;
 import pl.edu.pw.mini.ingreedio.api.brand.repository.BrandRepository;
-import pl.edu.pw.mini.ingreedio.api.category.model.Category;
 
 @Service
 @RequiredArgsConstructor

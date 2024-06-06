@@ -130,7 +130,7 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
         if (productCriteria.sortingCriteria() != null) {
             finalQueryOperations.addAll(productCriteria.sortingCriteria()
                 .stream()
-                .map(option -> Aggregation.sort(option.order(), option.byField()))
+                .map(option -> Aggregation.sort(option.order(), option.byField().getFieldName()))
                 .toList());
         }
 
