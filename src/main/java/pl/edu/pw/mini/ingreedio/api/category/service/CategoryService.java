@@ -1,6 +1,7 @@
 package pl.edu.pw.mini.ingreedio.api.category.service;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,10 @@ public class CategoryService {
 
     public Set<Category> getCategoriesByIds(Set<Long> ids) {
         return new HashSet<>(categoryRepository.findAllByIdIn(ids));
+    }
+
+    public List<Category> getAllCategories() {
+        return categoryRepository.findAll();
     }
 
 }
