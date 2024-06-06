@@ -37,7 +37,7 @@ public class IngredientController {
 
     @Operation(summary = "Search ingredients",
         description = "Fetches a list of ingredients based on the provided query and limits "
-            + "the results to the specified count.",
+                      + "the results to the specified count.",
         security = @SecurityRequirement(name = "Bearer Authentication")
     )
     @ApiResponses(value = {
@@ -104,47 +104,6 @@ public class IngredientController {
             .map((ingredient) -> modelMapper.map(
                 ingredient, IngredientDto.IngredientDtoBuilder.class).build())
             .collect(Collectors.toSet());
-        return ResponseEntity.ok(ingredientDtos);
-    }
-
-    @Operation(summary = "Get liked ingredients",
-        description = "Fetches a list of ingredients liked by the user.",
-        security = @SecurityRequirement(name = "Bearer Authentication")
-    )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Liked ingredients retrieved successfully",
-            content = @Content(
-                array = @ArraySchema(schema = @Schema(implementation = IngredientDto.class))
-            ))
-    })
-    @GetMapping("/liked")
-    public ResponseEntity<List<IngredientDto>> getLikedIngredients(Authentication authentication) {
-        List<IngredientDto> ingredientDtos = ingredientService
-            .getLikedIngredients(((AuthInfo) authentication.getPrincipal()).getUser())
-            .stream()
-            .map((ingredient) -> modelMapper.map(
-                ingredient, IngredientDto.IngredientDtoBuilder.class).build())
-            .toList();
-        return ResponseEntity.ok(ingredientDtos);
-    }
-
-    @Operation(summary = "Get allergens",
-        description = "Fetches a list of ingredients that are classified as allergens.",
-        security = @SecurityRequirement(name = "Bearer Authentication")
-    )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Allergens retrieved successfully",
-            content = @Content(
-                array = @ArraySchema(schema = @Schema(implementation = IngredientDto.class))))
-    })
-    @GetMapping("/allergens")
-    public ResponseEntity<List<IngredientDto>> getAllergens(Authentication authentication) {
-        List<IngredientDto> ingredientDtos = ingredientService
-            .getAllergens(((AuthInfo) authentication.getPrincipal()).getUser())
-            .stream()
-            .map((ingredient) -> modelMapper.map(
-                ingredient, IngredientDto.IngredientDtoBuilder.class).build())
-            .toList();
         return ResponseEntity.ok(ingredientDtos);
     }
 
