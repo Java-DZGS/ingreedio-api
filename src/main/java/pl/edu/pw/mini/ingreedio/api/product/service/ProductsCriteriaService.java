@@ -12,7 +12,6 @@ import pl.edu.pw.mini.ingreedio.api.brand.model.Brand;
 import pl.edu.pw.mini.ingreedio.api.brand.service.BrandService;
 import pl.edu.pw.mini.ingreedio.api.category.model.Category;
 import pl.edu.pw.mini.ingreedio.api.category.service.CategoryService;
-import pl.edu.pw.mini.ingreedio.api.ingredient.dto.IngredientDto;
 import pl.edu.pw.mini.ingreedio.api.ingredient.model.Ingredient;
 import pl.edu.pw.mini.ingreedio.api.ingredient.service.IngredientService;
 import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductCriteria;

@@ -1,4 +1,4 @@
-package pl.edu.pw.mini.ingreedio.api.ingredient.controller;
+package pl.edu.pw.mini.ingreedio.api.ingredient;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,9 +24,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import pl.edu.pw.mini.ingreedio.api.auth.model.AuthInfo;
 import pl.edu.pw.mini.ingreedio.api.ingredient.dto.IngredientDto;
-import pl.edu.pw.mini.ingreedio.api.ingredient.mapper.IngredientDtoMapper;
+import pl.edu.pw.mini.ingreedio.api.ingredient.model.Ingredient;
 import pl.edu.pw.mini.ingreedio.api.ingredient.service.IngredientService;
-import pl.edu.pw.mini.ingreedio.api.product.exception.IngredientNotFoundException;
 
 @RestController
 @RequestMapping("/api/ingredients")
@@ -33,11 +33,11 @@ import pl.edu.pw.mini.ingreedio.api.product.exception.IngredientNotFoundExceptio
 @Tag(name = "Ingredients")
 public class IngredientController {
     private final IngredientService ingredientService;
-    private final IngredientDtoMapper ingredientDtoMapper;
+    private final ModelMapper modelMapper;
 
     @Operation(summary = "Search ingredients",
         description = "Fetches a list of ingredients based on the provided query and limits "
-                      + "the results to the specified count.",
+            + "the results to the specified count.",
         security = @SecurityRequirement(name = "Bearer Authentication")
     )
     @ApiResponses(value = {
@@ -49,14 +49,41 @@ public class IngredientController {
         Authentication authentication,
         @RequestParam(defaultValue = "10") int count,
         @RequestParam(defaultValue = "") String query,
-        @RequestParam(name = "skip-allergens", defaultValue = "true") Boolean skipAllergens) {
+        @RequestParam(name = "skip-allergens", defaultValue = "true") boolean skipAllergens) {
         if (authentication != null && authentication.isAuthenticated()) {
-            return ResponseEntity.ok(
-                ingredientService.getIngredients(count, query.toUpperCase(),
-                    ((AuthInfo) authentication.getPrincipal()).getUser(), skipAllergens));
+            List<IngredientDto> ingredientDtoList = ingredientService
+                .getIngredients(
+                    count,
+                    query.toUpperCase(),
+                    ((AuthInfo) authentication.getPrincipal()).getUser(), skipAllergens)
+                .stream()
+                .map((ingredient) -> modelMapper.map(ingredient,
+                    IngredientDto.IngredientDtoBuilder.class).build()).toList();
+
+            return ResponseEntity.ok(ingredientDtoList);
         }
 
-        return ResponseEntity.ok(ingredientService.getIngredients(count, query.toUpperCase()));
+        List<IngredientDto> ingredientDtoList = ingredientService
+            .getIngredients(count, query.toUpperCase())
+            .stream()
+            .map((ingredient) -> modelMapper.map(ingredient,
+                IngredientDto.IngredientDtoBuilder.class).build()).toList();
+        return ResponseEntity.ok(ingredientDtoList);
+    }
+
+    @Operation(summary = "Get ingredient by ID",
+        description = "Fetches an ingredient based on the provided ID."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Ingredient retrieved successfully",
+            content = @Content(schema = @Schema(implementation = IngredientDto.class)))
+    })
+    @GetMapping("/{id}")
+    public ResponseEntity<IngredientDto> getIngredientById(@PathVariable long id) {
+        Ingredient ingredient = ingredientService.getIngredientById(id);
+        IngredientDto ingredientDto = modelMapper.map(
+            ingredient, IngredientDto.IngredientDtoBuilder.class).build();
+        return ResponseEntity.ok(ingredientDto);
     }
 
     @Operation(summary = "Get ingredients by IDs",
@@ -71,10 +98,13 @@ public class IngredientController {
     @GetMapping("/get-by")
     public ResponseEntity<Set<IngredientDto>> getIngredientsByIds(
         @RequestParam("ids") Set<Long> ingredientsIds) {
-        return ResponseEntity.ok(ingredientService.getIngredientsByIds(ingredientsIds)
+        Set<IngredientDto> ingredientDtos = ingredientService
+            .getIngredientsByIds(ingredientsIds)
             .stream()
-            .map(ingredientDtoMapper)
-            .collect(Collectors.toSet()));
+            .map((ingredient) -> modelMapper.map(
+                ingredient, IngredientDto.IngredientDtoBuilder.class).build())
+            .collect(Collectors.toSet());
+        return ResponseEntity.ok(ingredientDtos);
     }
 
     @Operation(summary = "Get liked ingredients",
@@ -88,9 +118,14 @@ public class IngredientController {
             ))
     })
     @GetMapping("/liked")
-    public ResponseEntity<List<IngredientDto>> getLikedIngredients() {
-        List<IngredientDto> likedIngredients = ingredientService.getLikedIngredients();
-        return ResponseEntity.ok(likedIngredients);
+    public ResponseEntity<List<IngredientDto>> getLikedIngredients(Authentication authentication) {
+        List<IngredientDto> ingredientDtos = ingredientService
+            .getLikedIngredients(((AuthInfo) authentication.getPrincipal()).getUser())
+            .stream()
+            .map((ingredient) -> modelMapper.map(
+                ingredient, IngredientDto.IngredientDtoBuilder.class).build())
+            .toList();
+        return ResponseEntity.ok(ingredientDtos);
     }
 
     @Operation(summary = "Get allergens",
@@ -103,9 +138,14 @@ public class IngredientController {
                 array = @ArraySchema(schema = @Schema(implementation = IngredientDto.class))))
     })
     @GetMapping("/allergens")
-    public ResponseEntity<List<IngredientDto>> getAllergens() {
-        List<IngredientDto> allergens = ingredientService.getAllergens();
-        return ResponseEntity.ok(allergens);
+    public ResponseEntity<List<IngredientDto>> getAllergens(Authentication authentication) {
+        List<IngredientDto> ingredientDtos = ingredientService
+            .getAllergens(((AuthInfo) authentication.getPrincipal()).getUser())
+            .stream()
+            .map((ingredient) -> modelMapper.map(
+                ingredient, IngredientDto.IngredientDtoBuilder.class).build())
+            .toList();
+        return ResponseEntity.ok(ingredientDtos);
     }
 
     @Operation(summary = "Like an ingredient",
@@ -118,12 +158,10 @@ public class IngredientController {
         @ApiResponse(responseCode = "404", description = "Ingredient not found", content = @Content)
     })
     @PostMapping("/{id}/likes")
-    public ResponseEntity<Void> likeIngredient(@PathVariable Long id) {
-        boolean likeSucceeded = ingredientService.likeIngredient(id);
-        if (!likeSucceeded) {
-            throw new IngredientNotFoundException(id);
-        }
-
+    public ResponseEntity<Void> likeIngredient(
+        Authentication authentication,
+        @PathVariable long id) {
+        ingredientService.likeIngredient(id, ((AuthInfo) authentication.getPrincipal()).getUser());
         return ResponseEntity.ok().build();
     }
 
@@ -137,12 +175,11 @@ public class IngredientController {
         @ApiResponse(responseCode = "404", description = "Ingredient not found", content = @Content)
     })
     @DeleteMapping("/{id}/likes")
-    public ResponseEntity<Void> unlikeIngredient(@PathVariable Long id) {
-        boolean unlikeSucceeded = ingredientService.unlikeIngredient(id);
-        if (!unlikeSucceeded) {
-            throw new IngredientNotFoundException(id);
-        }
-
+    public ResponseEntity<Void> unlikeIngredient(
+        Authentication authentication,
+        @PathVariable long id) {
+        ingredientService.unlikeIngredient(
+            id, ((AuthInfo) authentication.getPrincipal()).getUser());
         return ResponseEntity.ok().build();
     }
 
@@ -156,12 +193,10 @@ public class IngredientController {
         @ApiResponse(responseCode = "404", description = "Ingredient not found", content = @Content)
     })
     @PostMapping("/{id}/allergens")
-    public ResponseEntity<Void> addAllergen(@PathVariable Long id) {
-        boolean addAllergenSucceeded = ingredientService.addAllergen(id);
-        if (!addAllergenSucceeded) {
-            throw new IngredientNotFoundException(id);
-        }
-
+    public ResponseEntity<Void> addAllergen(
+        Authentication authentication,
+        @PathVariable Long id) {
+        ingredientService.addAllergen(id, ((AuthInfo) authentication.getPrincipal()).getUser());
         return ResponseEntity.ok().build();
     }
 
@@ -175,12 +210,10 @@ public class IngredientController {
         @ApiResponse(responseCode = "404", description = "Ingredient not found", content = @Content)
     })
     @DeleteMapping("/{id}/allergens")
-    public ResponseEntity<Void> removeAllergen(@PathVariable Long id) {
-        boolean removeAllergenSucceeded = ingredientService.removeAllergen(id);
-        if (!removeAllergenSucceeded) {
-            throw new IngredientNotFoundException(id);
-        }
-
+    public ResponseEntity<Void> removeAllergen(
+        Authentication authentication,
+        @PathVariable Long id) {
+        ingredientService.removeAllergen(id, ((AuthInfo) authentication.getPrincipal()).getUser());
         return ResponseEntity.ok().build();
     }
 }

@@ -9,7 +9,7 @@ import pl.edu.pw.mini.ingreedio.api.brand.model.Brand;
 
 @Repository
 public interface BrandRepository extends JpaRepository<Brand, Long> {
-    Optional<Brand> findById(Long id);
+    Optional<Brand> findById(long id);
 
     List<Brand> findAllByIdIn(Set<Long> ids);
 }

@@ -95,7 +95,7 @@ public class ReviewService {
 
             userRepository.save(review.getUser());
 
-            return Optional.of(reviewDtoMapper.apply(editedReview));
+            return Optional.of(reviewDtoMapper.apply(editedReview, user));
         }
         return Optional.empty();
     }
