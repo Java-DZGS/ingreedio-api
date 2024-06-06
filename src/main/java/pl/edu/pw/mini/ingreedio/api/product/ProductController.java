@@ -62,8 +62,9 @@ public class ProductController {
 
     @Operation(summary = "Get matching products",
         description = "Fetches a list of products based on various search criteria such as "
-            + "ingredients, rating, phrase, and sorting options. If authenticated, user gets "
-            + "additional info about whether the product is liked.",
+                      +
+                      "ingredients, rating, phrase, and sorting options. If authenticated, user gets "
+                      + "additional info about whether the product is liked.",
         security = @SecurityRequirement(name = "Bearer Authentication")
     )
     @ApiResponses(value = {
@@ -184,7 +185,7 @@ public class ProductController {
     @Operation(
         summary = "Update an entire product",
         description = "Updates all details of a product in the inventory based on "
-            + "the provided product ID and new product details.",
+                      + "the provided product ID and new product details.",
         security = @SecurityRequirement(name = "Bearer Authentication")
     )
     @ApiResponses(value = {
@@ -209,7 +210,7 @@ public class ProductController {
     @Operation(
         summary = "Partially update a product",
         description = "Partially updates details of a product in the inventory based on "
-            + "the provided product ID and new product details.",
+                      + "the provided product ID and new product details.",
         security = @SecurityRequirement(name = "Bearer Authentication")
     )
     @ApiResponses(value = {
@@ -220,8 +221,9 @@ public class ProductController {
     @PreAuthorize("hasAuthority('EDIT_PRODUCT')")
     @PatchMapping("/{id}")
     public ResponseEntity<ProductDocument> updateProductPatch(@PathVariable Long id,
-                                                         @Validated(ValidationGroups.Patch.class)
-                                                         @RequestBody ProductRequestDto product) {
+                                                              @Validated(ValidationGroups.Patch.class)
+                                                              @RequestBody
+                                                              ProductRequestDto product) {
         ProductDocument productPatch = modelMapper
             .map(product, ProductDocument.ProductDocumentBuilder.class)
             .id(id)
@@ -266,7 +268,7 @@ public class ProductController {
 
     @Operation(summary = "Add a review",
         description = "Adds a review to a product based on the provided product ID "
-            + "and review details.",
+                      + "and review details.",
         security = @SecurityRequirement(name = "Bearer Authentication")
     )
     @ApiResponses(value = {
@@ -287,47 +289,6 @@ public class ProductController {
             .orElseThrow(() -> Problem.valueOf(Status.BAD_REQUEST));
     }
 
-    @Operation(summary = "Edit a review",
-        description = "Edits a review for a product based on the provided product ID "
-            + "and review details.",
-        security = @SecurityRequirement(name = "Bearer Authentication")
-    )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Review edited successfully",
-            content = @Content(schema = @Schema(implementation = ReviewDto.class)))
-    })
-    @PutMapping("/{id}/reviews")
-    public ResponseEntity<ReviewDto> editReview(@PathVariable Long id,
-                                                @Valid @RequestBody
-                                                ReviewRequestDto reviewRequest) {
-        Review review = Review.builder()
-            .productId(id)
-            .rating(reviewRequest.rating())
-            .content(reviewRequest.content())
-            .build();
-        Optional<ReviewDto> reviewOptional = productService.editReview(review);
-        //TODO: proper exceptions, requires refactor
-        return reviewOptional.map(reviewDto -> new ResponseEntity<>(reviewDto, HttpStatus.OK))
-            .orElseThrow(() -> Problem.valueOf(Status.BAD_REQUEST));
-    }
-
-    @Operation(summary = "Delete a review",
-        description = "Deletes a review for a product based on the provided product ID.",
-        security = @SecurityRequirement(name = "Bearer Authentication")
-    )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Review deleted successfully",
-            content = @Content)
-    })
-    @DeleteMapping("/{id}/reviews")
-    public ResponseEntity<Void> deleteReview(@PathVariable Long id) {
-        boolean deleted = productService.deleteReview(id);
-        if (!deleted) {
-            throw Problem.valueOf(Status.BAD_REQUEST); //TODO: proper exceptions, requires refactor
-        }
-        return ResponseEntity.ok().build();
-    }
-
     @Operation(summary = "Get product reviews",
         description = "Fetches a list of reviews for a product based on the provided product ID.",
         security = @SecurityRequirement(name = "Bearer Authentication"))
@@ -343,28 +304,12 @@ public class ProductController {
                                                              @PathVariable Long id) {
         if (authentication != null && authentication.isAuthenticated()) {
             return productService.getProductReviews(id,
-                ((AuthInfo) authentication.getPrincipal()).getUser())
+                    ((AuthInfo) authentication.getPrincipal()).getUser())
                 .map(ResponseEntity::ok)
                 .orElseThrow(() -> new ProductNotFoundException(id));
         }
 
         return productService.getProductReviews(id).map(ResponseEntity::ok)
-            .orElseThrow(() -> new ProductNotFoundException(id));
-    }
-
-    @Operation(summary = "Get user review for a product",
-        description = "Fetches the review submitted by the authenticated user for a specific "
-            + "product based on the provided product ID.",
-        security = @SecurityRequirement(name = "Bearer Authentication"))
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "User review retrieved successfully",
-            content = @Content(schema = @Schema(implementation = ReviewDto.class))),
-        @ApiResponse(responseCode = "404", description = "Product not found", content = @Content)
-    })
-    @GetMapping("/{id}/review")
-    public ResponseEntity<ReviewDto> getProductUserReview(@PathVariable Long id) {
-        Optional<ReviewDto> reviewOptional = productService.getProductUserReview(id);
-        return reviewOptional.map(ResponseEntity::ok)
             .orElseThrow(() -> new ProductNotFoundException(id));
     }
 }

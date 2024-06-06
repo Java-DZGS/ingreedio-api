@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -22,7 +23,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import pl.edu.pw.mini.ingreedio.api.auth.dto.RegisterRequestDto;
+import pl.edu.pw.mini.ingreedio.api.auth.model.AuthInfo;
 import pl.edu.pw.mini.ingreedio.api.auth.service.AuthService;
+import pl.edu.pw.mini.ingreedio.api.ingredient.dto.IngredientDto;
+import pl.edu.pw.mini.ingreedio.api.ingredient.service.IngredientService;
 import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.user.dto.UserDto;
 import pl.edu.pw.mini.ingreedio.api.user.exception.UserNotFoundException;
@@ -38,6 +42,7 @@ public class UserController {
     private final UserService userService;
     private final AuthService authService;
     private final UserDtoMapper userDtoMapper;
+    private final ModelMapper modelMapper;
 
     @Operation(summary = "Get user data",
         description = "Fetches user information based on authentication or provided username. "
@@ -124,5 +129,48 @@ public class UserController {
             .getUserByUsername(authService.getCurrentUsername());
         return userOptional.map(user -> ResponseEntity.ok(userService.getUserRatings(user)))
             .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    private final IngredientService ingredientService; //TODO: temp
+
+    @Operation(summary = "Get liked ingredients",
+        description = "Fetches a list of ingredients liked by the user.",
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Liked ingredients retrieved successfully",
+            content = @Content(
+                array = @ArraySchema(schema = @Schema(implementation = IngredientDto.class))
+            ))
+    })
+    @GetMapping("/liked-ingredients")
+    public ResponseEntity<List<IngredientDto>> getLikedIngredients(Authentication authentication) {
+        List<IngredientDto> ingredientDtos = ingredientService
+            .getLikedIngredients(((AuthInfo) authentication.getPrincipal()).getUser())
+            .stream()
+            .map((ingredient) -> modelMapper.map(
+                ingredient, IngredientDto.IngredientDtoBuilder.class).build())
+            .toList();
+        return ResponseEntity.ok(ingredientDtos);
+    }
+
+    @Operation(summary = "Get allergens",
+        description = "Fetches a list of ingredients that are classified as allergens.",
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Allergens retrieved successfully",
+            content = @Content(
+                array = @ArraySchema(schema = @Schema(implementation = IngredientDto.class))))
+    })
+    @GetMapping("/allergens")
+    public ResponseEntity<List<IngredientDto>> getAllergens(Authentication authentication) {
+        List<IngredientDto> ingredientDtos = ingredientService
+            .getAllergens(((AuthInfo) authentication.getPrincipal()).getUser())
+            .stream()
+            .map((ingredient) -> modelMapper.map(
+                ingredient, IngredientDto.IngredientDtoBuilder.class).build())
+            .toList();
+        return ResponseEntity.ok(ingredientDtos);
     }
 }
