@@ -1,6 +1,7 @@
 package pl.edu.pw.mini.ingreedio.api.provider.service;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,4 +24,7 @@ public class ProviderService {
         return new HashSet<>(providerRepository.findAllByIdIn(ids));
     }
 
+    public List<Provider> getAllProviders() {
+        return providerRepository.findAll();
+    }
 }
