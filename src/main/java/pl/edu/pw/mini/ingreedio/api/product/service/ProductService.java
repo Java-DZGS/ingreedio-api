@@ -1,26 +1,34 @@
 package pl.edu.pw.mini.ingreedio.api.product.service;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.auth.service.AuthService;
+import pl.edu.pw.mini.ingreedio.api.brand.exception.BrandNotFoundException;
+import pl.edu.pw.mini.ingreedio.api.brand.service.BrandService;
+import pl.edu.pw.mini.ingreedio.api.category.service.CategoryService;
+import pl.edu.pw.mini.ingreedio.api.common.util.ModelPatcher;
+import pl.edu.pw.mini.ingreedio.api.ingredient.service.IngredientService;
 import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductCriteria;
-import pl.edu.pw.mini.ingreedio.api.product.dto.FullProductDto;
-import pl.edu.pw.mini.ingreedio.api.product.dto.ProductDto;
-import pl.edu.pw.mini.ingreedio.api.product.dto.ProductListResponseDto;
-import pl.edu.pw.mini.ingreedio.api.product.dto.ProductRequestDto;
-import pl.edu.pw.mini.ingreedio.api.product.mapper.FullProductDtoMapper;
-import pl.edu.pw.mini.ingreedio.api.product.mapper.ProductDtoMapper;
-import pl.edu.pw.mini.ingreedio.api.product.model.Product;
+import pl.edu.pw.mini.ingreedio.api.product.exception.ProductNotFoundException;
+import pl.edu.pw.mini.ingreedio.api.product.model.BrandDocument;
+import pl.edu.pw.mini.ingreedio.api.product.model.CategoryDocument;
+import pl.edu.pw.mini.ingreedio.api.product.model.IngredientDocument;
+import pl.edu.pw.mini.ingreedio.api.product.model.ProductDocument;
+import pl.edu.pw.mini.ingreedio.api.product.model.ProviderDocument;
 import pl.edu.pw.mini.ingreedio.api.product.repository.ProductRepository;
+import pl.edu.pw.mini.ingreedio.api.provider.exception.ProviderNotFoundException;
+import pl.edu.pw.mini.ingreedio.api.provider.service.ProviderService;
 import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.review.model.Review;
 import pl.edu.pw.mini.ingreedio.api.review.service.ReviewService;
@@ -31,193 +39,186 @@ import pl.edu.pw.mini.ingreedio.api.user.service.UserService;
 @RequiredArgsConstructor
 public class ProductService {
     private final ProductRepository productRepository;
-    private final UserService userService;
-    private final AuthService authService;
-    private final ReviewService reviewService;
-    private final ProductDtoMapper productDtoMapper;
-    private final FullProductDtoMapper fullProductDtoMapper;
     private final SequenceGeneratorService sequenceGenerator;
+    private final UserService userService;
+
+    private final IngredientService ingredientService;
+    private final BrandService brandService;
+    private final CategoryService categoryService;
+    private final ProviderService providerService;
+
+    private final ReviewService reviewService;
+
+    private final ModelMapper modelMapper;
+
+    private final AuthService authService;
+
+    private final ModelPatcher<ProductDocument> modelPatcher;
+
 
     @Transactional(readOnly = true)
-    public List<ProductDto> getAllProducts() {
-        return productRepository
-            .findAll()
-            .stream()
-            .map(productDtoMapper).collect(Collectors.toList());
+    public List<ProductDocument> getAllProducts() {
+        return productRepository.findAll();
     }
 
     @Transactional(readOnly = true)
-    public Optional<FullProductDto> getProductById(Long id) {
-        Optional<User> userOptional = userService
-            .getUserByUsername(authService.getCurrentUsername());
+    // This function checks whether the provider/brand/category/ingredients ids do
+    // exist in the postgresql database and adds (updates) missing (incorrect) fields
+    // if it's necessary.
+    //
+    // In case that every id is valid the product with correct subdocuments is returned.
+    //
+    // If there exists at least one invalid id a corresponding exception is thrown.
+    public ProductDocument makeProductFieldsValid(ProductDocument product) throws
+        BrandNotFoundException, ProviderNotFoundException {
+        if (product.getIngredients() != null) {
+            Set<Long> ingredientIds = product
+                .getIngredients()
+                .stream()
+                .map(IngredientDocument::getId)
+                .collect(Collectors.toSet());
 
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            Long userId = user.getId();
-            Optional<Product> productOptional = productRepository.findById(id);
-            if (productOptional.isPresent()) {
-                Product product = productOptional.get();
-                Boolean isLiked =
-                    product.getLikedBy() != null && product.getLikedBy().contains(userId);
-                return Optional.ofNullable(FullProductDto.builder()
-                    .id(product.getId())
-                    .name(product.getName())
-                    .largeImageUrl(product.getLargeImageUrl())
-                    .provider(product.getProvider())
-                    .brand(product.getBrand())
-                    .volume(product.getVolume())
-                    .longDescription(product.getLongDescription())
-                    .ingredients(product.getIngredients())
-                    .isLiked(isLiked)
-                    .rating(product.getRating())
-                    .build());
-            }
-            return productOptional.map(fullProductDtoMapper);
+            Set<IngredientDocument> ingredients = ingredientService
+                .getIngredientsByIds(ingredientIds)
+                .stream()
+                .map(ingredient -> modelMapper
+                    .map(ingredient, IngredientDocument.IngredientDocumentBuilder.class)
+                    .build())
+                .collect(Collectors.toSet());
+
+            product.setIngredients(ingredients);
         }
-        return productRepository.findById(id).map(fullProductDtoMapper);
+
+        if (product.getBrand() != null) {
+            BrandDocument brand = modelMapper
+                .map(brandService
+                    .getBrandById(product.getBrand().getId()),
+                    BrandDocument.BrandDocumentBuilder.class)
+                .build();
+
+            product.setBrand(brand);
+        }
+
+        if (product.getProvider() != null) {
+            ProviderDocument provider = modelMapper
+                .map(providerService
+                    .getProviderById(product.getProvider().getId()),
+                    ProviderDocument.ProviderDocumentBuilder.class)
+                .build();
+
+            product.setProvider(provider);
+        }
+
+        if (product.getCategories() != null) {
+            Set<Long> categoriesIds = product
+                .getCategories()
+                .stream()
+                .map(CategoryDocument::getId)
+                .collect(Collectors.toSet());
+
+            Set<CategoryDocument> categories = categoryService
+                .getCategoriesByIds(categoriesIds)
+                .stream()
+                .map(category -> modelMapper
+                    .map(category, CategoryDocument.CategoryDocumentBuilder.class)
+                    .build())
+                .collect(Collectors.toSet());
+
+            product.setCategories(categories);
+        }
+
+        return product;
+    }
+
+    @Transactional(readOnly = true)
+    public ProductDocument getProductById(long id) throws ProductNotFoundException {
+        return productRepository.findById(id)
+            .orElseThrow(() -> new ProductNotFoundException(id));
     }
 
     @Transactional
-    public Product addProduct(Product product) {
-        product.setId(sequenceGenerator.generateSequence(Product.SEQUENCE_NAME));
+    public ProductDocument addProduct(ProductDocument product) {
+        product.setId(sequenceGenerator.generateSequence(ProductDocument.SEQUENCE_NAME));
         return productRepository.save(product);
     }
 
     @Transactional
-    public boolean deleteProduct(Long id) {
-        Optional<Product> productOptional = productRepository.findById(id);
-        if (productOptional.isPresent()) {
-            userService.deleteProduct(id);
-            productRepository.deleteById(id);
-            return true;
-        }
-        return false;
+    public void deleteProductById(long id) throws ProductNotFoundException {
+        ProductDocument product = getProductById(id);
+
+        userService.allUsersUnlikeProduct(product.getId());
+        productRepository.deleteById(product.getId());
     }
 
     @Transactional
-    public Optional<Product> editProduct(Long id, ProductRequestDto product) {
-        Product existingProduct = productRepository.findById(id).orElse(null);
-        if (existingProduct != null) {
-            existingProduct.setName(product.name());
-            existingProduct.setSmallImageUrl(product.smallImageUrl());
-            existingProduct.setLargeImageUrl(product.largeImageUrl());
-            existingProduct.setProvider(product.provider());
-            existingProduct.setBrand(product.brand());
-            existingProduct.setShortDescription(product.shortDescription());
-            existingProduct.setLongDescription(product.longDescription());
-            existingProduct.setVolume(product.volume());
-            existingProduct.setIngredients(product.ingredients());
+    public ProductDocument updateProduct(ProductDocument productPatch)
+        throws ProductNotFoundException {
+        ProductDocument oldProduct = getProductById(productPatch.getId());
 
-            productRepository.save(existingProduct);
-            return Optional.of(existingProduct);
-        }
-        return Optional.empty();
+        // Update a field of the oldProduct only if corresponding field
+        // in the productPatch is not null
+        modelPatcher.patchAndExcludeFields(oldProduct, productPatch, List.of("id"));
+
+        return productRepository.save(oldProduct);
     }
 
     @Transactional(readOnly = true)
-    public ProductListResponseDto getProductsMatchingCriteria(
-        ProductCriteria criteria, PageRequest pageRequest) {
-        Page<Product> productsPage = productRepository
-            .getProductsMatchingCriteria(criteria, pageRequest);
+    public Page<ProductDocument> getProductsMatchingCriteria(ProductCriteria criteria,
+                                                             PageRequest pageRequest) {
+        return productRepository.getProductsMatchingCriteria(criteria, pageRequest);
+    }
 
-        Optional<User> userOptional = userService
-            .getUserByUsername(authService.getCurrentUsername());
-
-        if (userOptional.isEmpty()) {
-            return new ProductListResponseDto(
-                productsPage.getContent().stream().map(productDtoMapper).toList(),
-                productsPage.getTotalPages());
-        }
-
-        User user = userOptional.get();
-        Long userId = user.getId();
-
-        List<ProductDto> productDtos = productsPage.getContent().stream()
-            .map(product -> {
-                boolean isLiked =
-                    product.getLikedBy() != null && product.getLikedBy().contains(userId);
-                return productDtoMapper.applyWithIsLiked(product, isLiked);
-            })
-            .collect(Collectors.toList());
-
-        return new ProductListResponseDto(productDtos,
-            productsPage.getTotalPages());
+    public boolean isProductLikedByUser(ProductDocument product, User user) {
+        return product.getLikedBy() != null && product.getLikedBy().contains(user.getId());
     }
 
     @Transactional
-    public boolean likeProduct(Long productId) {
-        Optional<User> userOptional = userService
-            .getUserByUsername(authService.getCurrentUsername());
-        if (userOptional.isEmpty()) {
-            return false;
-        }
+    public void likeProduct(long productId, User user) throws ProductNotFoundException {
+        ProductDocument product = getProductById(productId);
 
-        Long userId = userOptional.get().getId();
-
-        Optional<Product> productOptional = productRepository.findById(productId);
-        if (productOptional.isEmpty()) {
-            return false;
-        }
-
-        Product product = productOptional.get();
-        List<Long> likedBy = product.getLikedBy();
-
+        Set<Long> likedBy = product.getLikedBy();
         if (likedBy == null) {
-            likedBy = new ArrayList<>();
+            likedBy = new HashSet<>();
         }
 
-        if (!likedBy.contains(userId)) {
-            likedBy.add(userId);
+        if (!likedBy.contains(user.getId())) {
+            likedBy.add(user.getId());
             product.setLikedBy(likedBy);
             productRepository.save(product);
-            userService.likeProduct(userId.intValue(), productId);
+            // TODO: refactor product liking (user domain)
+            userService.likeProduct(user.getId().intValue(), productId);
         }
-        return true;
     }
 
     @Transactional
-    public boolean unlikeProduct(Long productId) {
-        Optional<User> userOptional = userService
-            .getUserByUsername(authService.getCurrentUsername());
-        if (userOptional.isEmpty()) {
-            return false;
-        }
+    public void unlikeProduct(long productId, User user) {
+        ProductDocument product = getProductById(productId);
 
-        Long userId = userOptional.get().getId();
-
-        Optional<Product> productOptional = productRepository.findById(productId);
-        if (productOptional.isEmpty()) {
-            return false;
-        }
-
-        Product product = productOptional.get();
-        List<Long> likedBy = product.getLikedBy();
-
+        Set<Long> likedBy = product.getLikedBy();
         if (likedBy == null) {
-            return true;
+            return;
         }
 
-        if (likedBy.contains(userId)) {
-            likedBy.remove(userId);
+        if (likedBy.contains(user.getId())) {
+            likedBy.remove(user.getId());
             product.setLikedBy(likedBy);
             productRepository.save(product);
-            userService.unlikeProduct(userId.intValue(), productId);
+            // TODO: refactor product liking (user domain)
+            userService.unlikeProduct(user.getId().intValue(), productId);
         }
-        return true;
     }
 
+
+    // TODO: refactor reviews
     @Transactional
-    public Optional<ReviewDto> addReview(Review review) {
+    public Optional<ReviewDto> addReview(Review review) throws ProductNotFoundException {
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
         if (userOptional.isEmpty()) {
             return Optional.empty();
         }
 
-        Optional<Product> productOptional = productRepository.findById(review.getProductId());
-        if (productOptional.isEmpty()) {
-            return Optional.empty();
-        }
+        ProductDocument product = getProductById(review.getProductId());
 
         User user = userOptional.get();
         review.setUser(user);
@@ -227,7 +228,6 @@ public class ProductService {
             return Optional.empty();
         }
 
-        Product product = productOptional.get();
         Map<Long, Integer> ratings = product.getRatings();
         Integer ratingSum = product.getRatingSum();
 
@@ -255,17 +255,14 @@ public class ProductService {
     }
 
     @Transactional
-    public Optional<ReviewDto> editReview(Review review) {
+    public Optional<ReviewDto> editReview(Review review) throws ProductNotFoundException {
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
         if (userOptional.isEmpty()) {
             return Optional.empty();
         }
 
-        Optional<Product> productOptional = productRepository.findById(review.getProductId());
-        if (productOptional.isEmpty()) {
-            return Optional.empty();
-        }
+        ProductDocument product = getProductById(review.getProductId());
 
         User user = userOptional.get();
         Long userId = user.getId();
@@ -275,7 +272,6 @@ public class ProductService {
             return Optional.empty();
         }
 
-        Product product = productOptional.get();
         Map<Long, Integer> ratings = product.getRatings();
         if (ratings == null) {
             return Optional.empty();
@@ -296,22 +292,18 @@ public class ProductService {
     }
 
     @Transactional
-    public boolean deleteReview(Long productId) {
+    public boolean deleteReview(long productId) throws ProductNotFoundException {
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
         if (userOptional.isEmpty()) {
             return false;
         }
 
-        Optional<Product> productOptional = productRepository.findById(productId);
-        if (productOptional.isEmpty()) {
-            return false;
-        }
+        ProductDocument product = getProductById(productId);
 
         User user = userOptional.get();
         Long userId = user.getId();
 
-        Product product = productOptional.get();
         Map<Long, Integer> ratings = product.getRatings();
         if (ratings == null || !ratings.containsKey(userId)) {
             return false;
@@ -335,22 +327,16 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<List<ReviewDto>> getProductReviews(Long productId) {
-        Optional<Product> productOptional = productRepository.findById(productId);
-        if (productOptional.isEmpty()) {
-            return Optional.empty();
-        }
+    public Optional<List<ReviewDto>> getProductReviews(long productId)
+        throws ProductNotFoundException {
+        getProductById(productId);
 
         return Optional.of(reviewService.getProductReviews(productId));
     }
 
     @Transactional(readOnly = true)
     public Optional<List<ReviewDto>> getProductReviews(Long productId, User user) {
-        Optional<Product> productOptional = productRepository.findById(productId);
-        if (productOptional.isEmpty()) {
-            return Optional.empty();
-        }
-
+        getProductById(productId);
         return Optional.of(reviewService.getProductReviews(productId, user));
     }
 

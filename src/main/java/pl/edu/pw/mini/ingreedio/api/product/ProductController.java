@@ -12,13 +12,18 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -29,17 +34,19 @@ import org.springframework.web.bind.annotation.RestController;
 import org.zalando.problem.Problem;
 import org.zalando.problem.Status;
 import pl.edu.pw.mini.ingreedio.api.auth.model.AuthInfo;
-import pl.edu.pw.mini.ingreedio.api.product.dto.FullProductDto;
-import pl.edu.pw.mini.ingreedio.api.product.dto.ProductListResponseDto;
+import pl.edu.pw.mini.ingreedio.api.common.validation.ValidationGroups;
+import pl.edu.pw.mini.ingreedio.api.product.dto.ProductDto;
+import pl.edu.pw.mini.ingreedio.api.product.dto.ProductPageDto;
 import pl.edu.pw.mini.ingreedio.api.product.dto.ProductRequestDto;
 import pl.edu.pw.mini.ingreedio.api.product.exception.ProductNotFoundException;
-import pl.edu.pw.mini.ingreedio.api.product.model.Product;
+import pl.edu.pw.mini.ingreedio.api.product.model.ProductDocument;
 import pl.edu.pw.mini.ingreedio.api.product.service.PaginationService;
 import pl.edu.pw.mini.ingreedio.api.product.service.ProductService;
 import pl.edu.pw.mini.ingreedio.api.product.service.ProductsCriteriaService;
 import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewRequestDto;
 import pl.edu.pw.mini.ingreedio.api.review.model.Review;
+import pl.edu.pw.mini.ingreedio.api.user.model.User;
 
 @RestController
 @RequestMapping("/api/products")
@@ -50,6 +57,8 @@ public class ProductController {
     private final PaginationService paginationService;
     private final ProductsCriteriaService productsCriteriaService;
 
+    private final ModelMapper modelMapper;
+
     @Operation(summary = "Get matching products",
         description = "Fetches a list of products based on various search criteria such as "
             + "ingredients, rating, phrase, and sorting options. If authenticated, user gets "
@@ -58,10 +67,11 @@ public class ProductController {
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Products retrieved successfully",
-            content = @Content(schema = @Schema(implementation = ProductListResponseDto.class)))
+            content = @Content(schema = @Schema(implementation = ProductPageDto.class)))
     })
-    @GetMapping
-    public ResponseEntity<ProductListResponseDto> getProducts(
+    @GetMapping("/search")
+    public ResponseEntity<ProductPageDto> searchForProducts(
+        Authentication authentication,
         @RequestParam("page-number") Optional<Integer> pageNumber,
         @RequestParam("ingredients-exclude") Optional<Set<Long>> ingredientsToExclude,
         @RequestParam("ingredients-include") Optional<Set<Long>> ingredientsToInclude,
@@ -73,7 +83,7 @@ public class ProductController {
         @RequestParam("brands-include") Optional<Set<Long>> brandsToInclude,
         @RequestParam("providers") Optional<Set<Long>> providers,
         @RequestParam("categories") Optional<Set<Long>> categories) {
-        ProductListResponseDto products = productService.getProductsMatchingCriteria(
+        Page<ProductDocument> products = productService.getProductsMatchingCriteria(
             productsCriteriaService.getProductsCriteria(
                 ingredientsToExclude,
                 ingredientsToInclude,
@@ -89,22 +99,44 @@ public class ProductController {
             paginationService.getPageRequest(pageNumber)
         );
 
-        return ResponseEntity.ok(products);
+        User user = (authentication != null && authentication.isAuthenticated())
+            ? ((AuthInfo) authentication.getPrincipal()).getUser()
+            : null;
+
+        List<ProductDto> productDtos = products.getContent()
+            .stream()
+            .map(product -> modelMapper
+                .map(product, ProductDto.ProductDtoBuilder.class)
+                .isLiked(user != null && productService.isProductLikedByUser(product, user))
+                .build()
+            )
+            .collect(Collectors.toList());
+
+        return ResponseEntity.ok(new ProductPageDto(productDtos, products.getTotalPages()));
     }
 
-    @Operation(summary = "Get info of a specific product",
+    @Operation(summary = "Get full info of a specific product",
         description = "Fetches detailed information of a product based on the provided product ID.",
         security = @SecurityRequirement(name = "Bearer Authentication")
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Product retrieved successfully",
-            content = @Content(schema = @Schema(implementation = FullProductDto.class))),
+            content = @Content(schema = @Schema(implementation = ProductDto.class))),
         @ApiResponse(responseCode = "404", description = "Product not found", content = @Content)
     })
     @GetMapping("/{id}")
-    public ResponseEntity<FullProductDto> getProductById(@PathVariable Long id) {
-        return productService.getProductById(id).map(ResponseEntity::ok)
-            .orElseThrow(() -> new ProductNotFoundException(id));
+    public ResponseEntity<ProductDto> getProductById(Authentication authentication,
+                                                     @PathVariable Long id) {
+        ProductDocument product = productService.getProductById(id);
+
+        User user = (authentication != null && authentication.isAuthenticated())
+            ? ((AuthInfo) authentication.getPrincipal()).getUser()
+            : null;
+
+        return ResponseEntity.ok(modelMapper
+            .map(product, ProductDto.ProductDtoBuilder.class)
+            .isLiked(user != null && productService.isProductLikedByUser(product, user))
+            .build());
     }
 
     @Operation(summary = "Add a new product",
@@ -113,25 +145,22 @@ public class ProductController {
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Product added successfully",
-            content = @Content(schema = @Schema(implementation = Product.class)))
+            content = @Content(schema = @Schema(implementation = ProductDocument.class)))
     })
     @PreAuthorize("hasAuthority('ADD_PRODUCT')")
     @PostMapping
-    public ResponseEntity<Product> addProduct(@RequestBody ProductRequestDto productRequest) {
-        Product product = Product.builder()
-            .name(productRequest.name())
-            .smallImageUrl(productRequest.smallImageUrl())
-            .largeImageUrl(productRequest.largeImageUrl())
-            .provider(productRequest.provider())
-            .brand(productRequest.brand())
-            .shortDescription(productRequest.shortDescription())
-            .longDescription(productRequest.longDescription())
-            .volume(productRequest.volume())
-            .ingredients(productRequest.ingredients())
+    public ResponseEntity<ProductDto> addProduct(
+        @RequestBody @Validated(ValidationGroups.Put.class) ProductRequestDto productRequest) {
+        ProductDocument product = modelMapper
+            .map(productRequest, ProductDocument.ProductDocumentBuilder.class)
             .build();
 
-        Product savedProduct = productService.addProduct(product);
-        return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
+        ProductDocument savedProduct = productService
+            .addProduct(productService.makeProductFieldsValid(product));
+
+        return new ResponseEntity<>(modelMapper
+            .map(savedProduct, ProductDto.ProductDtoBuilder.class)
+            .build(), HttpStatus.CREATED);
     }
 
     @Operation(summary = "Delete a product",
@@ -147,29 +176,58 @@ public class ProductController {
     @PreAuthorize("hasAuthority('REMOVE_PRODUCT')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
-        boolean deleted = productService.deleteProduct(id);
-        if (!deleted) {
-            throw new ProductNotFoundException(id);
-        }
+        productService.deleteProductById(id);
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "Edit a product",
-        description = "Edits a product in the inventory based on the provided product ID and new "
-            + "product details.",
+    @Operation(
+        summary = "Update an entire product",
+        description = "Updates all details of a product in the inventory based on "
+            + "the provided product ID and new product details.",
         security = @SecurityRequirement(name = "Bearer Authentication")
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Product edited successfully",
-            content = @Content(schema = @Schema(implementation = Product.class))),
+            content = @Content(schema = @Schema(implementation = ProductDocument.class))),
         @ApiResponse(responseCode = "404", description = "Product not found", content = @Content)
     })
     @PreAuthorize("hasAuthority('EDIT_PRODUCT')")
     @PutMapping("/{id}")
-    public ResponseEntity<Product> editProduct(@PathVariable Long id,
-                                               @RequestBody ProductRequestDto product) {
-        return productService.editProduct(id, product).map(ResponseEntity::ok)
-            .orElseThrow(() -> new ProductNotFoundException(id));
+    public ResponseEntity<ProductDocument> updateProduct(@PathVariable Long id,
+                                                         @Validated(ValidationGroups.Put.class)
+                                                         @RequestBody ProductRequestDto product) {
+        ProductDocument newProduct = modelMapper
+            .map(product, ProductDocument.ProductDocumentBuilder.class)
+            .id(id)
+            .build();
+
+        return ResponseEntity.ok(productService
+            .updateProduct(productService.makeProductFieldsValid(newProduct)));
+    }
+
+    @Operation(
+        summary = "Partially update a product",
+        description = "Partially updates details of a product in the inventory based on "
+            + "the provided product ID and new product details.",
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Product edited successfully",
+            content = @Content(schema = @Schema(implementation = ProductDocument.class))),
+        @ApiResponse(responseCode = "404", description = "Product not found", content = @Content)
+    })
+    @PreAuthorize("hasAuthority('EDIT_PRODUCT')")
+    @PatchMapping("/{id}")
+    public ResponseEntity<ProductDocument> updateProductPatch(@PathVariable Long id,
+                                                         @Validated(ValidationGroups.Patch.class)
+                                                         @RequestBody ProductRequestDto product) {
+        ProductDocument productPatch = modelMapper
+            .map(product, ProductDocument.ProductDocumentBuilder.class)
+            .id(id)
+            .build();
+
+        return ResponseEntity.ok(productService
+            .updateProduct(productService.makeProductFieldsValid(productPatch)));
     }
 
     @Operation(summary = "Like a product",
@@ -182,11 +240,9 @@ public class ProductController {
         @ApiResponse(responseCode = "404", description = "Product not found", content = @Content)
     })
     @PostMapping("/{id}/likes")
-    public ResponseEntity<Void> likeProduct(@PathVariable Long id) {
-        boolean likeSucceeded = productService.likeProduct(id);
-        if (!likeSucceeded) {
-            throw new ProductNotFoundException(id);
-        }
+    public ResponseEntity<Void> likeProduct(Authentication authentication, @PathVariable Long id) {
+        User user = ((AuthInfo) authentication.getPrincipal()).getUser();
+        productService.likeProduct(id, user);
         return ResponseEntity.ok().build();
     }
 
@@ -200,11 +256,10 @@ public class ProductController {
         @ApiResponse(responseCode = "404", description = "Product not found", content = @Content)
     })
     @DeleteMapping("/{id}/likes")
-    public ResponseEntity<Void> unlikeProduct(@PathVariable Long id) {
-        boolean unlikeSucceeded = productService.unlikeProduct(id);
-        if (!unlikeSucceeded) {
-            throw new ProductNotFoundException(id);
-        }
+    public ResponseEntity<Void> unlikeProduct(Authentication authentication,
+                                              @PathVariable Long id) {
+        User user = ((AuthInfo) authentication.getPrincipal()).getUser();
+        productService.unlikeProduct(id, user);
         return ResponseEntity.ok().build();
     }
 

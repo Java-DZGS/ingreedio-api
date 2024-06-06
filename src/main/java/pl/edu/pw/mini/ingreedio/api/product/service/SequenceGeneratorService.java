@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
-import pl.edu.pw.mini.ingreedio.api.product.model.DatabaseSequence;
+import pl.edu.pw.mini.ingreedio.api.product.model.DatabaseSequenceDocument;
 
 @Service
 @RequiredArgsConstructor
@@ -20,11 +20,11 @@ public class SequenceGeneratorService {
     public Long generateSequence(String seqName) {
         Query query = new Query(Criteria.where("id").is(seqName));
         Update update = new Update().inc("seq", 1);
-        DatabaseSequence counter = mongoOperations
+        DatabaseSequenceDocument counter = mongoOperations
             .findAndModify(query,
                 update, options().returnNew(true).upsert(true),
-                DatabaseSequence.class);
-        return !Objects.isNull(counter) ? counter.getSeq() : 1;
+                DatabaseSequenceDocument.class);
 
+        return !Objects.isNull(counter) ? counter.getSeq() : 1;
     }
 }
