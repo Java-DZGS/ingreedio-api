@@ -401,7 +401,7 @@ public class ProductServiceTest extends IntegrationTest {
                     .build());
             productService.addProduct(
                 ProductDocument.builder().name("szamka").brand(grycan).provider(zapka)
-                .build());
+                    .build());
             productService.addProduct(
                 ProductDocument.builder().name("baton").brand(sniker).provider(zapka).build());
             productService.addProduct(
