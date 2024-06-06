@@ -17,28 +17,6 @@ import pl.edu.pw.mini.ingreedio.api.provider.dto.ProviderDto;
 public class ProductMapperConfig implements MapperConfig {
     @Override
     public void setupMapper(ModelMapper mapper) {
-//        mapper.addConverter(new AbstractConverter<ObjectId, Long>() {
-//            @Override
-//            protected Long convert(ObjectId source) {
-//                if (source != null) {
-//                    try {
-//                        Long id = Long.parseLong(source.toString());
-//                        return id;
-//                    } catch (NumberFormatException e) {
-//                        return null;
-//                    }
-//                }
-//                return null;
-//            }
-//        });
-//
-//        mapper.addConverter(new AbstractConverter<Long, ObjectId>() {
-//            @Override
-//            protected ObjectId convert(Long source) {
-//                return new ObjectId(source.toString());
-//            }
-//        });
-
         // These converters are required for ProductDocument -> ProductDto mapping
         mapper.addConverter(new AbstractConverter<BrandDocument, BrandDto>() {
             @Override
