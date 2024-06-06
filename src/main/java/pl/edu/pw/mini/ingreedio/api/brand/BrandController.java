@@ -36,7 +36,7 @@ public class BrandController {
     public ResponseEntity<Set<BrandDto>> getBrandsByIds(@RequestParam("ids") Set<Long> brandIds) {
         Set<Brand> brands = brandService.getBrandsByIds(brandIds);
         Set<BrandDto> brandDtos = brands.stream()
-                .map(brand -> modelMapper.map(brand, BrandDto.class))
+                .map(brand -> modelMapper.map(brand, BrandDto.BrandDtoBuilder.class).build())
                 .collect(Collectors.toSet());
         return ResponseEntity.ok(brandDtos);
     }
@@ -46,7 +46,7 @@ public class BrandController {
     public ResponseEntity<List<BrandDto>> getAllBrands() {
         List<Brand> brands = brandService.getAllBrands();
         List<BrandDto> brandDtos = brands.stream()
-                .map(brand -> modelMapper.map(brand, BrandDto.class))
+                .map(brand -> modelMapper.map(brand, BrandDto.BrandDtoBuilder.class).build())
                 .collect(Collectors.toList());
         return ResponseEntity.ok(brandDtos);
     }

@@ -38,7 +38,8 @@ public class ProviderController {
                                                                   Set<Long> providerIds) {
         Set<Provider> providers = providerService.getProvidersByIds(providerIds);
         Set<ProviderDto> providerDtos = providers.stream()
-                .map(provider -> modelMapper.map(provider, ProviderDto.class))
+                .map(provider -> modelMapper.map(provider,
+                    ProviderDto.ProviderDtoBuilder.class).build())
                 .collect(Collectors.toSet());
         return ResponseEntity.ok(providerDtos);
     }
@@ -48,7 +49,8 @@ public class ProviderController {
     public ResponseEntity<List<ProviderDto>> getAllProviders() {
         List<Provider> providers = providerService.getAllProviders();
         List<ProviderDto> providerDtos = providers.stream()
-                .map(provider -> modelMapper.map(provider, ProviderDto.class))
+                .map(provider -> modelMapper.map(provider,
+                    ProviderDto.ProviderDtoBuilder.class).build())
                 .collect(Collectors.toList());
         return ResponseEntity.ok(providerDtos);
     }
