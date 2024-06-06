@@ -287,47 +287,6 @@ public class ProductController {
             .orElseThrow(() -> Problem.valueOf(Status.BAD_REQUEST));
     }
 
-    @Operation(summary = "Edit a review",
-        description = "Edits a review for a product based on the provided product ID "
-            + "and review details.",
-        security = @SecurityRequirement(name = "Bearer Authentication")
-    )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Review edited successfully",
-            content = @Content(schema = @Schema(implementation = ReviewDto.class)))
-    })
-    @PutMapping("/{id}/reviews")
-    public ResponseEntity<ReviewDto> editReview(@PathVariable Long id,
-                                                @Valid @RequestBody
-                                                ReviewRequestDto reviewRequest) {
-        Review review = Review.builder()
-            .productId(id)
-            .rating(reviewRequest.rating())
-            .content(reviewRequest.content())
-            .build();
-        Optional<ReviewDto> reviewOptional = productService.editReview(review);
-        //TODO: proper exceptions, requires refactor
-        return reviewOptional.map(reviewDto -> new ResponseEntity<>(reviewDto, HttpStatus.OK))
-            .orElseThrow(() -> Problem.valueOf(Status.BAD_REQUEST));
-    }
-
-    @Operation(summary = "Delete a review",
-        description = "Deletes a review for a product based on the provided product ID.",
-        security = @SecurityRequirement(name = "Bearer Authentication")
-    )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Review deleted successfully",
-            content = @Content)
-    })
-    @DeleteMapping("/{id}/reviews")
-    public ResponseEntity<Void> deleteReview(@PathVariable Long id) {
-        boolean deleted = productService.deleteReview(id);
-        if (!deleted) {
-            throw Problem.valueOf(Status.BAD_REQUEST); //TODO: proper exceptions, requires refactor
-        }
-        return ResponseEntity.ok().build();
-    }
-
     @Operation(summary = "Get product reviews",
         description = "Fetches a list of reviews for a product based on the provided product ID.",
         security = @SecurityRequirement(name = "Bearer Authentication"))
@@ -349,22 +308,6 @@ public class ProductController {
         }
 
         return productService.getProductReviews(id).map(ResponseEntity::ok)
-            .orElseThrow(() -> new ProductNotFoundException(id));
-    }
-
-    @Operation(summary = "Get user review for a product",
-        description = "Fetches the review submitted by the authenticated user for a specific "
-            + "product based on the provided product ID.",
-        security = @SecurityRequirement(name = "Bearer Authentication"))
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "User review retrieved successfully",
-            content = @Content(schema = @Schema(implementation = ReviewDto.class))),
-        @ApiResponse(responseCode = "404", description = "Product not found", content = @Content)
-    })
-    @GetMapping("/{id}/review")
-    public ResponseEntity<ReviewDto> getProductUserReview(@PathVariable Long id) {
-        Optional<ReviewDto> reviewOptional = productService.getProductUserReview(id);
-        return reviewOptional.map(ResponseEntity::ok)
             .orElseThrow(() -> new ProductNotFoundException(id));
     }
 }
