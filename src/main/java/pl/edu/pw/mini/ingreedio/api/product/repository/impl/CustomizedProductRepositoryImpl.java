@@ -22,7 +22,7 @@ import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Repository;
 import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductCriteria;
-import pl.edu.pw.mini.ingreedio.api.product.model.Product;
+import pl.edu.pw.mini.ingreedio.api.product.model.ProductDocument;
 import pl.edu.pw.mini.ingreedio.api.product.repository.CustomizedProductRepository;
 
 @RequiredArgsConstructor
@@ -34,8 +34,8 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
     private Resource createMatchScoreQueryResource;
 
     @Override
-    public Page<Product> getProductsMatchingCriteria(ProductCriteria productCriteria,
-                                                     Pageable pageable) {
+    public Page<ProductDocument> getProductsMatchingCriteria(ProductCriteria productCriteria,
+                                                             Pageable pageable) {
 
         Pattern phraseKeywordsRegExp = null;
         if (productCriteria.phraseKeywords() != null) {
@@ -52,33 +52,33 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
         Criteria ingredientsFilteringCriteria = new Criteria().andOperator(
             productCriteria.ingredientsNamesToInclude() != null
                 && !productCriteria.ingredientsNamesToInclude().isEmpty()
-                ? Criteria.where("ingredients").all(productCriteria.ingredientsNamesToInclude())
+                ? Criteria.where("ingredients.name").all(productCriteria.ingredientsNamesToInclude())
                 : new Criteria(),
             productCriteria.ingredientsNamesToExclude() != null
                 && !productCriteria.ingredientsNamesToExclude().isEmpty()
-                ? Criteria.where("ingredients").nin(productCriteria.ingredientsNamesToExclude())
+                ? Criteria.where("ingredients.name").nin(productCriteria.ingredientsNamesToExclude())
                 : new Criteria()
         );
 
         Criteria brandsFilteringCriteria = new Criteria();
         if (productCriteria.brandsNamesToInclude() != null
                 && !productCriteria.brandsNamesToInclude().isEmpty()) {
-            brandsFilteringCriteria = Criteria.where("brand")
+            brandsFilteringCriteria = Criteria.where("brand.name")
                 .in(productCriteria.brandsNamesToInclude());
         } else if (productCriteria.brandsNamesToExclude() != null
                 && !productCriteria.brandsNamesToExclude().isEmpty()) {
-            brandsFilteringCriteria = Criteria.where("brand")
+            brandsFilteringCriteria = Criteria.where("brand.name")
                 .nin(productCriteria.brandsNamesToExclude());
         }
 
         Criteria providerFilteringCriteria = productCriteria.providersNames() != null
             && !productCriteria.providersNames().isEmpty()
-            ? Criteria.where("provider").in(productCriteria.providersNames())
+            ? Criteria.where("provider.name").in(productCriteria.providersNames())
             : new Criteria();
 
         Criteria categoriesFilteringCriteria = productCriteria.categoriesNames() != null
             && !productCriteria.categoriesNames().isEmpty()
-            ? Criteria.where("categories").in(productCriteria.categoriesNames())
+            ? Criteria.where("categories.name").in(productCriteria.categoriesNames())
             : new Criteria();
 
         Criteria ratingFilteringCriteria = productCriteria.minRating() != null
@@ -89,7 +89,7 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
         if (phraseKeywordsRegExp != null) {
             phraseFilteringCriteria = new Criteria().orOperator(
                 Criteria.where("name").regex(phraseKeywordsRegExp),
-                Criteria.where("brand").regex(phraseKeywordsRegExp),
+                Criteria.where("brand.name").regex(phraseKeywordsRegExp),
                 Criteria.where("shortDescription").regex(phraseKeywordsRegExp)
             );
         }
@@ -148,12 +148,13 @@ public class CustomizedProductRepositoryImpl implements CustomizedProductReposit
                         "products", Map.class)
                     .getMappedResults().getFirst().get("totalProductsCount");
 
+
             // Query 2: Get products basing on the criteria
             Aggregation productsAggregation = Aggregation
                 .newAggregation(finalQueryOperations.toArray(new AggregationOperation[0]));
 
-            List<Product> products = mongoTemplate.aggregate(productsAggregation,
-                    "products", Product.class)
+            List<ProductDocument> products = mongoTemplate.aggregate(productsAggregation,
+                    "products", ProductDocument.class)
                 .getMappedResults();
 
             return new PageImpl<>(

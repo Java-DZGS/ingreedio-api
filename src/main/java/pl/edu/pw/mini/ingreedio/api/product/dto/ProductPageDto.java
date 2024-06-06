@@ -4,6 +4,4 @@ import java.util.List;
 import lombok.Builder;
 
 @Builder
-public record ProductListResponseDto(List<ProductDto> products, int totalPages) {
-
-}
+public record ProductPageDto(List<ProductDto> products, int totalPages) { }

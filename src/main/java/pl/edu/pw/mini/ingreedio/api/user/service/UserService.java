@@ -13,6 +13,7 @@ import pl.edu.pw.mini.ingreedio.api.auth.exception.UserAlreadyExistsException;
 import pl.edu.pw.mini.ingreedio.api.auth.model.AuthInfo;
 import pl.edu.pw.mini.ingreedio.api.auth.service.AuthInfoMangerService;
 import pl.edu.pw.mini.ingreedio.api.ingredient.model.Ingredient;
+import pl.edu.pw.mini.ingreedio.api.product.model.ProductDocument;
 import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.review.mapper.ReviewDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.review.model.Review;
@@ -158,8 +159,9 @@ public class UserService {
         return true;
     }
 
+
     @Transactional
-    public void deleteProduct(Long productId) {
+    public void allUsersUnlikeProduct(Long productId) {
         List<User> users = userRepository.findUsersByLikedProduct(productId);
 
         for (User user : users) {

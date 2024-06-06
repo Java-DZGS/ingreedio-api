@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.test.context.support.WithMockUser;
 import pl.edu.pw.mini.ingreedio.api.IntegrationTest;
 import pl.edu.pw.mini.ingreedio.api.auth.service.AuthService;
-import pl.edu.pw.mini.ingreedio.api.product.model.Product;
+import pl.edu.pw.mini.ingreedio.api.product.model.ProductDocument;
 import pl.edu.pw.mini.ingreedio.api.product.service.ProductService;
 import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.review.exception.ReportEmptyReviewAttemptException;
@@ -44,8 +44,8 @@ public class ReviewReportServiceTest extends IntegrationTest {
         @WithMockUser(username = "user", password = "user", roles = {})
         public void givenNonEmptyReview_whenReportReview_reportIsCreated() {
             // Given
-            Product product = productService
-                .addProduct(Product.builder().name("testProduct").build());
+            ProductDocument product = productService
+                .addProduct(ProductDocument.builder().name("testProduct").build());
             Review review = Review.builder()
                 .productId(product.getId())
                 .content("testContent")
@@ -72,8 +72,8 @@ public class ReviewReportServiceTest extends IntegrationTest {
         @WithMockUser(username = "user", password = "user", roles = {})
         public void givenEmptyReview_whenReportReview_reportIsCreated() {
             // Given
-            Product product = productService
-                .addProduct(Product.builder().name("testProduct").build());
+            ProductDocument product = productService
+                .addProduct(ProductDocument.builder().name("testProduct").build());
             Review review = Review.builder()
                 .productId(product.getId())
                 .rating(5)
@@ -102,8 +102,8 @@ public class ReviewReportServiceTest extends IntegrationTest {
         @WithMockUser(username = "user", password = "user", roles = {})
         public void givenReview_whenLike_thenLikeCountIsIncreased() {
             // Given
-            Product product = productService
-                .addProduct(Product.builder().name("testProduct").build());
+            ProductDocument product = productService
+                .addProduct(ProductDocument.builder().name("testProduct").build());
             Review review = Review.builder()
                 .productId(product.getId())
                 .rating(5)
@@ -129,8 +129,8 @@ public class ReviewReportServiceTest extends IntegrationTest {
         @WithMockUser(username = "user", password = "user", roles = {})
         public void givenReview_whenLikeUnlike_thenLikeCountIsConstant() {
             // Given
-            Product product = productService
-                .addProduct(Product.builder().name("testProduct").build());
+            ProductDocument product = productService
+                .addProduct(ProductDocument.builder().name("testProduct").build());
             Review review = Review.builder()
                 .productId(product.getId())
                 .rating(5)
@@ -157,8 +157,8 @@ public class ReviewReportServiceTest extends IntegrationTest {
         @WithMockUser(username = "user", password = "user", roles = {})
         public void givenReview_whenDoubleLike_thenLikeCountIsIncreasedByOne() {
             // Given
-            Product product = productService
-                .addProduct(Product.builder().name("testProduct").build());
+            ProductDocument product = productService
+                .addProduct(ProductDocument.builder().name("testProduct").build());
             Review review = Review.builder()
                 .productId(product.getId())
                 .rating(5)
@@ -183,8 +183,8 @@ public class ReviewReportServiceTest extends IntegrationTest {
         @WithMockUser(username = "user", password = "user", roles = {})
         public void givenReview_whenDislike_thenDislikeCountIsIncreased() {
             // Given
-            Product product = productService
-                .addProduct(Product.builder().name("testProduct").build());
+            ProductDocument product = productService
+                .addProduct(ProductDocument.builder().name("testProduct").build());
             Review review = Review.builder()
                 .productId(product.getId())
                 .rating(5)
@@ -210,8 +210,8 @@ public class ReviewReportServiceTest extends IntegrationTest {
         @WithMockUser(username = "user", password = "user", roles = {})
         public void givenReview_whenDislikeUndislike_thenDislikeCountIsConstant() {
             // Given
-            Product product = productService
-                .addProduct(Product.builder().name("testProduct").build());
+            ProductDocument product = productService
+                .addProduct(ProductDocument.builder().name("testProduct").build());
             Review review = Review.builder()
                 .productId(product.getId())
                 .rating(5)
@@ -238,8 +238,8 @@ public class ReviewReportServiceTest extends IntegrationTest {
         @WithMockUser(username = "user", password = "user", roles = {})
         public void givenReview_whenDoubleDislike_thenLikeCountIsIncreasedByOne() {
             // Given
-            Product product = productService
-                .addProduct(Product.builder().name("testProduct").build());
+            ProductDocument product = productService
+                .addProduct(ProductDocument.builder().name("testProduct").build());
             Review review = Review.builder()
                 .productId(product.getId())
                 .rating(5)
@@ -264,8 +264,8 @@ public class ReviewReportServiceTest extends IntegrationTest {
         @WithMockUser(username = "user", password = "user", roles = {})
         public void givenReview_whenLikeDislike_thenIsDisliked() {
             // Given
-            Product product = productService
-                .addProduct(Product.builder().name("testProduct").build());
+            ProductDocument product = productService
+                .addProduct(ProductDocument.builder().name("testProduct").build());
             Review review = Review.builder()
                 .productId(product.getId())
                 .rating(5)
@@ -292,8 +292,8 @@ public class ReviewReportServiceTest extends IntegrationTest {
         @WithMockUser(username = "user", password = "user", roles = {})
         public void givenReview_whenDislikeLike_thenIsDisliked() {
             // Given
-            Product product = productService
-                .addProduct(Product.builder().name("testProduct").build());
+            ProductDocument product = productService
+                .addProduct(ProductDocument.builder().name("testProduct").build());
             Review review = Review.builder()
                 .productId(product.getId())
                 .rating(5)

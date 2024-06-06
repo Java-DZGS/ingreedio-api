@@ -1,5 +1,6 @@
 package pl.edu.pw.mini.ingreedio.api.ingredient.service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -30,10 +31,8 @@ public class IngredientService {
     }
 
     @Transactional(readOnly = true)
-    public Set<IngredientDto> getIngredientsByIds(Set<Long> ids) {
-        return ingredientRepository.findAllByIdIn(ids).stream()
-            .map(ingredientDtoMapper)
-            .collect(Collectors.toSet());
+    public Set<Ingredient> getIngredientsByIds(Set<Long> ids) {
+        return new HashSet<>(ingredientRepository.findAllByIdIn(ids));
     }
 
     @Transactional(readOnly = true)

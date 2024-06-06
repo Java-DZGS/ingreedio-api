@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import pl.edu.pw.mini.ingreedio.api.auth.model.AuthInfo;
 import pl.edu.pw.mini.ingreedio.api.ingredient.dto.IngredientDto;
+import pl.edu.pw.mini.ingreedio.api.ingredient.mapper.IngredientDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.ingredient.service.IngredientService;
 import pl.edu.pw.mini.ingreedio.api.product.exception.IngredientNotFoundException;
 
@@ -31,6 +33,7 @@ import pl.edu.pw.mini.ingreedio.api.product.exception.IngredientNotFoundExceptio
 @Tag(name = "Ingredients")
 public class IngredientController {
     private final IngredientService ingredientService;
+    private final IngredientDtoMapper ingredientDtoMapper;
 
     @Operation(summary = "Search ingredients",
         description = "Fetches a list of ingredients based on the provided query and limits "
@@ -68,7 +71,10 @@ public class IngredientController {
     @GetMapping("/get-by")
     public ResponseEntity<Set<IngredientDto>> getIngredientsByIds(
         @RequestParam("ids") Set<Long> ingredientsIds) {
-        return ResponseEntity.ok(ingredientService.getIngredientsByIds(ingredientsIds));
+        return ResponseEntity.ok(ingredientService.getIngredientsByIds(ingredientsIds)
+            .stream()
+            .map(ingredientDtoMapper)
+            .collect(Collectors.toSet()));
     }
 
     @Operation(summary = "Get liked ingredients",

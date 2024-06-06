@@ -13,6 +13,7 @@ import pl.edu.pw.mini.ingreedio.api.brand.service.BrandService;
 import pl.edu.pw.mini.ingreedio.api.category.model.Category;
 import pl.edu.pw.mini.ingreedio.api.category.service.CategoryService;
 import pl.edu.pw.mini.ingreedio.api.ingredient.dto.IngredientDto;
+import pl.edu.pw.mini.ingreedio.api.ingredient.model.Ingredient;
 import pl.edu.pw.mini.ingreedio.api.ingredient.service.IngredientService;
 import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductCriteria;
 import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductsSortingCriteria;
@@ -45,14 +46,14 @@ public class ProductsCriteriaService {
             ingredients -> builder.ingredientsNamesToExclude(ingredientService
                 .getIngredientsByIds(ingredients)
                 .stream()
-                .map(IngredientDto::name)
+                .map(Ingredient::getName)
                 .collect(Collectors.toSet())));
 
         ingredientsToInclude.ifPresent(
             ingredients -> builder.ingredientsNamesToInclude(ingredientService
                 .getIngredientsByIds(ingredients)
                 .stream()
-                .map(IngredientDto::name)
+                .map(Ingredient::getName)
                 .collect(Collectors.toSet())));
 
         minRating.ifPresent(builder::minRating);
