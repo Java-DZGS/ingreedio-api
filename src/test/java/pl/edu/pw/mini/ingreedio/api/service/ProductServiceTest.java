@@ -340,6 +340,8 @@ public class ProductServiceTest extends IntegrationTest {
                 assertThat(product.getRating()).isGreaterThanOrEqualTo(7);
             }
         }
+
+        // TODO: fix that test
 //        @Test
 //        public void givenMultiCriteria_whenFilter_thenReturnCorrectProducts() {
 //            // Given
