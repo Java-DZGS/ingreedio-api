@@ -38,6 +38,7 @@ import pl.edu.pw.mini.ingreedio.api.common.validation.ValidationGroups;
 import pl.edu.pw.mini.ingreedio.api.product.dto.ProductDto;
 import pl.edu.pw.mini.ingreedio.api.product.dto.ProductPageDto;
 import pl.edu.pw.mini.ingreedio.api.product.dto.ProductRequestDto;
+import pl.edu.pw.mini.ingreedio.api.product.dto.ProductViewDto;
 import pl.edu.pw.mini.ingreedio.api.product.exception.ProductNotFoundException;
 import pl.edu.pw.mini.ingreedio.api.product.model.ProductDocument;
 import pl.edu.pw.mini.ingreedio.api.product.service.PaginationService;
@@ -103,16 +104,16 @@ public class ProductController {
             ? ((AuthInfo) authentication.getPrincipal()).getUser()
             : null;
 
-        List<ProductDto> productDtos = products.getContent()
+        List<ProductViewDto> productsDtos = products.getContent()
             .stream()
             .map(product -> modelMapper
-                .map(product, ProductDto.ProductDtoBuilder.class)
+                .map(product, ProductViewDto.ProductViewDtoBuilder.class)
                 .isLiked(user != null && productService.isProductLikedByUser(product, user))
                 .build()
             )
             .collect(Collectors.toList());
 
-        return ResponseEntity.ok(new ProductPageDto(productDtos, products.getTotalPages()));
+        return ResponseEntity.ok(new ProductPageDto(productsDtos, products.getTotalPages()));
     }
 
     @Operation(summary = "Get full info of a specific product",
