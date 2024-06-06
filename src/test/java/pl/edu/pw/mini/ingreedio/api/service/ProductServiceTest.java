@@ -15,11 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.IntegrationTest;
-import pl.edu.pw.mini.ingreedio.api.auth.model.AuthInfo;
 import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductCriteria;
 import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductsSortingCriteria;
 import pl.edu.pw.mini.ingreedio.api.product.exception.ProductNotFoundException;
@@ -160,10 +158,14 @@ public class ProductServiceTest extends IntegrationTest {
             ProviderDocument daglasco =
                 ProviderDocument.builder().id(1L).name("daglas & co.").build();
 
-            productService.addProduct(ProductDocument.builder().brand(daglas).build()); // +1
-            productService.addProduct(ProductDocument.builder().brand(nivea).build()); // +1
-            productService.addProduct(ProductDocument.builder().name("perfume").brand(adidas).build());
-            productService.addProduct(ProductDocument.builder().provider(daglasco).brand(daglas).build());
+            productService.addProduct(ProductDocument.builder()
+                .brand(daglas).build()); // +1
+            productService.addProduct(ProductDocument.builder()
+                .brand(nivea).build()); // +1
+            productService.addProduct(ProductDocument.builder()
+                .name("perfume").brand(adidas).build());
+            productService.addProduct(ProductDocument.builder()
+                .provider(daglasco).brand(daglas).build());
 
             var criteria = ProductCriteria.builder()
                 .brandsNamesToExclude(Set.of("adidas", "nivea")).build();
@@ -183,12 +185,7 @@ public class ProductServiceTest extends IntegrationTest {
         @Test
         public void givenIngredientsIncludeCriteria_whenFilter_thenReturnCorrectProducts() {
             // Given
-            BrandDocument daglas = BrandDocument.builder().id(1L).name("daglas").build();
-            BrandDocument nivea = BrandDocument.builder().id(2L).name("nivea").build();
-            BrandDocument adidas = BrandDocument.builder().id(3L).name("adidas").build();
             BrandDocument carfour = BrandDocument.builder().id(3L).name("carfur").build();
-            ProviderDocument daglasco =
-                ProviderDocument.builder().id(1L).name("daglas & co.").build();
 
             IngredientDocument potato = IngredientDocument.builder().id(1L).name("potato").build();
             IngredientDocument carrot = IngredientDocument.builder().id(2L).name("carrot").build();
@@ -223,14 +220,14 @@ public class ProductServiceTest extends IntegrationTest {
             for (ProductDocument product : potatoBeetPage.getContent()) {
                 assertThat(product.getIngredients()
                     .stream()
-                    .map(ingr -> ingr.getName()).toList()).contains("potato", "beet");
+                    .map(IngredientDocument::getName).toList()).contains("potato", "beet");
             }
 
             assertThat(potatoPage.getContent().size()).isEqualTo(3);
             for (ProductDocument product : potatoPage.getContent()) {
                 assertThat(product.getIngredients()
                     .stream()
-                    .map(ingr -> ingr.getName()).toList()).contains("potato");
+                    .map(IngredientDocument::getName).toList()).contains("potato");
             }
         }
 
@@ -267,8 +264,8 @@ public class ProductServiceTest extends IntegrationTest {
             Page<ProductDocument> potatoBeetPage = productService
                 .getProductsMatchingCriteria(criteria1, PageRequest.of(0, 16));
 
-            Page<ProductDocument> potatoPage = productService.getProductsMatchingCriteria(criteria2,
-                PageRequest.of(0, 16));
+            Page<ProductDocument> potatoPage = productService.getProductsMatchingCriteria(
+                criteria2, PageRequest.of(0, 16));
 
             Page<ProductDocument> carrotTomatoPage = productService
                 .getProductsMatchingCriteria(criteria3, PageRequest.of(0, 16));
@@ -281,13 +278,14 @@ public class ProductServiceTest extends IntegrationTest {
             for (ProductDocument product : potatoPage.getContent()) {
                 assertThat(product.getIngredients()
                     .stream()
-                    .map(ingr -> ingr.getName()).toList()).doesNotContain("potato");
+                    .map(IngredientDocument::getName).toList()).doesNotContain("potato");
             }
 
             for (ProductDocument product : carrotTomatoPage.getContent()) {
                 assertThat(product.getIngredients()
                     .stream()
-                    .map(ingr -> ingr.getName()).toList()).doesNotContain("carrot", "tomato");
+                    .map(IngredientDocument::getName).toList())
+                    .doesNotContain("carrot", "tomato");
             }
         }
 
@@ -333,10 +331,12 @@ public class ProductServiceTest extends IntegrationTest {
             for (ProductDocument product : result.getContent()) {
                 assertThat(product.getIngredients()
                     .stream()
-                    .map(ingr -> ingr.getName()).toList()).doesNotContain("carrot", "tomato");
+                    .map(IngredientDocument::getName).toList())
+                    .doesNotContain("carrot", "tomato");
                 assertThat(product.getIngredients()
                     .stream()
-                    .map(ingr -> ingr.getName()).toList()).contains("potato");
+                    .map(IngredientDocument::getName).toList())
+                    .contains("potato");
                 assertThat(product.getRating()).isGreaterThanOrEqualTo(7);
             }
         }
@@ -347,16 +347,22 @@ public class ProductServiceTest extends IntegrationTest {
 //            // Given
 //            BrandDocument karfur = BrandDocument.builder().id(3L).name("karfur").build();
 //
-//            IngredientDocument potato = IngredientDocument.builder().id(1L).name("potato").build();
-//            IngredientDocument guma = IngredientDocument.builder().id(3L).name("guma").build();
+//            IngredientDocument potato = IngredientDocument.builder().id(1L)
+//            .name("potato").build();
+//            IngredientDocument guma = IngredientDocument.builder().id(3L
+//            ).name("guma").build();
 //            IngredientDocument rak = IngredientDocument.builder().id(4L).name("rak").build();
-//            IngredientDocument polietylen = IngredientDocument.builder().id(5L).name("polietylen").build();
-//            IngredientDocument gumaGuar = IngredientDocument.builder().id(6L).name("guma guar").build();
-//            IngredientDocument metanol = IngredientDocument.builder().id(7L).name("metanol").build();
+//            IngredientDocument polietylen = IngredientDocument.builder().id(5L)
+//            .name("polietylen").build();
+//            IngredientDocument gumaGuar = IngredientDocument.builder().id(6L).name("guma guar")
+//            .build();
+//            IngredientDocument metanol = IngredientDocument.builder().id(7L).name("metanol")
+//            .build();
 //
 //
 //            ProviderDocument zapka = ProviderDocument.builder().id(1L).name("żapka").build();
-//            ProviderDocument karfurProvider = ProviderDocument.builder().id(2L).name("karfur").build();
+//            ProviderDocument karfurProvider = ProviderDocument.builder().id(2L).name("karfur")
+//            .build();
 //
 //            // Proper
 //            productService.addProduct(
@@ -386,29 +392,36 @@ public class ProductServiceTest extends IntegrationTest {
 //                ProductDocument.builder().name("szampą").brand(zapka).provider(karfurProvider)
 //                    .build());
 //            productService.addProduct(
-//                ProductDocument.builder().name("szamka").brand("grycan").provider(zapka).build());
+//                ProductDocument.builder().name("szamka").brand("grycan").provider(zapka)
+//                .build());
 //            productService.addProduct(
 //                ProductDocument.builder().name("baton").brand("sniker").provider(zapka).build());
 //            productService.addProduct(
 //                ProductDocument.builder().name("marchew").brand("ogródek").provider(rosman)
 //                    .build());
 //            productService.addProduct(
-//                ProductDocument.builder().name("pianka do golenia").brand("golibroda").provider("romsan")
+//                ProductDocument.builder().name("pianka do golenia").brand("golibroda")
+//                .provider("romsan")
 //                    .build());
 //            productService.addProduct(
-//                ProductDocument.builder().name("pasta do zębów").brand("kolgat").provider("romsan")
+//                ProductDocument.builder().name("pasta do zębów").brand("kolgat")
+//                .provider("romsan")
 //                    .build());
 //            productService.addProduct(
-//                ProductDocument.builder().name("pasta do zębów").brand("sęsodę").provider("romsan")
+//                ProductDocument.builder().name("pasta do zębów").brand("sęsodę")
+//                .provider("romsan")
 //                    .build());
 //            productService.addProduct(
-//                ProductDocument.builder().name("pasta do zębów").brand("elmech").provider("romsan")
+//                ProductDocument.builder().name("pasta do zębów").brand("elmech")
+//                .provider("romsan")
 //                    .build());
 //            productService.addProduct(
-//                ProductDocument.builder().name("pasta do zębów").brand("akuafresz").provider("romsan")
+//                ProductDocument.builder().name("pasta do zębów").brand("akuafresz")
+//                .provider("romsan")
 //                    .build());
 //            productService.addProduct(
-//                ProductDocument.builder().name("pasta do butów").brand("kiwi").provider("romsan")
+//                ProductDocument.builder().name("pasta do butów").brand("kiwi")
+//                .provider("romsan")
 //                    .build());
 //
 //            var criteria = ProductCriteria.builder()
