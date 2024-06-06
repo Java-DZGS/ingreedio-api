@@ -1,7 +1,5 @@
 package pl.edu.pw.mini.ingreedio.api.product.service;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +17,7 @@ import pl.edu.pw.mini.ingreedio.api.auth.service.AuthService;
 import pl.edu.pw.mini.ingreedio.api.brand.exception.BrandNotFoundException;
 import pl.edu.pw.mini.ingreedio.api.brand.service.BrandService;
 import pl.edu.pw.mini.ingreedio.api.category.service.CategoryService;
+import pl.edu.pw.mini.ingreedio.api.common.util.ModelPatcher;
 import pl.edu.pw.mini.ingreedio.api.ingredient.service.IngredientService;
 import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductCriteria;
 import pl.edu.pw.mini.ingreedio.api.product.exception.ProductNotFoundException;
@@ -54,13 +53,15 @@ public class ProductService {
 
     private final AuthService authService;
 
+    private final ModelPatcher<ProductDocument> modelPatcher;
+
 
     @Transactional(readOnly = true)
     public List<ProductDocument> getAllProducts() {
         return productRepository.findAll();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     // This function checks whether the provider/brand/category/ingredients ids do
     // exist in the postgresql database and adds (updates) missing (incorrect) fields
     // if it's necessary.
@@ -131,8 +132,7 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public ProductDocument getProductById(long id) throws ProductNotFoundException {
-        return productRepository
-            .findById(id)
+        return productRepository.findById(id)
             .orElseThrow(() -> new ProductNotFoundException(id));
     }
 
@@ -157,22 +157,7 @@ public class ProductService {
 
         // Update a field of the oldProduct only if corresponding field
         // in the productPatch is not null
-        for (Field field : productPatch.getClass().getDeclaredFields()) {
-            if (Modifier.isStatic(field.getModifiers())
-                || Modifier.isFinal(field.getModifiers())) {
-                continue;
-            }
-
-            field.setAccessible(true);
-            try {
-                Object newValue = field.get(productPatch);
-                if (newValue != null) {
-                    field.set(oldProduct, newValue);
-                }
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        modelPatcher.patchAndExcludeFields(oldProduct, productPatch, List.of("id"));
 
         return productRepository.save(oldProduct);
     }
@@ -188,7 +173,7 @@ public class ProductService {
     }
 
     @Transactional
-    public void likeProduct(Long productId, User user) throws ProductNotFoundException {
+    public void likeProduct(long productId, User user) throws ProductNotFoundException {
         ProductDocument product = getProductById(productId);
 
         Set<Long> likedBy = product.getLikedBy();
@@ -200,12 +185,13 @@ public class ProductService {
             likedBy.add(user.getId());
             product.setLikedBy(likedBy);
             productRepository.save(product);
+            // TODO: refactor product liking (user domain)
             userService.likeProduct(user.getId().intValue(), productId);
         }
     }
 
     @Transactional
-    public void unlikeProduct(Long productId, User user) {
+    public void unlikeProduct(long productId, User user) {
         ProductDocument product = getProductById(productId);
 
         Set<Long> likedBy = product.getLikedBy();
@@ -217,11 +203,13 @@ public class ProductService {
             likedBy.remove(user.getId());
             product.setLikedBy(likedBy);
             productRepository.save(product);
+            // TODO: refactor product liking (user domain)
             userService.unlikeProduct(user.getId().intValue(), productId);
         }
     }
 
 
+    // TODO: refactor reviews
     @Transactional
     public Optional<ReviewDto> addReview(Review review) throws ProductNotFoundException {
         Optional<User> userOptional = userService
@@ -304,7 +292,7 @@ public class ProductService {
     }
 
     @Transactional
-    public boolean deleteReview(Long productId) throws ProductNotFoundException {
+    public boolean deleteReview(long productId) throws ProductNotFoundException {
         Optional<User> userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
         if (userOptional.isEmpty()) {
@@ -339,7 +327,7 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<List<ReviewDto>> getProductReviews(Long productId)
+    public Optional<List<ReviewDto>> getProductReviews(long productId)
         throws ProductNotFoundException {
         getProductById(productId);
 

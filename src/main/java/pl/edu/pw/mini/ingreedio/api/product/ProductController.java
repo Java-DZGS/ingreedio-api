@@ -69,8 +69,8 @@ public class ProductController {
         @ApiResponse(responseCode = "200", description = "Products retrieved successfully",
             content = @Content(schema = @Schema(implementation = ProductPageDto.class)))
     })
-    @GetMapping
-    public ResponseEntity<ProductPageDto> getProducts(
+    @GetMapping("/search")
+    public ResponseEntity<ProductPageDto> searchForProducts(
         Authentication authentication,
         @RequestParam("page-number") Optional<Integer> pageNumber,
         @RequestParam("ingredients-exclude") Optional<Set<Long>> ingredientsToExclude,
@@ -115,7 +115,7 @@ public class ProductController {
         return ResponseEntity.ok(new ProductPageDto(productDtos, products.getTotalPages()));
     }
 
-    @Operation(summary = "Get info of a specific product",
+    @Operation(summary = "Get full info of a specific product",
         description = "Fetches detailed information of a product based on the provided product ID.",
         security = @SecurityRequirement(name = "Bearer Authentication")
     )
