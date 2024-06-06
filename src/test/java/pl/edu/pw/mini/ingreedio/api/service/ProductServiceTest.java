@@ -370,7 +370,7 @@ public class ProductServiceTest extends IntegrationTest {
             ProviderDocument zapka = ProviderDocument.builder().id(1L).name("żapka").build();
             ProviderDocument rosman = ProviderDocument.builder().id(2L).name("rosman").build();
             ProviderDocument karfur = ProviderDocument.builder().id(3L).name("karfur")
-            .build();
+                .build();
 
             // Proper
             productService.addProduct(
