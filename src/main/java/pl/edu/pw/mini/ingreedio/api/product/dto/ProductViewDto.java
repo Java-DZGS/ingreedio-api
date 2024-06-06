@@ -1,6 +1,7 @@
 package pl.edu.pw.mini.ingreedio.api.product.dto;
 
 import lombok.Builder;
+
 import pl.edu.pw.mini.ingreedio.api.brand.dto.BrandDto;
 import pl.edu.pw.mini.ingreedio.api.provider.dto.ProviderDto;
 
