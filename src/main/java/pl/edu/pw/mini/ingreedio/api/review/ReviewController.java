@@ -125,10 +125,10 @@ public class ReviewController {
                                                 @Valid @RequestBody
                                                 ReviewRequestDto reviewRequest) {
         //TODO: awful hack
-        var old_review = reviewService.getReviewById(id).get();
+        var oldReview = reviewService.getReviewById(id).get();
 
         Review review = Review.builder()
-            .productId(old_review.productId())
+            .productId(oldReview.productId())
             .rating(reviewRequest.rating())
             .content(reviewRequest.content())
             .build();
@@ -149,9 +149,9 @@ public class ReviewController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteReview(@PathVariable Long id) {
         //TODO: awful hack
-        var old_review = reviewService.getReviewById(id).get();
+        var oldReview = reviewService.getReviewById(id).get();
 
-        boolean deleted = productService.deleteReview(old_review.productId());
+        boolean deleted = productService.deleteReview(oldReview.productId());
         if (!deleted) {
             throw Problem.valueOf(Status.BAD_REQUEST); //TODO: proper exceptions, requires refactor
         }
