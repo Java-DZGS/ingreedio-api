@@ -29,7 +29,7 @@ public class ProviderController {
     @GetMapping("/{id}")
     public ResponseEntity<ProviderDto> getProviderById(@PathVariable long id) {
         return ResponseEntity.ok(modelMapper.map(providerService.getProviderById(id),
-            ProviderDto.class));
+            ProviderDto.ProviderDtoBuilder.class).build());
     }
 
     @Operation(summary = "Get providers by IDs", description = "Get providers by IDs")

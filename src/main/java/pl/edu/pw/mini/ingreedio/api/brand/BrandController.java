@@ -28,7 +28,8 @@ public class BrandController {
     @Operation(summary = "Get brand by ID", description = "Get brand by ID")
     @GetMapping("/{id}")
     public ResponseEntity<BrandDto> getBrandById(@PathVariable long id) {
-        return ResponseEntity.ok(modelMapper.map(brandService.getBrandById(id), BrandDto.class));
+        return ResponseEntity.ok(modelMapper.map(brandService.getBrandById(id),
+            BrandDto.BrandDtoBuilder.class).build());
     }
 
     @Operation(summary = "Get brands by IDs", description = "Get brands by IDs")
