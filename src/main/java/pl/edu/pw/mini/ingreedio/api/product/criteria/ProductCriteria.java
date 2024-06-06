@@ -14,7 +14,7 @@ public record ProductCriteria(
         Set<String> categoriesNames,
         Integer minRating,
         Set<String> phraseKeywords,
-        List<ProductsSortingCriteria> sortingCriteria,
+        List<ProductSortingCriteria> sortingCriteria,
         Boolean hasMatchScoreSortCriteria,
         Boolean liked
 ) {}

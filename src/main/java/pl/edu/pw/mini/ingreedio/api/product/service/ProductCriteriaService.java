@@ -15,13 +15,15 @@ import pl.edu.pw.mini.ingreedio.api.category.service.CategoryService;
 import pl.edu.pw.mini.ingreedio.api.ingredient.model.Ingredient;
 import pl.edu.pw.mini.ingreedio.api.ingredient.service.IngredientService;
 import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductCriteria;
-import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductsSortingCriteria;
+import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductSortingCriteria;
+import pl.edu.pw.mini.ingreedio.api.product.criteria.SortingBy;
+import pl.edu.pw.mini.ingreedio.api.product.exception.InvalidSortingOptionException;
 import pl.edu.pw.mini.ingreedio.api.provider.model.Provider;
 import pl.edu.pw.mini.ingreedio.api.provider.service.ProviderService;
 
 @Service
 @AllArgsConstructor
-public class ProductsCriteriaService {
+public class ProductCriteriaService {
     private final IngredientService ingredientService;
     private final ProviderService providerService;
     private final BrandService brandService;
@@ -36,7 +38,8 @@ public class ProductsCriteriaService {
                                                Optional<Set<Long>> providers,
                                                Optional<Set<Long>> brandsToExclude,
                                                Optional<Set<Long>> brandsToInclude,
-                                               Optional<Set<Long>> categories) {
+                                               Optional<Set<Long>> categories)
+        throws InvalidSortingOptionException {
 
         var builder = ProductCriteria.builder();
         builder.hasMatchScoreSortCriteria(false);
@@ -96,14 +99,13 @@ public class ProductsCriteriaService {
         );
 
         sortBy.ifPresent(sortingSignatures -> {
-            List<ProductsSortingCriteria> sortingCriteriaList =
+            List<ProductSortingCriteria> sortingCriteriaList =
                 sortingSignatures.stream()
                     .map(this::getProductsSortingCriteria)
-                    .flatMap(Optional::stream)
                     .toList();
 
-            Optional<ProductsSortingCriteria> foundCriteria = sortingCriteriaList.stream()
-                .filter(criteria -> criteria.byField().equals("matchScore"))
+            Optional<ProductSortingCriteria> foundCriteria = sortingCriteriaList.stream()
+                .filter(criteria -> criteria.byField().getFieldName().equals("matchScore"))
                 .findAny();
 
             builder.sortingCriteria(sortingCriteriaList);
@@ -113,43 +115,24 @@ public class ProductsCriteriaService {
         return builder.build();
     }
 
-    public Optional<ProductsSortingCriteria> getProductsSortingCriteria(String sortingSignature) {
-        if (sortingSignature.length() < 3) {
-            return Optional.empty();
+    public ProductSortingCriteria getProductsSortingCriteria(String sortingOption) throws
+        InvalidSortingOptionException {
+        if (sortingOption.length() < 3) {
+            throw new InvalidSortingOptionException(sortingOption);
         }
 
-        char orderChar = sortingSignature.charAt(0);
-        Sort.Direction order;
-        switch (orderChar) {
-            case 'a':
-                order = Sort.Direction.ASC;
-                break;
-            case 'd':
-                order = Sort.Direction.DESC;
-                break;
-            default:
-                return Optional.empty();
+        char orderChar = sortingOption.charAt(0);
+        if (orderChar != 'a' && orderChar != 'd') {
+            throw new InvalidSortingOptionException(sortingOption);
         }
 
-        String sortBy = sortingSignature.substring(2);
-        String byField;
-        switch (sortBy) {
-            case "rating":
-                byField = "rating";
-                break;
-            case "rate-count":
-                byField = "rateCount";
-                break;
-            case "opinions-count":
-                byField = "opinionsCount";
-                break;
-            case "match-score":
-                byField = "matchScore";
-                break;
-            default:
-                return Optional.empty();
-        }
+        Sort.Direction order = orderChar == 'a' ? Sort.Direction.ASC : Sort.Direction.DESC;
 
-        return Optional.of(new ProductsSortingCriteria(order, byField));
+        String sortingByField = sortingOption.substring(2);
+        SortingBy sortingBy = SortingBy
+            .fromKebabCode(sortingByField)
+            .orElseThrow(() -> new InvalidSortingOptionException(sortingOption));
+
+        return new ProductSortingCriteria(order, sortingBy);
     }
 }

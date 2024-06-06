@@ -1,8 +1,13 @@
 package pl.edu.pw.mini.ingreedio.api.product.exception;
 
-public class InvalidSortingOptionException extends Exception {
+import org.zalando.problem.AbstractThrowableProblem;
+import org.zalando.problem.Status;
+
+public class InvalidSortingOptionException extends AbstractThrowableProblem {
     public InvalidSortingOptionException(String option) {
-        super("Sorting option [" + option + "] has not been recognized");
+        super(null, "Sorting option is invalid",
+            Status.BAD_REQUEST,
+            "Sorting option [" + option + "] has not been recognized");
     }
 
 }

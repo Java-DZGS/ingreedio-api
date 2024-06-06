@@ -19,7 +19,8 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.IntegrationTest;
 import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductCriteria;
-import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductsSortingCriteria;
+import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductSortingCriteria;
+import pl.edu.pw.mini.ingreedio.api.product.criteria.SortingBy;
 import pl.edu.pw.mini.ingreedio.api.product.exception.ProductNotFoundException;
 import pl.edu.pw.mini.ingreedio.api.product.model.BrandDocument;
 import pl.edu.pw.mini.ingreedio.api.product.model.CategoryDocument;
@@ -28,6 +29,7 @@ import pl.edu.pw.mini.ingreedio.api.product.model.ProductDocument;
 import pl.edu.pw.mini.ingreedio.api.product.model.ProviderDocument;
 import pl.edu.pw.mini.ingreedio.api.product.repository.ProductRepository;
 import pl.edu.pw.mini.ingreedio.api.product.service.ProductService;
+import pl.edu.pw.mini.ingreedio.api.product.service.ProductCriteriaService;
 import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.review.model.Review;
 import pl.edu.pw.mini.ingreedio.api.user.model.User;
@@ -37,6 +39,9 @@ public class ProductServiceTest extends IntegrationTest {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private ProductCriteriaService productCriteriaService;
 
     @Autowired
     private ProductRepository productRepository;
@@ -355,8 +360,9 @@ public class ProductServiceTest extends IntegrationTest {
             productService.addProduct(ProductDocument.builder().name("serek")
                 .shortDescription("krem do stóp").build());
 
-            var sortingCriteria =
-                new ProductsSortingCriteria(Sort.Direction.DESC, "matchScore");
+            var sortingCriteria = productCriteriaService
+                .getProductsSortingCriteria("d-match-score");
+
             var criteria = ProductCriteria.builder()
                 .phraseKeywords(Set.of("krem"))
                 .hasMatchScoreSortCriteria(true)

@@ -43,7 +43,7 @@ import pl.edu.pw.mini.ingreedio.api.product.exception.ProductNotFoundException;
 import pl.edu.pw.mini.ingreedio.api.product.model.ProductDocument;
 import pl.edu.pw.mini.ingreedio.api.product.service.PaginationService;
 import pl.edu.pw.mini.ingreedio.api.product.service.ProductService;
-import pl.edu.pw.mini.ingreedio.api.product.service.ProductsCriteriaService;
+import pl.edu.pw.mini.ingreedio.api.product.service.ProductCriteriaService;
 import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewRequestDto;
 import pl.edu.pw.mini.ingreedio.api.review.model.Review;
@@ -56,7 +56,7 @@ import pl.edu.pw.mini.ingreedio.api.user.model.User;
 public class ProductController {
     private final ProductService productService;
     private final PaginationService paginationService;
-    private final ProductsCriteriaService productsCriteriaService;
+    private final ProductCriteriaService productCriteriaService;
 
     private final ModelMapper modelMapper;
 
@@ -85,7 +85,7 @@ public class ProductController {
         @RequestParam("providers") Optional<Set<Long>> providers,
         @RequestParam("categories") Optional<Set<Long>> categories) {
         Page<ProductDocument> products = productService.getProductsMatchingCriteria(
-            productsCriteriaService.getProductsCriteria(
+            productCriteriaService.getProductsCriteria(
                 ingredientsToExclude,
                 ingredientsToInclude,
                 minRating,
