@@ -16,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.auth.service.AuthService;
+import pl.edu.pw.mini.ingreedio.api.brand.exception.BrandNotFoundException;
 import pl.edu.pw.mini.ingreedio.api.brand.service.BrandService;
 import pl.edu.pw.mini.ingreedio.api.category.service.CategoryService;
 import pl.edu.pw.mini.ingreedio.api.ingredient.service.IngredientService;
@@ -27,6 +28,7 @@ import pl.edu.pw.mini.ingreedio.api.product.model.IngredientDocument;
 import pl.edu.pw.mini.ingreedio.api.product.model.ProductDocument;
 import pl.edu.pw.mini.ingreedio.api.product.model.ProviderDocument;
 import pl.edu.pw.mini.ingreedio.api.product.repository.ProductRepository;
+import pl.edu.pw.mini.ingreedio.api.provider.exception.ProviderNotFoundException;
 import pl.edu.pw.mini.ingreedio.api.provider.service.ProviderService;
 import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.review.model.Review;
@@ -66,9 +68,8 @@ public class ProductService {
     // In case that every id is valid the product with correct subdocuments is returned.
     //
     // If there exists at least one invalid id a corresponding exception is thrown.
-    public ProductDocument makeProductFieldsValid(ProductDocument product) {
-        // TODO: add throws
-
+    public ProductDocument makeProductFieldsValid(ProductDocument product) throws
+        BrandNotFoundException, ProviderNotFoundException {
         if (product.getIngredients() != null) {
             Set<Long> ingredientIds = product
                 .getIngredients()
@@ -90,8 +91,8 @@ public class ProductService {
         if (product.getBrand() != null) {
             BrandDocument brand = modelMapper
                 .map(brandService
-                    .getBrandById(product.getBrand().getId())
-                    .orElse(null), BrandDocument.BrandDocumentBuilder.class)
+                    .getBrandById(product.getBrand().getId()),
+                    BrandDocument.BrandDocumentBuilder.class)
                 .build();
 
             product.setBrand(brand);
@@ -100,8 +101,8 @@ public class ProductService {
         if (product.getProvider() != null) {
             ProviderDocument provider = modelMapper
                 .map(providerService
-                    .getProviderById(product.getProvider().getId())
-                    .orElse(null), ProviderDocument.ProviderDocumentBuilder.class)
+                    .getProviderById(product.getProvider().getId()),
+                    ProviderDocument.ProviderDocumentBuilder.class)
                 .build();
 
             product.setProvider(provider);
