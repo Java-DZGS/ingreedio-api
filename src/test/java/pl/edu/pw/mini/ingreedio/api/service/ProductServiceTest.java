@@ -50,7 +50,7 @@ public class ProductServiceTest extends IntegrationTest {
 
     @BeforeEach
     public void setupData() {
-        user = userService.createUser("Dummy", "dummy@example.com");
+        user = userService.getUserByUsername("user");
     }
 
     /**
