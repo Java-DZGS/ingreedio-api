@@ -1,4 +1,4 @@
-package pl.edu.pw.mini.ingreedio.api.common.config;
+package pl.edu.pw.mini.ingreedio.api.common.mapping;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +8,6 @@ import org.modelmapper.convention.NamingConventions;
 import org.modelmapper.record.RecordModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.edu.pw.mini.ingreedio.api.common.MapperConfig;
 
 @Configuration
 @RequiredArgsConstructor

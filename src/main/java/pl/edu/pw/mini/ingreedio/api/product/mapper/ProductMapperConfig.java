@@ -5,7 +5,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import pl.edu.pw.mini.ingreedio.api.brand.dto.BrandDto;
 import pl.edu.pw.mini.ingreedio.api.category.dto.CategoryDto;
-import pl.edu.pw.mini.ingreedio.api.common.MapperConfig;
+import pl.edu.pw.mini.ingreedio.api.common.mapping.MapperConfig;
 import pl.edu.pw.mini.ingreedio.api.ingredient.dto.IngredientDto;
 import pl.edu.pw.mini.ingreedio.api.product.model.BrandDocument;
 import pl.edu.pw.mini.ingreedio.api.product.model.CategoryDocument;

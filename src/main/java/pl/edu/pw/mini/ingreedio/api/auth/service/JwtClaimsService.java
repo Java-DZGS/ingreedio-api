@@ -14,6 +14,6 @@ public class JwtClaimsService {
 
     @Transactional(readOnly = true)
     public JwtUserClaims getJwtUserClaimsByAuthInfo(AuthInfo authInfo) {
-        return modelMapper.map(authInfo, JwtUserClaims.JwtUserClaimsBuilder.class).build();
+        return modelMapper.map(authInfo, JwtUserClaims.class);
     }
 }

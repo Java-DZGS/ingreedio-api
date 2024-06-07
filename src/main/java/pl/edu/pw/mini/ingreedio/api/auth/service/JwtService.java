@@ -39,8 +39,8 @@ public class JwtService {
             extractClaim(token, claims -> claims.get("roles", Collection.class));
 
         return roles.stream()
-                          .map(Object::toString)
-                          .collect(Collectors.toSet());
+            .map(Object::toString)
+            .collect(Collectors.toSet());
     }
 
     public Set<String> extractPermissions(String token) {
@@ -48,8 +48,8 @@ public class JwtService {
             extractClaim(token, claims -> claims.get("permissions", Collection.class));
 
         return permissions.stream()
-                          .map(Object::toString)
-                          .collect(Collectors.toSet());
+            .map(Object::toString)
+            .collect(Collectors.toSet());
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -71,9 +71,9 @@ public class JwtService {
         final Set<String> permissions = extractPermissions(token);
 
         return (username.equals(expectedJwtUserClaims.username())
-            && roles.equals(expectedJwtUserClaims.roles())
-            && permissions.equals(expectedJwtUserClaims.permissions())
-            && !isTokenExpired(token));
+                && roles.equals(expectedJwtUserClaims.roles())
+                && permissions.equals(expectedJwtUserClaims.permissions())
+                && !isTokenExpired(token));
     }
 
     public String generateToken(JwtUserClaims jwtUserClaimsDto) {
