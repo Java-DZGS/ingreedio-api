@@ -152,16 +152,13 @@ public class ProductController {
     @PostMapping
     public ResponseEntity<ProductDto> addProduct(
         @RequestBody @Validated(ValidationGroups.Put.class) ProductRequestDto productRequest) {
-        ProductDocument product = modelMapper
-            .map(productRequest, ProductDocument.ProductDocumentBuilder.class)
-            .build();
+        ProductDocument product = modelMapper.map(productRequest, ProductDocument.class);
 
         ProductDocument savedProduct = productService
             .addProduct(productService.makeProductFieldsValid(product));
 
-        return new ResponseEntity<>(modelMapper
-            .map(savedProduct, ProductDto.ProductDtoBuilder.class)
-            .build(), HttpStatus.CREATED);
+        return new ResponseEntity<>(modelMapper.map(savedProduct, ProductDto.class),
+            HttpStatus.CREATED);
     }
 
     @Operation(summary = "Delete a product",
