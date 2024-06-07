@@ -36,7 +36,7 @@ public class AuthInfo implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
@@ -46,7 +46,7 @@ public class AuthInfo implements UserDetails {
     @JsonIgnore
     private String password;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "auth_infos_roles",
         joinColumns = @JoinColumn(name = "auth_info_id"),

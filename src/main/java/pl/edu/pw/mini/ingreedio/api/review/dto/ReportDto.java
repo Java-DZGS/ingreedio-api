@@ -4,7 +4,7 @@ import lombok.Builder;
 
 @Builder
 public record ReportDto(Long reportId,
-                        Long userId,
+                        long userId,
                         Long reviewId,
                         String content) {
 

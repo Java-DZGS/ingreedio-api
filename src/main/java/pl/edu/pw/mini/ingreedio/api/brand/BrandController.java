@@ -28,8 +28,7 @@ public class BrandController {
     @Operation(summary = "Get brand by ID", description = "Get brand by ID")
     @GetMapping("/{id}")
     public ResponseEntity<BrandDto> getBrandById(@PathVariable long id) {
-        return ResponseEntity.ok(modelMapper.map(brandService.getBrandById(id),
-            BrandDto.BrandDtoBuilder.class).build());
+        return ResponseEntity.ok(modelMapper.map(brandService.getBrandById(id), BrandDto.class));
     }
 
     @Operation(summary = "Get brands by IDs", description = "Get brands by IDs")
@@ -37,7 +36,7 @@ public class BrandController {
     public ResponseEntity<Set<BrandDto>> getBrandsByIds(@RequestParam("ids") Set<Long> brandIds) {
         Set<Brand> brands = brandService.getBrandsByIds(brandIds);
         Set<BrandDto> brandDtos = brands.stream()
-                .map(brand -> modelMapper.map(brand, BrandDto.BrandDtoBuilder.class).build())
+                .map(brand -> modelMapper.map(brand, BrandDto.class))
                 .collect(Collectors.toSet());
         return ResponseEntity.ok(brandDtos);
     }
@@ -47,8 +46,8 @@ public class BrandController {
     public ResponseEntity<List<BrandDto>> getAllBrands() {
         List<Brand> brands = brandService.getAllBrands();
         List<BrandDto> brandDtos = brands.stream()
-                .map(brand -> modelMapper.map(brand, BrandDto.BrandDtoBuilder.class).build())
-                .collect(Collectors.toList());
+                .map(brand -> modelMapper.map(brand, BrandDto.class))
+                .toList();
         return ResponseEntity.ok(brandDtos);
     }
 }

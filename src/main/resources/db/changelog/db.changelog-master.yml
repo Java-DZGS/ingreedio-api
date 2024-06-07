@@ -20,3 +20,6 @@ databaseChangeLog:
   - include:
       file: data/v0.5-data-import.sql
       relativeToChangelogFile: true
+  - include:
+      file: changes/v0.5-changelog.sql
+      relativeToChangelogFile: true

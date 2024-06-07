@@ -27,8 +27,8 @@ public class CategoryController {
     @Operation(summary = "Get category by ID", description = "Get category by ID")
     @GetMapping("/{id}")
     public ResponseEntity<CategoryDto> getCategoryById(@PathVariable long id) {
-        return ResponseEntity.ok(modelMapper.map(categoryService.getCategoryById(id),
-            CategoryDto.CategoryDtoBuilder.class).build());
+        return ResponseEntity.ok(
+            modelMapper.map(categoryService.getCategoryById(id), CategoryDto.class));
     }
 
     @Operation(summary = "Get categories by IDs", description = "Get categories by IDs")
@@ -37,9 +37,7 @@ public class CategoryController {
         @RequestParam("ids") Set<Long> categoryIds) {
         return ResponseEntity.ok(categoryService.getCategoriesByIds(categoryIds)
             .stream()
-            .map(category -> modelMapper
-                .map(category, CategoryDto.CategoryDtoBuilder.class)
-                .build())
+            .map(category -> modelMapper.map(category, CategoryDto.class))
             .collect(Collectors.toSet()));
     }
 
@@ -48,9 +46,7 @@ public class CategoryController {
     public ResponseEntity<List<CategoryDto>> getAllCategories() {
         return ResponseEntity.ok(categoryService.getAllCategories()
             .stream()
-            .map(category -> modelMapper
-                .map(category, CategoryDto.CategoryDtoBuilder.class)
-                .build())
+            .map(category -> modelMapper.map(category, CategoryDto.class))
             .toList());
     }
 }

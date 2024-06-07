@@ -41,7 +41,7 @@ public class ReviewService {
     }
 
     @Transactional
-    public ReportDto reportReview(Long reviewId, Long userId, String content)
+    public ReportDto reportReview(Long reviewId, long userId, String content)
         throws ReportEmptyReviewAttemptException, ReviewNotFoundException {
         Optional<Review> optionalReview = reviewRepository.findById(reviewId);
 
@@ -128,8 +128,8 @@ public class ReviewService {
         return reviewRepository.getProductReviews(productId)
             .stream()
             .sorted((first, second) -> -Boolean.compare(
-                first.getUser().getId().equals(user.getId()),
-                second.getUser().getId().equals(user.getId())))
+                first.getUser().getId() == (user.getId()),
+                second.getUser().getId() == (user.getId())))
             .map(review -> reviewDtoMapper.apply(review, user))
             .collect(Collectors.toList());
     }
@@ -144,12 +144,8 @@ public class ReviewService {
     @Transactional
     public void likeReview(Long reviewId)
         throws NotLoggedInException, ReviewNotFoundException {
-        Optional<User> userOptional = userService
+        User userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
-
-        if (userOptional.isEmpty()) {
-            throw new NotLoggedInException();
-        }
 
         Optional<Review> reviewOptional = reviewRepository.findById(reviewId);
 
@@ -159,24 +155,20 @@ public class ReviewService {
 
         Set<User> likingUsers = reviewOptional.get().getLikingUsers();
         Set<User> dislikingUsers = reviewOptional.get().getDislikingUsers();
-        likingUsers.add(userOptional.get());
-        dislikingUsers.remove(userOptional.get());
+        likingUsers.add(userOptional);
+        dislikingUsers.remove(userOptional);
         reviewOptional.get().setLikingUsers(likingUsers);
         reviewOptional.get().setDislikingUsers(dislikingUsers);
 
         reviewRepository.save(reviewOptional.get());
-        userService.likeReview(userOptional.get(), reviewOptional.get());
+        userService.likeReview(userOptional, reviewOptional.get());
     }
 
     @Transactional
     public void unlikeReview(Long reviewId)
         throws NotLoggedInException, ReviewNotFoundException {
-        Optional<User> userOptional = userService
+        User userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
-
-        if (userOptional.isEmpty()) {
-            throw new NotLoggedInException();
-        }
 
         Optional<Review> reviewOptional = reviewRepository.findById(reviewId);
 
@@ -185,22 +177,18 @@ public class ReviewService {
         }
 
         Set<User> likingUsers = reviewOptional.get().getLikingUsers();
-        likingUsers.remove(userOptional.get());
+        likingUsers.remove(userOptional);
         reviewOptional.get().setLikingUsers(likingUsers);
 
         reviewRepository.save(reviewOptional.get());
-        userService.unlikeReview(userOptional.get(), reviewOptional.get());
+        userService.unlikeReview(userOptional, reviewOptional.get());
     }
 
     @Transactional
     public void dislikeReview(Long reviewId)
         throws NotLoggedInException, ReviewNotFoundException {
-        Optional<User> userOptional = userService
+        User userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
-
-        if (userOptional.isEmpty()) {
-            throw new NotLoggedInException();
-        }
 
         Optional<Review> reviewOptional = reviewRepository.findById(reviewId);
 
@@ -210,24 +198,20 @@ public class ReviewService {
 
         Set<User> likingUsers = reviewOptional.get().getLikingUsers();
         Set<User> dislikingUsers = reviewOptional.get().getDislikingUsers();
-        likingUsers.remove(userOptional.get());
-        dislikingUsers.add(userOptional.get());
+        likingUsers.remove(userOptional);
+        dislikingUsers.add(userOptional);
         reviewOptional.get().setLikingUsers(likingUsers);
         reviewOptional.get().setDislikingUsers(dislikingUsers);
 
         reviewRepository.save(reviewOptional.get());
-        userService.dislikeReview(userOptional.get(), reviewOptional.get());
+        userService.dislikeReview(userOptional, reviewOptional.get());
     }
 
     @Transactional
     public void undislikeReview(Long reviewId)
         throws NotLoggedInException, ReviewNotFoundException {
-        Optional<User> userOptional = userService
+        User userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
-
-        if (userOptional.isEmpty()) {
-            throw new NotLoggedInException();
-        }
 
         Optional<Review> reviewOptional = reviewRepository.findById(reviewId);
 
@@ -236,10 +220,10 @@ public class ReviewService {
         }
 
         Set<User> dislikingUsers = reviewOptional.get().getDislikingUsers();
-        dislikingUsers.remove(userOptional.get());
+        dislikingUsers.remove(userOptional);
         reviewOptional.get().setDislikingUsers(dislikingUsers);
 
         reviewRepository.save(reviewOptional.get());
-        userService.undislikeReview(userOptional.get(), reviewOptional.get());
+        userService.undislikeReview(userOptional, reviewOptional.get());
     }
 }

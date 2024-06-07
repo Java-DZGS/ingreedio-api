@@ -35,7 +35,7 @@ import pl.edu.pw.mini.ingreedio.api.review.model.Review;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
 
     @Column
     private String email;
@@ -43,23 +43,25 @@ public class User {
     @Column
     private String displayName;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "users_ingredients",
         joinColumns = @JoinColumn(name = "user_id"),
         inverseJoinColumns = @JoinColumn(name = "ingredient_id"))
     @Builder.Default
+    @EqualsAndHashCode.Exclude
     private Set<Ingredient> likedIngredients = new HashSet<>();
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "users_allergens",
         joinColumns = @JoinColumn(name = "user_id"),
         inverseJoinColumns = @JoinColumn(name = "ingredient_id"))
     @Builder.Default
+    @EqualsAndHashCode.Exclude
     private Set<Ingredient> allergens = new HashSet<>();
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "users_liked_reviews",
         joinColumns = @JoinColumn(name = "user_id"),
@@ -69,7 +71,7 @@ public class User {
     @EqualsAndHashCode.Exclude
     private Set<Review> likedReviews = new HashSet<>();
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "users_disliked_reviews",
         joinColumns = @JoinColumn(name = "user_id"),
@@ -79,16 +81,17 @@ public class User {
     @EqualsAndHashCode.Exclude
     private Set<Review> dislikedReviews = new HashSet<>();
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(
         name = "users_products",
         joinColumns = @JoinColumn(name = "user_id")
     )
     @Column(name = "product_id")
     @Builder.Default
+    @EqualsAndHashCode.Exclude
     private Set<Long> likedProducts = new HashSet<>();
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @Builder.Default
     @ToString.Exclude
     @EqualsAndHashCode.Exclude

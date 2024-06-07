@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,12 +49,15 @@ import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewRequestDto;
 import pl.edu.pw.mini.ingreedio.api.review.model.Review;
 import pl.edu.pw.mini.ingreedio.api.user.model.User;
+import pl.edu.pw.mini.ingreedio.api.user.service.UserService;
 
 @RestController
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
 @Tag(name = "Products")
+@Transactional
 public class ProductController {
+    private final UserService userService;
     private final ProductService productService;
     private final PaginationService paginationService;
     private final ProductCriteriaService productCriteriaService;
@@ -101,8 +105,7 @@ public class ProductController {
         );
 
         User user = (authentication != null && authentication.isAuthenticated())
-            ? ((AuthInfo) authentication.getPrincipal()).getUser()
-            : null;
+            ? userService.getUser(authentication) : null;
 
         List<ProductViewDto> productsDtos = products.getContent()
             .stream()
@@ -131,8 +134,7 @@ public class ProductController {
         ProductDocument product = productService.getProductById(id);
 
         User user = (authentication != null && authentication.isAuthenticated())
-            ? ((AuthInfo) authentication.getPrincipal()).getUser()
-            : null;
+            ? userService.getUser(authentication) : null;
 
         return ResponseEntity.ok(modelMapper
             .map(product, ProductDto.ProductDtoBuilder.class)
@@ -152,16 +154,13 @@ public class ProductController {
     @PostMapping
     public ResponseEntity<ProductDto> addProduct(
         @RequestBody @Validated(ValidationGroups.Put.class) ProductRequestDto productRequest) {
-        ProductDocument product = modelMapper
-            .map(productRequest, ProductDocument.ProductDocumentBuilder.class)
-            .build();
+        ProductDocument product = modelMapper.map(productRequest, ProductDocument.class);
 
         ProductDocument savedProduct = productService
             .addProduct(productService.makeProductFieldsValid(product));
 
-        return new ResponseEntity<>(modelMapper
-            .map(savedProduct, ProductDto.ProductDtoBuilder.class)
-            .build(), HttpStatus.CREATED);
+        return new ResponseEntity<>(modelMapper.map(savedProduct, ProductDto.class),
+            HttpStatus.CREATED);
     }
 
     @Operation(summary = "Delete a product",
@@ -242,7 +241,7 @@ public class ProductController {
     })
     @PostMapping("/{id}/likes")
     public ResponseEntity<Void> likeProduct(Authentication authentication, @PathVariable long id) {
-        User user = ((AuthInfo) authentication.getPrincipal()).getUser();
+        User user = userService.getUser(authentication);
         productService.likeProduct(id, user);
         return ResponseEntity.ok().build();
     }
@@ -259,7 +258,7 @@ public class ProductController {
     @DeleteMapping("/{id}/likes")
     public ResponseEntity<Void> unlikeProduct(Authentication authentication,
                                               @PathVariable long id) {
-        User user = ((AuthInfo) authentication.getPrincipal()).getUser();
+        User user = userService.getUser(authentication);
         productService.unlikeProduct(id, user);
         return ResponseEntity.ok().build();
     }
@@ -301,8 +300,7 @@ public class ProductController {
     public ResponseEntity<List<ReviewDto>> getProductReviews(Authentication authentication,
                                                              @PathVariable long id) {
         if (authentication != null && authentication.isAuthenticated()) {
-            return productService.getProductReviews(id,
-                ((AuthInfo) authentication.getPrincipal()).getUser())
+            return productService.getProductReviews(id, userService.getUser(authentication))
                 .map(ResponseEntity::ok)
                 .orElseThrow(() -> new ProductNotFoundException(id));
         }

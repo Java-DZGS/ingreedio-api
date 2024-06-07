@@ -69,7 +69,7 @@ public class AuthService {
 
         AuthInfo authInfo = (AuthInfo) authentication.getPrincipal();
         String jwtToken = jwtService.generateToken(jwtClaimsService
-            .getJwtUserClaimsByUsername(username));
+            .getJwtUserClaimsByAuthInfo(authInfo));
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(authInfo);
         return JwtAuthTokens.builder().accessToken(jwtToken).refreshToken(refreshToken).build();
     }

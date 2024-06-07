@@ -44,8 +44,8 @@ public class AuthController {
         @RequestBody AuthRequestDto request) {
         return ResponseEntity.ok(mapper.map(
             authService.login(request.username(), request.password()),
-            JwtAuthTokensDto.JwtAuthTokensDtoBuilder.class
-        ).build());
+            JwtAuthTokensDto.class
+        ));
     }
 
     @Operation(summary = "Refresh JWT token",
@@ -61,9 +61,6 @@ public class AuthController {
         @RequestBody RefreshTokenRequestDto request) {
         RefreshToken token = refreshTokenService.getToken(request.refreshToken());
         JwtAuthTokens newTokens = authService.refresh(token);
-        return ResponseEntity.ok(mapper.map(
-            newTokens,
-            JwtAuthTokensDto.JwtAuthTokensDtoBuilder.class
-        ).build());
+        return ResponseEntity.ok(mapper.map(newTokens, JwtAuthTokensDto.class));
     }
 }

@@ -10,13 +10,13 @@ import pl.edu.pw.mini.ingreedio.api.review.model.Review;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
-    Optional<Review> findById(Long id);
+    Optional<Review> findById(int id);
 
     @Query("SELECT r FROM Review r WHERE r.user.id = :userId AND r.productId = :productId")
-    Optional<Review> findByUserIdAndProductId(@Param("userId") Long userId,
-                                              @Param("productId") Long productId);
+    Optional<Review> findByUserIdAndProductId(@Param("userId") long userId,
+                                              @Param("productId") long productId);
 
     @Query("SELECT r FROM Review r WHERE r.productId = :productId")
-    List<Review> getProductReviews(@Param("productId") Long productId);
+    List<Review> getProductReviews(@Param("productId") long productId);
 
 }

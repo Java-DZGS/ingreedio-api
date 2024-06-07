@@ -1,9 +1,10 @@
 package pl.edu.pw.mini.ingreedio.api.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchException;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.IntegrationTest;
 import pl.edu.pw.mini.ingreedio.api.ingredient.model.Ingredient;
 import pl.edu.pw.mini.ingreedio.api.ingredient.service.IngredientService;
-import pl.edu.pw.mini.ingreedio.api.product.exception.IngredientNotFoundException;
 import pl.edu.pw.mini.ingreedio.api.user.model.User;
 import pl.edu.pw.mini.ingreedio.api.user.service.UserService;
 
@@ -22,13 +22,15 @@ import pl.edu.pw.mini.ingreedio.api.user.service.UserService;
 public class IngredientServiceTest extends IntegrationTest {
     @Autowired
     private IngredientService ingredientService;
+
     @Autowired
     private UserService userService;
+
     private User user;
 
     @BeforeEach
-    public void createUser() {
-        user = userService.createUser("user", "us@er.com");
+    public void setupData() {
+        user = userService.getUserByUsername("user");
     }
 
     @Test
@@ -45,159 +47,116 @@ public class IngredientServiceTest extends IntegrationTest {
     }
 
     @Test
-    public void givenIngredientId_whenLikeIngredient_thenSuccess() {
+    public void givenIngredient_whenLikeIngredient_thenSuccess() {
         // Given
-        long ingredientId = ingredientService.addIngredient(
-            Ingredient.builder().name("ingredient1").build()).getId();
+        Ingredient ingredient = ingredientService.addIngredient(
+            Ingredient.builder().name("ingredient1").build());
 
         // When
-        ingredientService.likeIngredient(ingredientId, user);
-        List<Ingredient> ingredients = ingredientService.getLikedIngredients(user);
+        ingredientService.likeIngredient(ingredient, user);
+        Set<Ingredient> ingredients = user.getLikedIngredients();
 
         // Then
-        assertThat(ingredients).map(Ingredient::getId).contains(ingredientId);
+        assertThat(ingredients).map(Ingredient::getId).contains(ingredient.getId());
     }
 
     @Test
-    public void givenNonExistingIngredientId_whenLikeIngredient_thenFailure() {
+    public void givenIngredient_whenUnlikeIngredient_thenSuccess() {
         // Given
+        Ingredient ingredient = ingredientService.addIngredient(
+            Ingredient.builder().name("ingredient1").build());
+        ingredientService.likeIngredient(ingredient, user);
 
         // When
-        Exception problem = catchException(() -> ingredientService.likeIngredient(10000L, user));
+        ingredientService.unlikeIngredient(ingredient, user);
+        Set<Ingredient> ingredients = user.getLikedIngredients();
 
         // Then
-        assertThat(problem).isInstanceOf(IngredientNotFoundException.class);
-    }
-
-    @Test
-    public void givenIngredientId_whenUnlikeIngredient_thenSuccess() {
-        // Given
-        long ingredientId = ingredientService.addIngredient(
-            Ingredient.builder().name("ingredient1").build()).getId();
-        ingredientService.likeIngredient(ingredientId, user);
-
-        // When
-        ingredientService.unlikeIngredient(ingredientId, user);
-        List<Ingredient> ingredients = ingredientService.getLikedIngredients(user);
-
-        // Then
-        assertThat(ingredients).map(Ingredient::getId).doesNotContain(ingredientId);
-    }
-
-    @Test
-    public void givenNonExistingIngredientId_whenUnlikeIngredient_thenFailure() {
-        // Given
-
-        // When
-        Exception problem = catchException(() -> ingredientService.unlikeIngredient(10000L, user));
-
-        // Then
-        assertThat(problem).isInstanceOf(IngredientNotFoundException.class);
+        assertThat(ingredients).map(Ingredient::getId).doesNotContain(ingredient.getId());
     }
 
     @Test
     public void givenUser_whenLikeIngredients_thenGetLikedIngredients() {
         // Given
-        final long ingredient1Id = ingredientService.addIngredient(
-            Ingredient.builder().name("ingredient1").build()).getId();
-        final long ingredient2Id = ingredientService.addIngredient(
-            Ingredient.builder().name("ingredient2").build()).getId();
-        final long ingredient3Id = ingredientService.addIngredient(
-            Ingredient.builder().name("ingredient3").build()).getId();
-        final long ingredient4Id = ingredientService.addIngredient(
-            Ingredient.builder().name("ingredient4").build()).getId();
+        final Ingredient ingredient1 = ingredientService.addIngredient(
+            Ingredient.builder().name("ingredient1").build());
+        final Ingredient ingredient2 = ingredientService.addIngredient(
+            Ingredient.builder().name("ingredient2").build());
+        final Ingredient ingredient3 = ingredientService.addIngredient(
+            Ingredient.builder().name("ingredient3").build());
+        final Ingredient ingredient4 = ingredientService.addIngredient(
+            Ingredient.builder().name("ingredient4").build());
 
-        ingredientService.likeIngredient(ingredient1Id, user);
-        ingredientService.likeIngredient(ingredient2Id, user);
-        ingredientService.likeIngredient(ingredient3Id, user);
+        ingredientService.likeIngredient(ingredient1, user);
+        ingredientService.likeIngredient(ingredient2, user);
+        ingredientService.likeIngredient(ingredient3, user);
 
         // When
-        List<Long> likedIngredients = ingredientService.getLikedIngredients(user)
-            .stream().map(Ingredient::getId).toList();
+        Set<Long> likedIngredients = user.getLikedIngredients()
+            .stream().map(Ingredient::getId).collect(Collectors.toSet());
 
         // Then
         assertThat(likedIngredients.size()).isEqualTo(3);
         assertThat(likedIngredients).containsAll(
-            List.of(ingredient1Id, ingredient2Id, ingredient1Id));
-        assertThat(likedIngredients).doesNotContain(ingredient4Id);
+            List.of(ingredient1.getId(), ingredient2.getId(), ingredient3.getId()));
+        assertThat(likedIngredients).doesNotContain(ingredient4.getId());
     }
 
     @Test
-    public void givenIngredientId_whenAddAllergen_thenSuccess() {
+    public void givenIngredient_whenAddAllergen_thenSuccess() {
         // Given
-        long ingredientId = ingredientService.addIngredient(
-            Ingredient.builder().name("ingredient1").build()).getId();
+        Ingredient ingredient = ingredientService.addIngredient(
+            Ingredient.builder().name("ingredient1").build());
 
         // When
-        ingredientService.addAllergen(ingredientId, user);
-        List<Ingredient> allergens = ingredientService.getAllergens(user);
+        ingredientService.addAllergen(ingredient, user);
+        Set<Ingredient> allergens = user.getAllergens();
 
         // Then
-        assertThat(allergens).map(Ingredient::getId).contains(ingredientId);
-    }
-
-    @Test
-    public void givenNonExistingIngredientId_whenAddAllergen_thenFailure() {
-        // Given
-
-        // When
-        Exception problem = catchException(() -> ingredientService.addAllergen(10000L, user));
-
-        // Then
-        assertThat(problem).isInstanceOf(IngredientNotFoundException.class);
+        assertThat(allergens).map(Ingredient::getId).contains(ingredient.getId());
     }
 
     @Test
     @Transactional
-    public void givenIngredientId_whenRemoveAllergen_thenSuccess() {
+    public void givenIngredient_whenRemoveAllergen_thenSuccess() {
         // Given
-        Long ingredientId = ingredientService.addIngredient(
-            Ingredient.builder().name("ingredient1").build()).getId();
-        ingredientService.addAllergen(ingredientId, user);
+        Ingredient ingredient = ingredientService.addIngredient(
+            Ingredient.builder().name("ingredient1").build());
+        ingredientService.addAllergen(ingredient, user);
 
         // When
-        ingredientService.removeAllergen(ingredientId, user);
-        List<Ingredient> allergens = ingredientService.getAllergens(user);
+        ingredientService.removeAllergen(ingredient, user);
+        Set<Ingredient> allergens = user.getAllergens();
 
         // Then
-        assertThat(allergens).map(Ingredient::getId).doesNotContain(ingredientId);
-    }
-
-    @Test
-    public void givenNonExistingIngredientId_whenRemoveAllergen_thenFailure() {
-        // Given
-
-        Exception problem = catchException(() -> ingredientService.removeAllergen(10000L, user));
-
-        // Then
-        assertThat(problem).isInstanceOf(IngredientNotFoundException.class);
+        assertThat(allergens).map(Ingredient::getId).doesNotContain(ingredient.getId());
     }
 
     @Test
     public void givenUser_whenAddAllergens_thenGetAllergens() {
         // Given
-        final long ingredient1Id = ingredientService.addIngredient(
-            Ingredient.builder().name("ingredient1").build()).getId();
-        final long ingredient2Id = ingredientService.addIngredient(
-            Ingredient.builder().name("ingredient2").build()).getId();
-        final long ingredient3Id = ingredientService.addIngredient(
-            Ingredient.builder().name("ingredient3").build()).getId();
-        final long ingredient4Id = ingredientService.addIngredient(
-            Ingredient.builder().name("ingredient4").build()).getId();
+        final Ingredient ingredient1 = ingredientService.addIngredient(
+            Ingredient.builder().name("ingredient1").build());
+        final Ingredient ingredient2 = ingredientService.addIngredient(
+            Ingredient.builder().name("ingredient2").build());
+        final Ingredient ingredient3 = ingredientService.addIngredient(
+            Ingredient.builder().name("ingredient3").build());
+        final Ingredient ingredient4 = ingredientService.addIngredient(
+            Ingredient.builder().name("ingredient4").build());
 
-        ingredientService.addAllergen(ingredient1Id, user);
-        ingredientService.addAllergen(ingredient2Id, user);
-        ingredientService.addAllergen(ingredient3Id, user);
+        ingredientService.addAllergen(ingredient1, user);
+        ingredientService.addAllergen(ingredient2, user);
+        ingredientService.addAllergen(ingredient3, user);
 
         // When
-        List<Long> allergens = ingredientService.getAllergens(user).stream()
-            .map(Ingredient::getId).toList();
+        Set<Long> allergens = user.getAllergens().stream()
+            .map(Ingredient::getId).collect(Collectors.toSet());
 
         // Then
         assertThat(allergens.size()).isEqualTo(3);
         assertThat(allergens).containsAll(
-            List.of(ingredient1Id, ingredient2Id, ingredient3Id));
-        assertThat(allergens).doesNotContain(ingredient4Id);
+            List.of(ingredient1.getId(), ingredient2.getId(), ingredient3.getId()));
+        assertThat(allergens).doesNotContain(ingredient4.getId());
     }
 
     @Test
@@ -232,17 +191,17 @@ public class IngredientServiceTest extends IntegrationTest {
     @WithMockUser(username = "user", password = "user")
     public void givenLiked_whenSearch_thenLikedArePromoted() {
         // Given
-        final Long ingredient1Id = ingredientService.addIngredient(
-            Ingredient.builder().name("LAURKA DLA MAMY").build()).getId();
-        final Long ingredient2Id = ingredientService.addIngredient(
-            Ingredient.builder().name("SULFUR").build()).getId();
-        final Long ingredient3Id = ingredientService.addIngredient(
-            Ingredient.builder().name("LAURYL SULFATE").build()).getId();
-        final Long ingredient4Id = ingredientService.addIngredient(
-            Ingredient.builder().name("LAURYL SULFIDE").build()).getId();
+        final Ingredient ingredient1 = ingredientService.addIngredient(
+            Ingredient.builder().name("LAURKA DLA MAMY").build());
+        final Ingredient ingredient2 = ingredientService.addIngredient(
+            Ingredient.builder().name("SULFUR").build());
+        final Ingredient ingredient3 = ingredientService.addIngredient(
+            Ingredient.builder().name("LAURYL SULFATE").build());
+        final Ingredient ingredient4 = ingredientService.addIngredient(
+            Ingredient.builder().name("LAURYL SULFIDE").build());
 
         String query = "LAU SUL";
-        ingredientService.likeIngredient(ingredient4Id, user);
+        ingredientService.likeIngredient(ingredient4, user);
 
         // When
         List<Ingredient> ingredients =
@@ -250,9 +209,10 @@ public class IngredientServiceTest extends IntegrationTest {
 
         // Then
         assertThat(ingredients.size()).isEqualTo(4);
-        assertThat(ingredients.getFirst().getId()).isEqualTo(ingredient4Id);
+        assertThat(ingredients.getFirst().getId()).isEqualTo(ingredient4.getId());
         assertThat(ingredients).map(Ingredient::getId).containsAll(
-            List.of(ingredient1Id, ingredient2Id, ingredient3Id, ingredient4Id)
+            List.of(ingredient1.getId(), ingredient2.getId(), ingredient3.getId(),
+                ingredient4.getId())
         );
     }
 
@@ -260,17 +220,17 @@ public class IngredientServiceTest extends IntegrationTest {
     @WithMockUser(username = "user", password = "user")
     public void givenAllergens_whenSearch_thenAllergensAreSkipped() {
         // Given
-        final Long ingredient1Id = ingredientService.addIngredient(
-            Ingredient.builder().name("LAURKA DLA MAMY").build()).getId();
-        final Long ingredient2Id = ingredientService.addIngredient(
-            Ingredient.builder().name("SULFUR").build()).getId();
-        final Long ingredient3Id = ingredientService.addIngredient(
-            Ingredient.builder().name("LAURYL SULFATE").build()).getId();
-        final Long ingredient4Id = ingredientService.addIngredient(
-            Ingredient.builder().name("LAURYL SULFIDE").build()).getId();
+        final Ingredient ingredient1 = ingredientService.addIngredient(
+            Ingredient.builder().name("LAURKA DLA MAMY").build());
+        final Ingredient ingredient2 = ingredientService.addIngredient(
+            Ingredient.builder().name("SULFUR").build());
+        final Ingredient ingredient3 = ingredientService.addIngredient(
+            Ingredient.builder().name("LAURYL SULFATE").build());
+        final Ingredient ingredient4 = ingredientService.addIngredient(
+            Ingredient.builder().name("LAURYL SULFIDE").build());
 
         String query = "LAU SUL";
-        ingredientService.addAllergen(ingredient3Id, user);
+        ingredientService.addAllergen(ingredient3, user);
 
         // When
         List<Ingredient> ingredients =
@@ -278,9 +238,9 @@ public class IngredientServiceTest extends IntegrationTest {
 
         // Then
         assertThat(ingredients.size()).isEqualTo(3);
-        assertThat(ingredients).map(Ingredient::getId).doesNotContain(ingredient3Id);
+        assertThat(ingredients).map(Ingredient::getId).doesNotContain(ingredient3.getId());
         assertThat(ingredients).map(Ingredient::getId).containsAll(
-            List.of(ingredient1Id, ingredient2Id, ingredient4Id)
+            List.of(ingredient1.getId(), ingredient2.getId(), ingredient4.getId())
         );
     }
 }

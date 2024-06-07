@@ -1,7 +1,7 @@
 package pl.edu.pw.mini.ingreedio.api.auth.service;
 
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Hibernate;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,19 @@ public class AuthInfoMangerService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<AuthInfo> getByUsername(String username) throws UsernameNotFoundException {
-        return authInfoRepository.findByUsername(username);
+    public AuthInfo getByUsername(String username) throws UsernameNotFoundException {
+        return authInfoRepository.findByUsername(username)
+            .orElseThrow(() -> new UsernameNotFoundException("User '" + username + "' not found!"));
+    }
+
+    @Transactional(readOnly = true)
+    public AuthInfo getByUsername(String username, boolean roles) throws UsernameNotFoundException {
+        var authInfo = this.getByUsername(username);
+
+        if (roles) {
+            Hibernate.initialize(authInfo.getRoles());
+        }
+
+        return authInfo;
     }
 }

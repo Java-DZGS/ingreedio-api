@@ -28,8 +28,8 @@ public class ProviderController {
     @Operation(summary = "Get provider by ID", description = "Get provider by ID")
     @GetMapping("/{id}")
     public ResponseEntity<ProviderDto> getProviderById(@PathVariable long id) {
-        return ResponseEntity.ok(modelMapper.map(providerService.getProviderById(id),
-            ProviderDto.ProviderDtoBuilder.class).build());
+        return ResponseEntity.ok(
+            modelMapper.map(providerService.getProviderById(id), ProviderDto.class));
     }
 
     @Operation(summary = "Get providers by IDs", description = "Get providers by IDs")
@@ -38,8 +38,7 @@ public class ProviderController {
                                                                   Set<Long> providerIds) {
         Set<Provider> providers = providerService.getProvidersByIds(providerIds);
         Set<ProviderDto> providerDtos = providers.stream()
-                .map(provider -> modelMapper.map(provider,
-                    ProviderDto.ProviderDtoBuilder.class).build())
+                .map(provider -> modelMapper.map(provider, ProviderDto.class))
                 .collect(Collectors.toSet());
         return ResponseEntity.ok(providerDtos);
     }
@@ -49,8 +48,7 @@ public class ProviderController {
     public ResponseEntity<List<ProviderDto>> getAllProviders() {
         List<Provider> providers = providerService.getAllProviders();
         List<ProviderDto> providerDtos = providers.stream()
-                .map(provider -> modelMapper.map(provider,
-                    ProviderDto.ProviderDtoBuilder.class).build())
+                .map(provider -> modelMapper.map(provider, ProviderDto.class))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(providerDtos);
     }

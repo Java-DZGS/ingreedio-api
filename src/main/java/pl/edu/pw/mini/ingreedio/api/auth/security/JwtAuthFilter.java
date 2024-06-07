@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import pl.edu.pw.mini.ingreedio.api.auth.model.AuthInfo;
 import pl.edu.pw.mini.ingreedio.api.auth.service.JwtClaimsService;
 import pl.edu.pw.mini.ingreedio.api.auth.service.JwtService;
 
@@ -47,12 +48,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            JwtUserClaims claims = jwtClaimsService.getJwtUserClaimsByUsername(username);
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            UserDetails details = userDetailsService.loadUserByUsername(username);
+            JwtUserClaims claims = jwtClaimsService.getJwtUserClaimsByAuthInfo((AuthInfo) details);
             if (jwtService.isTokenValid(jwt, claims)) {
                 UsernamePasswordAuthenticationToken authToken =
-                    new UsernamePasswordAuthenticationToken(userDetails, null,
-                        userDetails.getAuthorities()
+                    new UsernamePasswordAuthenticationToken(details, null,
+                        details.getAuthorities()
                     );
 
                 authToken.setDetails(

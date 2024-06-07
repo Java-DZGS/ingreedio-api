@@ -147,7 +147,7 @@ public class ProductService {
         ProductDocument product = getProductById(id);
 
         // Add users unlike product
-        userService.allUsersUnlikeProduct(product.getId());
+        userService.handleProductDeletion(product.getId());
         // TODO: remove all product reviews!!!
 
         productRepository.deleteById(product.getId());
@@ -182,15 +182,14 @@ public class ProductService {
         Set<Long> likedBy = product.getLikedBy();
         if (likedBy == null) {
             likedBy = new HashSet<>();
+            product.setLikedBy(likedBy);
         }
 
-        if (!likedBy.contains(user.getId())) {
-            likedBy.add(user.getId());
-            product.setLikedBy(likedBy);
-            productRepository.save(product);
-            // TODO: refactor product liking (user domain)
-            userService.likeProduct(user.getId().intValue(), productId);
-        }
+        likedBy.add(user.getId());
+        productRepository.save(product);
+
+        user.getLikedProducts().add(productId);
+        userService.saveUser(user);
     }
 
     @Transactional
@@ -202,27 +201,21 @@ public class ProductService {
             return;
         }
 
-        if (likedBy.contains(user.getId())) {
-            likedBy.remove(user.getId());
-            product.setLikedBy(likedBy);
-            productRepository.save(product);
-            // TODO: refactor product liking (user domain)
-            userService.unlikeProduct(user.getId().intValue(), productId);
-        }
+        likedBy.remove(user.getId());
+        productRepository.save(product);
+
+        user.getLikedProducts().remove(productId);
+        userService.saveUser(user);
     }
 
     // TODO: refactor reviews
     @Transactional
     public Optional<ReviewDto> addReview(Review review) throws ProductNotFoundException {
-        Optional<User> userOptional = userService
-            .getUserByUsername(authService.getCurrentUsername());
-        if (userOptional.isEmpty()) {
-            return Optional.empty();
-        }
+        User userOptional = userService.getUserByUsername(authService.getCurrentUsername());
 
         ProductDocument product = getProductById(review.getProductId());
 
-        User user = userOptional.get();
+        User user = userOptional;
         review.setUser(user);
 
         Optional<ReviewDto> reviewOptional = reviewService.addReview(user, review);
@@ -238,7 +231,7 @@ public class ProductService {
             ratingSum = 0;
         }
 
-        Long userId = user.getId();
+        long userId = user.getId();
         if (ratings.containsKey(userId)) {
             return Optional.empty();
         }
@@ -258,16 +251,12 @@ public class ProductService {
 
     @Transactional
     public Optional<ReviewDto> editReview(Review review) throws ProductNotFoundException {
-        Optional<User> userOptional = userService
-            .getUserByUsername(authService.getCurrentUsername());
-        if (userOptional.isEmpty()) {
-            return Optional.empty();
-        }
+        User userOptional = userService.getUserByUsername(authService.getCurrentUsername());
 
         ProductDocument product = getProductById(review.getProductId());
 
-        User user = userOptional.get();
-        Long userId = user.getId();
+        User user = userOptional;
+        long userId = user.getId();
 
         Optional<ReviewDto> reviewOptional = reviewService.editReview(user, review);
         if (reviewOptional.isEmpty()) {
@@ -295,16 +284,12 @@ public class ProductService {
 
     @Transactional
     public boolean deleteReview(long productId) throws ProductNotFoundException {
-        Optional<User> userOptional = userService
+        User userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
-        if (userOptional.isEmpty()) {
-            return false;
-        }
-
         ProductDocument product = getProductById(productId);
 
-        User user = userOptional.get();
-        Long userId = user.getId();
+        User user = userOptional;
+        long userId = user.getId();
 
         Map<Long, Integer> ratings = product.getRatings();
         if (ratings == null || !ratings.containsKey(userId)) {
@@ -343,13 +328,10 @@ public class ProductService {
     }
 
     public Optional<ReviewDto> getProductUserReview(long id) {
-        Optional<User> userOptional = userService
+        User userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
-        if (userOptional.isEmpty()) {
-            return Optional.empty();
-        }
 
-        User user = userOptional.get();
+        User user = userOptional;
         return reviewService.getProductUserReview(user, id);
     }
 }

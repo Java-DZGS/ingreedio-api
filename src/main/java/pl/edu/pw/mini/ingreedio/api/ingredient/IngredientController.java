@@ -22,16 +22,17 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import pl.edu.pw.mini.ingreedio.api.auth.model.AuthInfo;
 import pl.edu.pw.mini.ingreedio.api.ingredient.dto.IngredientDto;
 import pl.edu.pw.mini.ingreedio.api.ingredient.model.Ingredient;
 import pl.edu.pw.mini.ingreedio.api.ingredient.service.IngredientService;
+import pl.edu.pw.mini.ingreedio.api.user.service.UserService;
 
 @RestController
 @RequestMapping("/api/ingredients")
 @RequiredArgsConstructor
 @Tag(name = "Ingredients")
 public class IngredientController {
+    private final UserService userService;
     private final IngredientService ingredientService;
     private final ModelMapper modelMapper;
 
@@ -55,10 +56,10 @@ public class IngredientController {
                 .getIngredients(
                     count,
                     query.toUpperCase(),
-                    ((AuthInfo) authentication.getPrincipal()).getUser(), skipAllergens)
+                    userService.getUser(authentication), skipAllergens)
                 .stream()
-                .map((ingredient) -> modelMapper.map(ingredient,
-                    IngredientDto.IngredientDtoBuilder.class).build()).toList();
+                .map((ingredient) -> modelMapper.map(ingredient, IngredientDto.class))
+                .toList();
 
             return ResponseEntity.ok(ingredientDtoList);
         }
@@ -66,8 +67,8 @@ public class IngredientController {
         List<IngredientDto> ingredientDtoList = ingredientService
             .getIngredients(count, query.toUpperCase())
             .stream()
-            .map((ingredient) -> modelMapper.map(ingredient,
-                IngredientDto.IngredientDtoBuilder.class).build()).toList();
+            .map((ingredient) -> modelMapper.map(ingredient, IngredientDto.class))
+            .toList();
         return ResponseEntity.ok(ingredientDtoList);
     }
 
@@ -81,8 +82,7 @@ public class IngredientController {
     @GetMapping("/{id}")
     public ResponseEntity<IngredientDto> getIngredientById(@PathVariable long id) {
         Ingredient ingredient = ingredientService.getIngredientById(id);
-        IngredientDto ingredientDto = modelMapper.map(
-            ingredient, IngredientDto.IngredientDtoBuilder.class).build();
+        IngredientDto ingredientDto = modelMapper.map(ingredient, IngredientDto.class);
         return ResponseEntity.ok(ingredientDto);
     }
 
@@ -101,8 +101,7 @@ public class IngredientController {
         Set<IngredientDto> ingredientDtos = ingredientService
             .getIngredientsByIds(ingredientsIds)
             .stream()
-            .map((ingredient) -> modelMapper.map(
-                ingredient, IngredientDto.IngredientDtoBuilder.class).build())
+            .map((ingredient) -> modelMapper.map(ingredient, IngredientDto.class))
             .collect(Collectors.toSet());
         return ResponseEntity.ok(ingredientDtos);
     }
@@ -120,7 +119,8 @@ public class IngredientController {
     public ResponseEntity<Void> likeIngredient(
         Authentication authentication,
         @PathVariable long id) {
-        ingredientService.likeIngredient(id, ((AuthInfo) authentication.getPrincipal()).getUser());
+        Ingredient ingredient = ingredientService.getIngredientById(id);
+        ingredientService.likeIngredient(ingredient, userService.getUser(authentication));
         return ResponseEntity.ok().build();
     }
 
@@ -137,8 +137,8 @@ public class IngredientController {
     public ResponseEntity<Void> unlikeIngredient(
         Authentication authentication,
         @PathVariable long id) {
-        ingredientService.unlikeIngredient(
-            id, ((AuthInfo) authentication.getPrincipal()).getUser());
+        Ingredient ingredient = ingredientService.getIngredientById(id);
+        ingredientService.unlikeIngredient(ingredient, userService.getUser(authentication));
         return ResponseEntity.ok().build();
     }
 
@@ -155,7 +155,8 @@ public class IngredientController {
     public ResponseEntity<Void> addAllergen(
         Authentication authentication,
         @PathVariable Long id) {
-        ingredientService.addAllergen(id, ((AuthInfo) authentication.getPrincipal()).getUser());
+        Ingredient ingredient = ingredientService.getIngredientById(id);
+        ingredientService.addAllergen(ingredient, userService.getUser(authentication));
         return ResponseEntity.ok().build();
     }
 
@@ -172,7 +173,8 @@ public class IngredientController {
     public ResponseEntity<Void> removeAllergen(
         Authentication authentication,
         @PathVariable Long id) {
-        ingredientService.removeAllergen(id, ((AuthInfo) authentication.getPrincipal()).getUser());
+        Ingredient ingredient = ingredientService.getIngredientById(id);
+        ingredientService.removeAllergen(ingredient, userService.getUser(authentication));
         return ResponseEntity.ok().build();
     }
 }

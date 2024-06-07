@@ -43,17 +43,17 @@ public class AuthServiceTest extends IntegrationTest {
     @Autowired
     private UserService userService;
 
-    private User dummyUser;
+    private User user;
 
     @BeforeEach
     public void setupData() {
-        dummyUser = userService.createUser("Dummy", "dummy@example.com");
+        user = userService.createUser("Dummy", "dummy@example.com");
     }
 
     @Test
     public void givenValidSignupData_whenRegister_thenSuccess() {
         // Given
-        User user = dummyUser;
+        User user = this.user;
 
         // When
         AuthInfo info = authService.register("us", "as", user);
@@ -69,7 +69,7 @@ public class AuthServiceTest extends IntegrationTest {
     @Test
     public void givenDuplicatedUsername_whenRegister_thenExceptionThrown() {
         // Given
-        User user = dummyUser;
+        User user = this.user;
 
         // When
         Exception problem = catchException(() -> authService.register("user", "user", user));
@@ -81,7 +81,7 @@ public class AuthServiceTest extends IntegrationTest {
     @Test
     public void givenValidSignupData_whenRegister_thenNewUserHasDefaultRoles() {
         // Given
-        User user = dummyUser;
+        User user = this.user;
         AuthInfo authInfo = authService.register("us", "us", user);
 
         // When
@@ -102,7 +102,8 @@ public class AuthServiceTest extends IntegrationTest {
 
         // When
         JwtAuthTokens response = authService.login(username, password);
-        JwtUserClaims claims = jwtClaimsService.getJwtUserClaimsByUsername(username);
+        AuthInfo info = response.refreshToken().getAuthInfo();
+        JwtUserClaims claims = jwtClaimsService.getJwtUserClaimsByAuthInfo(info);
 
         // Then
         assertThat(response.accessToken()).isNotNull();
@@ -144,7 +145,8 @@ public class AuthServiceTest extends IntegrationTest {
 
         // When
         JwtAuthTokens response = authService.refresh(loginResponse.refreshToken());
-        JwtUserClaims claims = jwtClaimsService.getJwtUserClaimsByUsername("user");
+        AuthInfo info = response.refreshToken().getAuthInfo();
+        JwtUserClaims claims = jwtClaimsService.getJwtUserClaimsByAuthInfo(info);
 
         // Then
         assertThat(response.accessToken()).isNotNull();
@@ -169,7 +171,7 @@ public class AuthServiceTest extends IntegrationTest {
     @Test
     public void givenUser_whenGrantingRole_thenRoleIsGranted() {
         // Given
-        User user = dummyUser;
+        User user = this.user;
         AuthInfo authInfo = authService.register("test_user", "pass", user);
 
         Role newUserRole = assertRoleExist("TEST");
