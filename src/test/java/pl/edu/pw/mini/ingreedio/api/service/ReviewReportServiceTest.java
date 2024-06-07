@@ -56,12 +56,11 @@ public class ReviewReportServiceTest extends IntegrationTest {
             Optional<ReviewDto> reviewDto = productService.addReview(review);
             assertThat(reviewDto).isPresent();
 
-            Optional<User> userOptional = userService
+            User userOptional = userService
                 .getUserByUsername(authService.getCurrentUsername());
-            assertThat(userOptional).isPresent();
 
             reviewService.reportReview(reviewDto.get().reviewId(),
-                userOptional.get().getId(),
+                userOptional.getId(),
                 "this review is problematic");
 
             // Then
@@ -84,14 +83,13 @@ public class ReviewReportServiceTest extends IntegrationTest {
             Optional<ReviewDto> reviewDto = productService.addReview(review);
             assertThat(reviewDto).isPresent();
 
-            Optional<User> userOptional = userService
+            User userOptional = userService
                 .getUserByUsername(authService.getCurrentUsername());
-            assertThat(userOptional).isPresent();
 
             // Then
             assertThatExceptionOfType(ReportEmptyReviewAttemptException.class).isThrownBy(
                 () -> reviewService.reportReview(
-                    review.getId(), userOptional.get().getId(), "this review is problematic"
+                    review.getId(), userOptional.getId(), "this review is problematic"
                 ));
         }
     }

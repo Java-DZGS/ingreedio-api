@@ -102,7 +102,8 @@ public class AuthServiceTest extends IntegrationTest {
 
         // When
         JwtAuthTokens response = authService.login(username, password);
-        JwtUserClaims claims = jwtClaimsService.getJwtUserClaimsByUsername(username);
+        AuthInfo info = response.refreshToken().getAuthInfo();
+        JwtUserClaims claims = jwtClaimsService.getJwtUserClaimsByAuthInfo(info);
 
         // Then
         assertThat(response.accessToken()).isNotNull();
@@ -144,7 +145,8 @@ public class AuthServiceTest extends IntegrationTest {
 
         // When
         JwtAuthTokens response = authService.refresh(loginResponse.refreshToken());
-        JwtUserClaims claims = jwtClaimsService.getJwtUserClaimsByUsername("user");
+        AuthInfo info = response.refreshToken().getAuthInfo();
+        JwtUserClaims claims = jwtClaimsService.getJwtUserClaimsByAuthInfo(info);
 
         // Then
         assertThat(response.accessToken()).isNotNull();
