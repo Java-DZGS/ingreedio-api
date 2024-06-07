@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.IntegrationTest;
 import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductCriteria;
@@ -740,6 +741,7 @@ public class ProductServiceTest extends IntegrationTest {
     @Nested
     class ReviewTest {
         @Test
+        @WithMockUser(username = "user", password = "user")
         public void givenProductId_whenAddReview_reviewIsAdded() {
             // Given
             ProductDocument product = productService
@@ -765,6 +767,7 @@ public class ProductServiceTest extends IntegrationTest {
         }
 
         @Test
+        @WithMockUser(username = "user", password = "user")
         public void givenNonExistingProductId_whenAddReview_reviewIsNotAdded() {
             // Given
             Review review = Review.builder()
@@ -783,6 +786,7 @@ public class ProductServiceTest extends IntegrationTest {
         }
 
         @Test
+        @WithMockUser(username = "user", password = "user")
         public void givenProductId_whenGetReviews_thenGetProductReviews() {
             // Given
             ProductDocument product = productService
@@ -806,6 +810,7 @@ public class ProductServiceTest extends IntegrationTest {
         }
 
         @Test
+        @WithMockUser(username = "user", password = "user")
         public void givenNonExistingProductId_whenGetReviews_thenGetEmptyResponse() {
             // Given
 
@@ -819,6 +824,7 @@ public class ProductServiceTest extends IntegrationTest {
         }
 
         @Test
+        @WithMockUser(username = "user", password = "user")
         public void givenProductId_whenEditReview_reviewIsEdited() {
             ProductDocument product = productService
                 .addProduct(ProductDocument.builder().name("testProduct").build());
@@ -856,6 +862,7 @@ public class ProductServiceTest extends IntegrationTest {
         }
 
         @Test
+        @WithMockUser(username = "user", password = "user")
         public void givenNonExistingProductId_whenEditReview_reviewIsNotEdited() {
             ProductDocument product = productService
                 .addProduct(ProductDocument.builder().name("testProduct").build());
@@ -873,6 +880,7 @@ public class ProductServiceTest extends IntegrationTest {
         }
 
         @Test
+        @WithMockUser(username = "user", password = "user")
         public void givenProductId_whenEditNonExistingReview_reviewIsNotEdited() {
             ProductDocument product = productService
                 .addProduct(ProductDocument.builder().name("testProduct").build());
@@ -890,6 +898,7 @@ public class ProductServiceTest extends IntegrationTest {
         }
 
         @Test
+        @WithMockUser(username = "user", password = "user")
         public void givenProductId_whenDeleteReview_reviewIsDeleted() {
             ProductDocument product = productService
                 .addProduct(ProductDocument.builder().name("testProduct").build());
@@ -916,6 +925,7 @@ public class ProductServiceTest extends IntegrationTest {
         }
 
         @Test
+        @WithMockUser(username = "user", password = "user")
         public void givenProductId_whenGetProductUserReview_getProductUserReview() {
             ProductDocument product = productService
                 .addProduct(ProductDocument.builder().name("testProduct").build());
@@ -940,6 +950,7 @@ public class ProductServiceTest extends IntegrationTest {
         }
 
         @Test
+        @WithMockUser(username = "user", password = "user")
         public void givenProductId_whenGetNonExistingProductUserReview_getEmpty() {
             ProductDocument product = productService
                 .addProduct(ProductDocument.builder().name("testProduct").build());
