@@ -52,41 +52,30 @@ public class IngredientService {
         return ingredientRepository.save(ingredient);
     }
 
-    @Transactional(readOnly = true)
-    public List<Ingredient> getLikedIngredients(User user) {
-        return user.getLikedIngredients().stream().toList();
-    }
-
-    @Transactional(readOnly = true)
-    public List<Ingredient> getAllergens(User user) {
-        return user.getAllergens().stream().toList();
+    @Transactional
+    public void likeIngredient(Ingredient ingredient, User user)
+        throws IngredientNotFoundException {
+        user.getLikedIngredients().add(ingredient);
+        userService.saveUser(user);
     }
 
     @Transactional
-    public void likeIngredient(long id, User user) throws IngredientNotFoundException {
-        Ingredient ingredient = this.getIngredientById(id);
-
-        userService.likeIngredient(user, ingredient);
+    public void unlikeIngredient(Ingredient ingredient, User user)
+        throws IngredientNotFoundException {
+        user.getLikedIngredients().remove(ingredient);
+        userService.saveUser(user);
     }
 
     @Transactional
-    public void unlikeIngredient(long id, User user) throws IngredientNotFoundException {
-        Ingredient ingredient = this.getIngredientById(id);
-
-        userService.unlikeIngredient(user, ingredient);
+    public void addAllergen(Ingredient ingredient, User user) throws IngredientNotFoundException {
+        user.getAllergens().add(ingredient);
+        userService.saveUser(user);
     }
 
     @Transactional
-    public void addAllergen(long id, User user) throws IngredientNotFoundException {
-        Ingredient ingredient = this.getIngredientById(id);
-
-        userService.addAllergen(user, ingredient);
-    }
-
-    @Transactional
-    public void removeAllergen(long id, User user) throws IngredientNotFoundException {
-        Ingredient ingredient = this.getIngredientById(id);
-
-        userService.removeAllergen(user, ingredient);
+    public void removeAllergen(Ingredient ingredient, User user)
+        throws IngredientNotFoundException {
+        user.getAllergens().remove(ingredient);
+        userService.saveUser(user);
     }
 }

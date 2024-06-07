@@ -5,7 +5,7 @@ import lombok.Builder;
 
 @Builder
 public record ReviewDto(Long reviewId,
-                        Long userId,
+                        int userId,
                         String displayName,
                         Long productId,
                         Integer rating,

@@ -34,7 +34,7 @@ public class ReviewDtoMapper implements Function<Review, ReviewDto> {
             .userId(review.getUser().getId())
             .likesCount(review.getLikingUsers().size())
             .dislikesCount(review.getDislikingUsers().size())
-            .isCurrentUser(review.getUser().getId().equals(user.getId()))
+            .isCurrentUser(review.getUser().getId() == (user.getId()))
             .isLiked(review.getLikingUsers().contains(user))
             .isDisliked(review.getDislikingUsers().contains(user))
             .build();

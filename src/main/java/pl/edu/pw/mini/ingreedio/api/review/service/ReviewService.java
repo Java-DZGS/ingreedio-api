@@ -41,7 +41,7 @@ public class ReviewService {
     }
 
     @Transactional
-    public ReportDto reportReview(Long reviewId, Long userId, String content)
+    public ReportDto reportReview(Long reviewId, int userId, String content)
         throws ReportEmptyReviewAttemptException, ReviewNotFoundException {
         Optional<Review> optionalReview = reviewRepository.findById(reviewId);
 
@@ -128,8 +128,8 @@ public class ReviewService {
         return reviewRepository.getProductReviews(productId)
             .stream()
             .sorted((first, second) -> -Boolean.compare(
-                first.getUser().getId().equals(user.getId()),
-                second.getUser().getId().equals(user.getId())))
+                first.getUser().getId() == (user.getId()),
+                second.getUser().getId() == (user.getId())))
             .map(review -> reviewDtoMapper.apply(review, user))
             .collect(Collectors.toList());
     }

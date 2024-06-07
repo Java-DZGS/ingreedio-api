@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.catchException;
 
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -25,7 +24,6 @@ import pl.edu.pw.mini.ingreedio.api.auth.service.JwtService;
 import pl.edu.pw.mini.ingreedio.api.auth.service.RefreshTokenService;
 import pl.edu.pw.mini.ingreedio.api.auth.service.RoleService;
 import pl.edu.pw.mini.ingreedio.api.user.model.User;
-import pl.edu.pw.mini.ingreedio.api.user.service.UserService;
 
 public class AuthServiceTest extends IntegrationTest {
     @Autowired
@@ -40,20 +38,14 @@ public class AuthServiceTest extends IntegrationTest {
     private JwtService jwtService;
     @Autowired
     private JwtClaimsService jwtClaimsService;
+
     @Autowired
-    private UserService userService;
-
-    private User dummyUser;
-
-    @BeforeEach
-    public void setupData() {
-        dummyUser = userService.createUser("Dummy", "dummy@example.com");
-    }
+    private User user;
 
     @Test
     public void givenValidSignupData_whenRegister_thenSuccess() {
         // Given
-        User user = dummyUser;
+        User user = this.user;
 
         // When
         AuthInfo info = authService.register("us", "as", user);
@@ -69,7 +61,7 @@ public class AuthServiceTest extends IntegrationTest {
     @Test
     public void givenDuplicatedUsername_whenRegister_thenExceptionThrown() {
         // Given
-        User user = dummyUser;
+        User user = this.user;
 
         // When
         Exception problem = catchException(() -> authService.register("user", "user", user));
@@ -81,7 +73,7 @@ public class AuthServiceTest extends IntegrationTest {
     @Test
     public void givenValidSignupData_whenRegister_thenNewUserHasDefaultRoles() {
         // Given
-        User user = dummyUser;
+        User user = this.user;
         AuthInfo authInfo = authService.register("us", "us", user);
 
         // When
@@ -171,7 +163,7 @@ public class AuthServiceTest extends IntegrationTest {
     @Test
     public void givenUser_whenGrantingRole_thenRoleIsGranted() {
         // Given
-        User user = dummyUser;
+        User user = this.user;
         AuthInfo authInfo = authService.register("test_user", "pass", user);
 
         Role newUserRole = assertRoleExist("TEST");

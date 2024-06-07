@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.IntegrationTest;
 import pl.edu.pw.mini.ingreedio.api.product.criteria.ProductCriteria;
@@ -30,7 +29,6 @@ import pl.edu.pw.mini.ingreedio.api.product.service.ProductService;
 import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.review.model.Review;
 import pl.edu.pw.mini.ingreedio.api.user.model.User;
-import pl.edu.pw.mini.ingreedio.api.user.service.UserService;
 
 public class ProductServiceTest extends IntegrationTest {
 
@@ -44,8 +42,7 @@ public class ProductServiceTest extends IntegrationTest {
     private ProductRepository productRepository;
 
     @Autowired
-    // TODO: make it better??
-    private UserService userService;
+    private User user;
 
     /**
      * Please refer to <a href="https://github.com/Java-DZGS/ingreedio-api/pull/81#issuecomment-2115445411">this</a> PR comment.
@@ -409,19 +406,19 @@ public class ProductServiceTest extends IntegrationTest {
                     .build());
             productService.addProduct(
                 ProductDocument.builder().name("pianka do golenia").brand(golibroda)
-                .provider(rosman)
+                    .provider(rosman)
                     .build());
             productService.addProduct(
                 ProductDocument.builder().name("pasta do zębów").brand(kolgat)
-                .provider(rosman)
+                    .provider(rosman)
                     .build());
             productService.addProduct(
                 ProductDocument.builder().name("pasta do zębów").brand(elmech)
-                .provider(rosman)
+                    .provider(rosman)
                     .build());
             productService.addProduct(
                 ProductDocument.builder().name("pasta do zębów").brand(akufresz)
-                .provider(rosman)
+                    .provider(rosman)
                     .build());
 
             var criteria = ProductCriteria.builder()
@@ -510,7 +507,6 @@ public class ProductServiceTest extends IntegrationTest {
     @Transactional
     class ProductsLikingTests {
         @Test
-        @WithMockUser(username = "user", password = "user", roles = {})
         public void givenProduct_whenLikeProduct_thenSuccess() {
             // Given
             ProductDocument product = ProductDocument.builder().name("likedProduct").build();
@@ -518,7 +514,7 @@ public class ProductServiceTest extends IntegrationTest {
             Long id = savedProduct.getId();
 
             // When
-            User user = userService.getUserByUsername("user");
+            User user = ProductServiceTest.this.user;
 
             productService.likeProduct(id, user);
             ProductDocument updatedProduct = productService.getProductById(id);
@@ -528,10 +524,9 @@ public class ProductServiceTest extends IntegrationTest {
         }
 
         @Test
-        @WithMockUser(username = "user", password = "user", roles = {})
         public void givenProduct_whenLikeNonExistingProduct_thenFailure() {
             // Given
-            User user = userService.getUserByUsername("user");
+            User user = ProductServiceTest.this.user;
 
             // When
 
@@ -542,13 +537,12 @@ public class ProductServiceTest extends IntegrationTest {
         }
 
         @Test
-        @WithMockUser(username = "user", password = "user", roles = {})
         public void givenProduct_whenUnLikeProduct_thenSuccess() {
             // Given
             ProductDocument product = ProductDocument.builder().name("likedProduct").build();
             ProductDocument savedProduct = productService.addProduct(product);
             Long id = savedProduct.getId();
-            User user = userService.getUserByUsername("user");
+            User user = ProductServiceTest.this.user;
 
             // When
             productService.likeProduct(id, user);
@@ -560,10 +554,9 @@ public class ProductServiceTest extends IntegrationTest {
         }
 
         @Test
-        @WithMockUser(username = "user", password = "user", roles = {})
         public void givenProduct_whenUnLikeNonExistingProduct_thenFailure() {
             // Given
-            User user = userService.getUserByUsername("user");
+            User user = ProductServiceTest.this.user;
 
             // When
 
@@ -574,14 +567,13 @@ public class ProductServiceTest extends IntegrationTest {
         }
 
         @Test
-        @WithMockUser(username = "user", password = "user", roles = {})
         public void givenProduct_whenLikeAndGetProductsList_thenProductsAreLiked() {
             // Given
             ProductDocument product1 = productService
                 .addProduct(ProductDocument.builder().name("likedProduct1").build());
             ProductDocument product2 = productService
                 .addProduct(ProductDocument.builder().name("likedProduct2").build());
-            User user = userService.getUserByUsername("user");
+            User user = ProductServiceTest.this.user;
 
             productService.addProduct(ProductDocument.builder().name("likedProduct3").build());
 
@@ -600,12 +592,11 @@ public class ProductServiceTest extends IntegrationTest {
         }
 
         @Test
-        @WithMockUser(username = "user", password = "user", roles = {})
         public void givenProduct_whenLikeAndGetProductDetails_thenProductIsLiked() {
             // Given
             ProductDocument product = productService
                 .addProduct(ProductDocument.builder().name("likedProduct").build());
-            User user = userService.getUserByUsername("user");
+            User user = ProductServiceTest.this.user;
 
             // When
             productService.likeProduct(product.getId(), user);
@@ -740,7 +731,6 @@ public class ProductServiceTest extends IntegrationTest {
     @Nested
     class ReviewTest {
         @Test
-        @WithMockUser(username = "user", password = "user", roles = {})
         public void givenProductId_whenAddReview_reviewIsAdded() {
             // Given
             ProductDocument product = productService
@@ -766,7 +756,6 @@ public class ProductServiceTest extends IntegrationTest {
         }
 
         @Test
-        @WithMockUser(username = "user", password = "user", roles = {})
         public void givenNonExistingProductId_whenAddReview_reviewIsNotAdded() {
             // Given
             Review review = Review.builder()
@@ -785,7 +774,6 @@ public class ProductServiceTest extends IntegrationTest {
         }
 
         @Test
-        @WithMockUser(username = "user", password = "user", roles = {})
         public void givenProductId_whenGetReviews_thenGetProductReviews() {
             // Given
             ProductDocument product = productService
@@ -809,7 +797,6 @@ public class ProductServiceTest extends IntegrationTest {
         }
 
         @Test
-        @WithMockUser(username = "user", password = "user", roles = {})
         public void givenNonExistingProductId_whenGetReviews_thenGetEmptyResponse() {
             // Given
 
@@ -823,7 +810,6 @@ public class ProductServiceTest extends IntegrationTest {
         }
 
         @Test
-        @WithMockUser(username = "user", password = "user", roles = {})
         public void givenProductId_whenEditReview_reviewIsEdited() {
             ProductDocument product = productService
                 .addProduct(ProductDocument.builder().name("testProduct").build());
@@ -861,7 +847,6 @@ public class ProductServiceTest extends IntegrationTest {
         }
 
         @Test
-        @WithMockUser(username = "user", password = "user", roles = {})
         public void givenNonExistingProductId_whenEditReview_reviewIsNotEdited() {
             ProductDocument product = productService
                 .addProduct(ProductDocument.builder().name("testProduct").build());
@@ -879,7 +864,6 @@ public class ProductServiceTest extends IntegrationTest {
         }
 
         @Test
-        @WithMockUser(username = "user", password = "user", roles = {})
         public void givenProductId_whenEditNonExistingReview_reviewIsNotEdited() {
             ProductDocument product = productService
                 .addProduct(ProductDocument.builder().name("testProduct").build());
@@ -897,7 +881,6 @@ public class ProductServiceTest extends IntegrationTest {
         }
 
         @Test
-        @WithMockUser(username = "user", password = "user", roles = {})
         public void givenProductId_whenDeleteReview_reviewIsDeleted() {
             ProductDocument product = productService
                 .addProduct(ProductDocument.builder().name("testProduct").build());
@@ -924,7 +907,6 @@ public class ProductServiceTest extends IntegrationTest {
         }
 
         @Test
-        @WithMockUser(username = "user", password = "user", roles = {})
         public void givenProductId_whenGetProductUserReview_getProductUserReview() {
             ProductDocument product = productService
                 .addProduct(ProductDocument.builder().name("testProduct").build());
@@ -949,7 +931,6 @@ public class ProductServiceTest extends IntegrationTest {
         }
 
         @Test
-        @WithMockUser(username = "user", password = "user", roles = {})
         public void givenProductId_whenGetNonExistingProductUserReview_getEmpty() {
             ProductDocument product = productService
                 .addProduct(ProductDocument.builder().name("testProduct").build());

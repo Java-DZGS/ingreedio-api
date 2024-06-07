@@ -35,7 +35,7 @@ import pl.edu.pw.mini.ingreedio.api.review.model.Review;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int id;
 
     @Column
     private String email;
@@ -49,6 +49,7 @@ public class User {
         joinColumns = @JoinColumn(name = "user_id"),
         inverseJoinColumns = @JoinColumn(name = "ingredient_id"))
     @Builder.Default
+    @EqualsAndHashCode.Exclude
     private Set<Ingredient> likedIngredients = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -57,6 +58,7 @@ public class User {
         joinColumns = @JoinColumn(name = "user_id"),
         inverseJoinColumns = @JoinColumn(name = "ingredient_id"))
     @Builder.Default
+    @EqualsAndHashCode.Exclude
     private Set<Ingredient> allergens = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -86,6 +88,7 @@ public class User {
     )
     @Column(name = "product_id")
     @Builder.Default
+    @EqualsAndHashCode.Exclude
     private Set<Long> likedProducts = new HashSet<>();
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)

@@ -1,21 +1,18 @@
 package pl.edu.pw.mini.ingreedio.api.user.service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.Hibernate;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.auth.exception.UserAlreadyExistsException;
+import pl.edu.pw.mini.ingreedio.api.auth.model.AuthInfo;
 import pl.edu.pw.mini.ingreedio.api.auth.service.AuthInfoMangerService;
-import pl.edu.pw.mini.ingreedio.api.ingredient.model.Ingredient;
-import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
-import pl.edu.pw.mini.ingreedio.api.review.mapper.ReviewDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.review.model.Review;
+import pl.edu.pw.mini.ingreedio.api.user.exception.UserNotFoundException;
 import pl.edu.pw.mini.ingreedio.api.user.model.User;
 import pl.edu.pw.mini.ingreedio.api.user.repository.UserRepository;
 
@@ -24,8 +21,14 @@ import pl.edu.pw.mini.ingreedio.api.user.repository.UserRepository;
 public class UserService {
     private final UserRepository userRepository;
     private final AuthInfoMangerService authInfoMangerService;
-    private final ReviewDtoMapper reviewDtoMapper;
 
+    @Transactional(readOnly = true)
+    public User getUser(Authentication authentication) {
+        AuthInfo info = (AuthInfo) authentication.getPrincipal();
+        return getUserById(info.getUser().getId());
+    }
+
+    @Transactional
     public User createUser(String displayName, String email) {
         User user = User.builder().displayName(displayName).email(email).build();
 
@@ -41,10 +44,8 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<User> getUserById(Integer id) {
-        Optional<User> userOptional = userRepository.findById(id);
-        userOptional.ifPresent(user -> Hibernate.initialize(user.getLikedProducts()));
-        return userOptional;
+    public User getUserById(int id) {
+        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
     }
 
     @Transactional(readOnly = true)
@@ -53,35 +54,13 @@ public class UserService {
     }
 
     @Transactional
-    public void likeIngredient(User user, Ingredient ingredient) {
-        Set<Ingredient> likedIngredients = user.getLikedIngredients();
-        likedIngredients.add(ingredient);
-        user.setLikedIngredients(likedIngredients);
+    public void saveUser(User user) {
         userRepository.save(user);
     }
 
     @Transactional
-    public void unlikeIngredient(User user, Ingredient ingredient) {
-        Set<Ingredient> likedIngredients = user.getLikedIngredients();
-        likedIngredients.remove(ingredient);
-        user.setLikedIngredients(likedIngredients);
-        userRepository.save(user);
-    }
-
-    @Transactional
-    public void addAllergen(User user, Ingredient ingredient) {
-        Set<Ingredient> allergens = user.getAllergens();
-        allergens.add(ingredient);
-        user.setAllergens(allergens);
-        userRepository.save(user);
-    }
-
-    @Transactional
-    public void removeAllergen(User user, Ingredient ingredient) {
-        Set<Ingredient> allergens = user.getAllergens();
-        allergens.remove(ingredient);
-        user.setAllergens(allergens);
-        userRepository.save(user);
+    public void handleProductDeletion(long productId) {
+        userRepository.productDeleted(productId);
     }
 
     @Transactional
@@ -123,57 +102,7 @@ public class UserService {
     }
 
     @Transactional
-    public boolean likeProduct(Integer userId, Long productId) {
-        Optional<User> userOptional = userRepository.findById(userId);
-        if (userOptional.isEmpty()) {
-            return false;
-        }
-
-        User user = userOptional.get();
-        Hibernate.initialize(user.getLikedProducts());
-        Set<Long> likedProducts = user.getLikedProducts();
-        if (!likedProducts.contains(productId)) {
-            likedProducts.add(productId);
-            user.setLikedProducts(likedProducts);
-            userRepository.save(user);
-        }
-        return true;
-    }
-
-    @Transactional
-    public boolean unlikeProduct(Integer userId, Long productId) {
-        Optional<User> userOptional = userRepository.findById(userId);
-        if (userOptional.isEmpty()) {
-            return false;
-        }
-
-        User user = userOptional.get();
-        Hibernate.initialize(user.getLikedProducts());
-        Set<Long> likedProducts = user.getLikedProducts();
-        if (likedProducts.contains(productId)) {
-            likedProducts.remove(productId);
-            user.setLikedProducts(likedProducts);
-            userRepository.save(user);
-        }
-        return true;
-    }
-
-
-    @Transactional
-    public void allUsersUnlikeProduct(Long productId) {
-        List<User> users = userRepository.findUsersByLikedProduct(productId);
-
-        for (User user : users) {
-            user.getLikedProducts().remove(productId);
-        }
-
-        userRepository.saveAll(users);
-    }
-
-    @Transactional
-    public List<ReviewDto> getUserRatings(User user) {
-        return user.getReviews().stream()
-            .map(reviewDtoMapper)
-            .collect(Collectors.toList());
+    public List<Review> getUserReviews(User user) {
+        return user.getReviews();
     }
 }

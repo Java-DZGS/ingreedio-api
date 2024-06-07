@@ -147,7 +147,7 @@ public class ProductService {
         ProductDocument product = getProductById(id);
 
         // Add users unlike product
-        userService.allUsersUnlikeProduct(product.getId());
+        userService.handleProductDeletion(product.getId());
         // TODO: remove all product reviews!!!
 
         productRepository.deleteById(product.getId());
@@ -179,36 +179,32 @@ public class ProductService {
     public void likeProduct(long productId, User user) throws ProductNotFoundException {
         ProductDocument product = getProductById(productId);
 
-        Set<Long> likedBy = product.getLikedBy();
+        Set<Integer> likedBy = product.getLikedBy();
         if (likedBy == null) {
             likedBy = new HashSet<>();
         }
 
-        if (!likedBy.contains(user.getId())) {
-            likedBy.add(user.getId());
-            product.setLikedBy(likedBy);
-            productRepository.save(product);
-            // TODO: refactor product liking (user domain)
-            userService.likeProduct(user.getId().intValue(), productId);
-        }
+        likedBy.add(user.getId());
+        productRepository.save(product);
+
+        user.getLikedProducts().add(productId);
+        userService.saveUser(user);
     }
 
     @Transactional
     public void unlikeProduct(long productId, User user) {
         ProductDocument product = getProductById(productId);
 
-        Set<Long> likedBy = product.getLikedBy();
+        Set<Integer> likedBy = product.getLikedBy();
         if (likedBy == null) {
             return;
         }
 
-        if (likedBy.contains(user.getId())) {
-            likedBy.remove(user.getId());
-            product.setLikedBy(likedBy);
-            productRepository.save(product);
-            // TODO: refactor product liking (user domain)
-            userService.unlikeProduct(user.getId().intValue(), productId);
-        }
+        likedBy.remove(user.getId());
+        productRepository.save(product);
+
+        user.getLikedProducts().remove(productId);
+        userService.saveUser(user);
     }
 
     // TODO: refactor reviews
@@ -226,7 +222,7 @@ public class ProductService {
             return Optional.empty();
         }
 
-        Map<Long, Integer> ratings = product.getRatings();
+        Map<Integer, Integer> ratings = product.getRatings();
         Integer ratingSum = product.getRatingSum();
 
         if (ratings == null) {
@@ -234,7 +230,7 @@ public class ProductService {
             ratingSum = 0;
         }
 
-        Long userId = user.getId();
+        int userId = user.getId();
         if (ratings.containsKey(userId)) {
             return Optional.empty();
         }
@@ -259,14 +255,14 @@ public class ProductService {
         ProductDocument product = getProductById(review.getProductId());
 
         User user = userOptional;
-        Long userId = user.getId();
+        int userId = user.getId();
 
         Optional<ReviewDto> reviewOptional = reviewService.editReview(user, review);
         if (reviewOptional.isEmpty()) {
             return Optional.empty();
         }
 
-        Map<Long, Integer> ratings = product.getRatings();
+        Map<Integer, Integer> ratings = product.getRatings();
         if (ratings == null) {
             return Optional.empty();
         }
@@ -292,9 +288,9 @@ public class ProductService {
         ProductDocument product = getProductById(productId);
 
         User user = userOptional;
-        Long userId = user.getId();
+        int userId = user.getId();
 
-        Map<Long, Integer> ratings = product.getRatings();
+        Map<Integer, Integer> ratings = product.getRatings();
         if (ratings == null || !ratings.containsKey(userId)) {
             return false;
         }
