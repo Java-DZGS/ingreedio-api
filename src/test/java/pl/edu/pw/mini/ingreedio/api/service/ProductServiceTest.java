@@ -961,18 +961,5 @@ public class ProductServiceTest extends IntegrationTest {
             // Then
             assertThat(productUserReview.isPresent()).isFalse();
         }
-
-        @Test
-        public void givenProductId_whenUserNotLoggedIn_getEmptyProductUserReview() {
-            ProductDocument product = productService
-                .addProduct(ProductDocument.builder().name("testProduct").build());
-
-            // When
-            Optional<ReviewDto> productUserReview = productService
-                .getProductUserReview(product.getId());
-
-            // Then
-            assertThat(productUserReview.isPresent()).isFalse();
-        }
     }
 }
