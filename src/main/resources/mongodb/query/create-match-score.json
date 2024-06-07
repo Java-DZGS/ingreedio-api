@@ -10,7 +10,7 @@
         },
         {
           "$multiply": [
-            { "$size": { "$regexFindAll": { "input": "$brand", "regex": "%1$s", "options": "i" } } },
+            { "$size": { "$regexFindAll": { "input": "$brand.name", "regex": "%1$s", "options": "i" } } },
             10
           ]
         },
