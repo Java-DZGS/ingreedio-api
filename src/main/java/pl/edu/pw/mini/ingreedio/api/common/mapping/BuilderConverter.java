@@ -2,7 +2,6 @@ package pl.edu.pw.mini.ingreedio.api.common.mapping;
 
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.AbstractConverter;
 import org.modelmapper.Converter;
 import org.modelmapper.spi.MappingContext;
 

@@ -57,8 +57,8 @@ public class IngredientController {
                     query.toUpperCase(),
                     ((AuthInfo) authentication.getPrincipal()).getUser(), skipAllergens)
                 .stream()
-                .map((ingredient) -> modelMapper.map(ingredient,
-                    IngredientDto.IngredientDtoBuilder.class).build()).toList();
+                .map((ingredient) -> modelMapper.map(ingredient, IngredientDto.class))
+                .toList();
 
             return ResponseEntity.ok(ingredientDtoList);
         }
@@ -66,8 +66,8 @@ public class IngredientController {
         List<IngredientDto> ingredientDtoList = ingredientService
             .getIngredients(count, query.toUpperCase())
             .stream()
-            .map((ingredient) -> modelMapper.map(ingredient,
-                IngredientDto.IngredientDtoBuilder.class).build()).toList();
+            .map((ingredient) -> modelMapper.map(ingredient, IngredientDto.class))
+            .toList();
         return ResponseEntity.ok(ingredientDtoList);
     }
 
@@ -81,8 +81,7 @@ public class IngredientController {
     @GetMapping("/{id}")
     public ResponseEntity<IngredientDto> getIngredientById(@PathVariable long id) {
         Ingredient ingredient = ingredientService.getIngredientById(id);
-        IngredientDto ingredientDto = modelMapper.map(
-            ingredient, IngredientDto.IngredientDtoBuilder.class).build();
+        IngredientDto ingredientDto = modelMapper.map(ingredient, IngredientDto.class);
         return ResponseEntity.ok(ingredientDto);
     }
 
@@ -101,8 +100,7 @@ public class IngredientController {
         Set<IngredientDto> ingredientDtos = ingredientService
             .getIngredientsByIds(ingredientsIds)
             .stream()
-            .map((ingredient) -> modelMapper.map(
-                ingredient, IngredientDto.IngredientDtoBuilder.class).build())
+            .map((ingredient) -> modelMapper.map(ingredient, IngredientDto.class))
             .collect(Collectors.toSet());
         return ResponseEntity.ok(ingredientDtos);
     }
