@@ -1,6 +1,7 @@
 package pl.edu.pw.mini.ingreedio.api.brand.service;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,4 +24,7 @@ public class BrandService {
         return new HashSet<>(brandRepository.findAllByIdIn(ids));
     }
 
+    public List<Brand> getAllBrands() {
+        return brandRepository.findAll();
+    }
 }

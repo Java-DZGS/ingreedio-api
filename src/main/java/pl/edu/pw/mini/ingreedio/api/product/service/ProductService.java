@@ -92,7 +92,7 @@ public class ProductService {
         if (product.getBrand() != null) {
             BrandDocument brand = modelMapper
                 .map(brandService
-                        .getBrandById(product.getBrand().getId()),
+                    .getBrandById(product.getBrand().getId()),
                     BrandDocument.BrandDocumentBuilder.class)
                 .build();
 
@@ -102,7 +102,7 @@ public class ProductService {
         if (product.getProvider() != null) {
             ProviderDocument provider = modelMapper
                 .map(providerService
-                        .getProviderById(product.getProvider().getId()),
+                    .getProviderById(product.getProvider().getId()),
                     ProviderDocument.ProviderDocumentBuilder.class)
                 .build();
 
@@ -146,20 +146,23 @@ public class ProductService {
     public void deleteProductById(long id) throws ProductNotFoundException {
         ProductDocument product = getProductById(id);
 
+        // Add users unlike product
         userService.allUsersUnlikeProduct(product.getId());
+        // TODO: remove all product reviews!!!
+
         productRepository.deleteById(product.getId());
     }
 
     @Transactional
     public ProductDocument updateProduct(ProductDocument productPatch)
         throws ProductNotFoundException {
-        ProductDocument oldProduct = getProductById(productPatch.getId());
+        ProductDocument product = getProductById(productPatch.getId());
 
         // Update a field of the oldProduct only if corresponding field
         // in the productPatch is not null
-        modelPatcher.patchAndExcludeFields(oldProduct, productPatch, List.of("id"));
+        modelPatcher.patchAndExcludeFields(product, productPatch, Set.of("id"));
 
-        return productRepository.save(oldProduct);
+        return productRepository.save(product);
     }
 
     @Transactional(readOnly = true)
@@ -207,7 +210,6 @@ public class ProductService {
             userService.unlikeProduct(user.getId().intValue(), productId);
         }
     }
-
 
     // TODO: refactor reviews
     @Transactional
@@ -323,12 +325,12 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<List<ReviewDto>> getProductReviews(Long productId, User user) {
+    public Optional<List<ReviewDto>> getProductReviews(long productId, User user) {
         getProductById(productId);
         return Optional.of(reviewService.getProductReviews(productId, user));
     }
 
-    public Optional<ReviewDto> getProductUserReview(Long id) {
+    public Optional<ReviewDto> getProductUserReview(long id) {
         User userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
 
