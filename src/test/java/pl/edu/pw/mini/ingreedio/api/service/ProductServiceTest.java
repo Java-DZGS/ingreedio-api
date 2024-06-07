@@ -409,7 +409,7 @@ public class ProductServiceTest extends IntegrationTest {
             Long id = savedProduct.getId();
 
             // When
-            User user = userService.getUserByUsername("user").get();
+            User user = userService.getUserByUsername("user");
 
             productService.likeProduct(id, user);
             ProductDocument updatedProduct = productService.getProductById(id);
@@ -422,7 +422,7 @@ public class ProductServiceTest extends IntegrationTest {
         @WithMockUser(username = "user", password = "user", roles = {})
         public void givenProduct_whenLikeNonExistingProduct_thenFailure() {
             // Given
-            User user = userService.getUserByUsername("user").get();
+            User user = userService.getUserByUsername("user");
 
             // When
 
@@ -439,7 +439,7 @@ public class ProductServiceTest extends IntegrationTest {
             ProductDocument product = ProductDocument.builder().name("likedProduct").build();
             ProductDocument savedProduct = productService.addProduct(product);
             Long id = savedProduct.getId();
-            User user = userService.getUserByUsername("user").get();
+            User user = userService.getUserByUsername("user");
 
             // When
             productService.likeProduct(id, user);
@@ -454,7 +454,7 @@ public class ProductServiceTest extends IntegrationTest {
         @WithMockUser(username = "user", password = "user", roles = {})
         public void givenProduct_whenUnLikeNonExistingProduct_thenFailure() {
             // Given
-            User user = userService.getUserByUsername("user").get();
+            User user = userService.getUserByUsername("user");
 
             // When
 
@@ -472,7 +472,7 @@ public class ProductServiceTest extends IntegrationTest {
                 .addProduct(ProductDocument.builder().name("likedProduct1").build());
             ProductDocument product2 = productService
                 .addProduct(ProductDocument.builder().name("likedProduct2").build());
-            User user = userService.getUserByUsername("user").get();
+            User user = userService.getUserByUsername("user");
 
             productService.addProduct(ProductDocument.builder().name("likedProduct3").build());
 
@@ -496,7 +496,7 @@ public class ProductServiceTest extends IntegrationTest {
             // Given
             ProductDocument product = productService
                 .addProduct(ProductDocument.builder().name("likedProduct").build());
-            User user = userService.getUserByUsername("user").get();
+            User user = userService.getUserByUsername("user");
 
             // When
             productService.likeProduct(product.getId(), user);
@@ -513,8 +513,8 @@ public class ProductServiceTest extends IntegrationTest {
         @Test
         public void givenProductId_whenUpdateEntireProduct_thenProductIsUpdated() {
             Set<IngredientDocument> oldIngredients = Set.of(
-                    IngredientDocument.builder().name("oldIngredient1").build(),
-                    IngredientDocument.builder().name("oldIngredient2").build()
+                IngredientDocument.builder().name("oldIngredient1").build(),
+                IngredientDocument.builder().name("oldIngredient2").build()
             );
             ProviderDocument oldProvider = ProviderDocument.builder().name("oldProvider").build();
             BrandDocument oldBrand = BrandDocument.builder().name("oldBrand").build();
@@ -537,8 +537,8 @@ public class ProductServiceTest extends IntegrationTest {
                 .build());
 
             Set<IngredientDocument> newIngredients = Set.of(
-                    IngredientDocument.builder().name("newIngredient1").build(),
-                    IngredientDocument.builder().name("newIngredient2").build()
+                IngredientDocument.builder().name("newIngredient1").build(),
+                IngredientDocument.builder().name("newIngredient2").build()
             );
             ProviderDocument newProvider = ProviderDocument.builder().name("newProvider").build();
             BrandDocument newBrand = BrandDocument.builder().name("newBrand").build();

@@ -7,13 +7,12 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.edu.pw.mini.ingreedio.api.auth.exception.UserAlreadyExistsException;
-import pl.edu.pw.mini.ingreedio.api.auth.model.AuthInfo;
 import pl.edu.pw.mini.ingreedio.api.auth.service.AuthInfoMangerService;
 import pl.edu.pw.mini.ingreedio.api.ingredient.model.Ingredient;
-import pl.edu.pw.mini.ingreedio.api.product.model.ProductDocument;
 import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.review.mapper.ReviewDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.review.model.Review;
@@ -49,8 +48,8 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<User> getUserByUsername(String username) {
-        return authInfoMangerService.getByUsername(username).map(AuthInfo::getUser);
+    public User getUserByUsername(String username) throws UsernameNotFoundException {
+        return authInfoMangerService.getByUsername(username).getUser();
     }
 
     @Transactional

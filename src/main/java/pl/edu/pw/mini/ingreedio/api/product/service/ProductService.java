@@ -92,7 +92,7 @@ public class ProductService {
         if (product.getBrand() != null) {
             BrandDocument brand = modelMapper
                 .map(brandService
-                    .getBrandById(product.getBrand().getId()),
+                        .getBrandById(product.getBrand().getId()),
                     BrandDocument.BrandDocumentBuilder.class)
                 .build();
 
@@ -102,7 +102,7 @@ public class ProductService {
         if (product.getProvider() != null) {
             ProviderDocument provider = modelMapper
                 .map(providerService
-                    .getProviderById(product.getProvider().getId()),
+                        .getProviderById(product.getProvider().getId()),
                     ProviderDocument.ProviderDocumentBuilder.class)
                 .build();
 
@@ -212,15 +212,11 @@ public class ProductService {
     // TODO: refactor reviews
     @Transactional
     public Optional<ReviewDto> addReview(Review review) throws ProductNotFoundException {
-        Optional<User> userOptional = userService
-            .getUserByUsername(authService.getCurrentUsername());
-        if (userOptional.isEmpty()) {
-            return Optional.empty();
-        }
+        User userOptional = userService.getUserByUsername(authService.getCurrentUsername());
 
         ProductDocument product = getProductById(review.getProductId());
 
-        User user = userOptional.get();
+        User user = userOptional;
         review.setUser(user);
 
         Optional<ReviewDto> reviewOptional = reviewService.addReview(user, review);
@@ -256,15 +252,11 @@ public class ProductService {
 
     @Transactional
     public Optional<ReviewDto> editReview(Review review) throws ProductNotFoundException {
-        Optional<User> userOptional = userService
-            .getUserByUsername(authService.getCurrentUsername());
-        if (userOptional.isEmpty()) {
-            return Optional.empty();
-        }
+        User userOptional = userService.getUserByUsername(authService.getCurrentUsername());
 
         ProductDocument product = getProductById(review.getProductId());
 
-        User user = userOptional.get();
+        User user = userOptional;
         Long userId = user.getId();
 
         Optional<ReviewDto> reviewOptional = reviewService.editReview(user, review);
@@ -293,15 +285,11 @@ public class ProductService {
 
     @Transactional
     public boolean deleteReview(long productId) throws ProductNotFoundException {
-        Optional<User> userOptional = userService
+        User userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
-        if (userOptional.isEmpty()) {
-            return false;
-        }
-
         ProductDocument product = getProductById(productId);
 
-        User user = userOptional.get();
+        User user = userOptional;
         Long userId = user.getId();
 
         Map<Long, Integer> ratings = product.getRatings();
@@ -341,13 +329,10 @@ public class ProductService {
     }
 
     public Optional<ReviewDto> getProductUserReview(Long id) {
-        Optional<User> userOptional = userService
+        User userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
-        if (userOptional.isEmpty()) {
-            return Optional.empty();
-        }
 
-        User user = userOptional.get();
+        User user = userOptional;
         return reviewService.getProductUserReview(user, id);
     }
 }

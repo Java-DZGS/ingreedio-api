@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.zalando.problem.Problem;
 import org.zalando.problem.Status;
-import pl.edu.pw.mini.ingreedio.api.auth.exception.NotLoggedInException;
 import pl.edu.pw.mini.ingreedio.api.auth.service.AuthService;
 import pl.edu.pw.mini.ingreedio.api.product.service.ProductService;
 import pl.edu.pw.mini.ingreedio.api.review.dto.ReportDto;
@@ -101,14 +100,10 @@ public class ReviewController {
     @PostMapping("/{id}/reports")
     public ReportDto reportReview(@PathVariable Long id,
                                   @RequestBody String content) {
-        Optional<User> userOptional = userService
+        User userOptional = userService
             .getUserByUsername(authService.getCurrentUsername());
 
-        if (userOptional.isEmpty()) {
-            throw new NotLoggedInException();
-        }
-
-        return reviewService.reportReview(id, userOptional.get().getId(), content);
+        return reviewService.reportReview(id, userOptional.getId(), content);
     }
 
     @Operation(summary = "Edit a review",

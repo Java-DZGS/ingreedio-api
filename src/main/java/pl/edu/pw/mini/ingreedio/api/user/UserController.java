@@ -61,7 +61,7 @@ public class UserController {
         if (authentication.getAuthorities().stream() // TODO: change this in S5
             .anyMatch(authority -> authority.getAuthority().equals("GET_USER_INFO"))) {
             String user = username.orElseGet(authentication::getName);
-            return userService.getUserByUsername(user)
+            return Optional.of(userService.getUserByUsername(user)) //TODO: temp
                 .map(userDtoMapper)
                 .map(ResponseEntity::ok)
                 .orElseThrow(() -> new UserNotFoundException(user));
@@ -72,7 +72,7 @@ public class UserController {
         }
 
         String user = authentication.getName();
-        return userService.getUserByUsername(user)
+        return Optional.of(userService.getUserByUsername(user)) //TODO: temp
             .map(userDtoMapper)
             .map(ResponseEntity::ok)
             .orElseThrow(() -> new UserNotFoundException(user));
@@ -125,8 +125,8 @@ public class UserController {
     })
     @GetMapping("/reviews")
     public ResponseEntity<List<ReviewDto>> getUserRatings() {
-        Optional<User> userOptional = userService
-            .getUserByUsername(authService.getCurrentUsername());
+        Optional<User> userOptional = Optional.of(userService
+            .getUserByUsername(authService.getCurrentUsername()));
         return userOptional.map(user -> ResponseEntity.ok(userService.getUserRatings(user)))
             .orElseGet(() -> ResponseEntity.notFound().build());
     }
