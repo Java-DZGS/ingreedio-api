@@ -35,7 +35,7 @@ import pl.edu.pw.mini.ingreedio.api.review.model.Review;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
 
     @Column
     private String email;

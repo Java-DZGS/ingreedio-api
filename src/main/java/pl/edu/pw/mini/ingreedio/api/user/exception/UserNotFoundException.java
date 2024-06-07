@@ -9,7 +9,7 @@ public class UserNotFoundException extends AbstractThrowableProblem {
             String.format("User not found: %s", username));
     }
 
-    public UserNotFoundException(int id) {
+    public UserNotFoundException(long id) {
         super(null, "User not found", Status.NOT_FOUND,
             String.format("User not found: %d", id));
     }

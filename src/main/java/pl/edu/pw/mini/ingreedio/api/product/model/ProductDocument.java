@@ -62,9 +62,9 @@ public class ProductDocument {
 
     @Field
     @Nullable
-    private Set<Integer> likedBy;
+    private Set<Long> likedBy;
 
     @Field
     @Nullable
-    private Map<Integer, Integer> ratings;
+    private Map<Long, Integer> ratings;
 }

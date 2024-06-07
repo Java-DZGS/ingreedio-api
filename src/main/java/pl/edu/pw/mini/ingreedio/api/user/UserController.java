@@ -23,10 +23,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import pl.edu.pw.mini.ingreedio.api.auth.dto.RegisterRequestDto;
-import pl.edu.pw.mini.ingreedio.api.auth.model.AuthInfo;
 import pl.edu.pw.mini.ingreedio.api.auth.service.AuthService;
 import pl.edu.pw.mini.ingreedio.api.ingredient.dto.IngredientDto;
-import pl.edu.pw.mini.ingreedio.api.ingredient.service.IngredientService;
 import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.review.mapper.ReviewDtoMapper;
 import pl.edu.pw.mini.ingreedio.api.user.dto.UserDto;
@@ -127,8 +125,6 @@ public class UserController {
             .map(review -> reviewDtoMapper.apply(review, user))
             .toList()); // TODO: mapper
     }
-
-    private final IngredientService ingredientService; //TODO: temp
 
     @Operation(summary = "Get liked ingredients",
         description = "Fetches a list of ingredients liked by the user.",

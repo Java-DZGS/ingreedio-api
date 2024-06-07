@@ -41,7 +41,7 @@ public class ReviewService {
     }
 
     @Transactional
-    public ReportDto reportReview(Long reviewId, int userId, String content)
+    public ReportDto reportReview(Long reviewId, long userId, String content)
         throws ReportEmptyReviewAttemptException, ReviewNotFoundException {
         Optional<Review> optionalReview = reviewRepository.findById(reviewId);
 

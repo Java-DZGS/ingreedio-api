@@ -179,7 +179,7 @@ public class ProductService {
     public void likeProduct(long productId, User user) throws ProductNotFoundException {
         ProductDocument product = getProductById(productId);
 
-        Set<Integer> likedBy = product.getLikedBy();
+        Set<Long> likedBy = product.getLikedBy();
         if (likedBy == null) {
             likedBy = new HashSet<>();
         }
@@ -195,7 +195,7 @@ public class ProductService {
     public void unlikeProduct(long productId, User user) {
         ProductDocument product = getProductById(productId);
 
-        Set<Integer> likedBy = product.getLikedBy();
+        Set<Long> likedBy = product.getLikedBy();
         if (likedBy == null) {
             return;
         }
@@ -222,7 +222,7 @@ public class ProductService {
             return Optional.empty();
         }
 
-        Map<Integer, Integer> ratings = product.getRatings();
+        Map<Long, Integer> ratings = product.getRatings();
         Integer ratingSum = product.getRatingSum();
 
         if (ratings == null) {
@@ -230,7 +230,7 @@ public class ProductService {
             ratingSum = 0;
         }
 
-        int userId = user.getId();
+        long userId = user.getId();
         if (ratings.containsKey(userId)) {
             return Optional.empty();
         }
@@ -255,14 +255,14 @@ public class ProductService {
         ProductDocument product = getProductById(review.getProductId());
 
         User user = userOptional;
-        int userId = user.getId();
+        long userId = user.getId();
 
         Optional<ReviewDto> reviewOptional = reviewService.editReview(user, review);
         if (reviewOptional.isEmpty()) {
             return Optional.empty();
         }
 
-        Map<Integer, Integer> ratings = product.getRatings();
+        Map<Long, Integer> ratings = product.getRatings();
         if (ratings == null) {
             return Optional.empty();
         }
@@ -288,9 +288,9 @@ public class ProductService {
         ProductDocument product = getProductById(productId);
 
         User user = userOptional;
-        int userId = user.getId();
+        long userId = user.getId();
 
-        Map<Integer, Integer> ratings = product.getRatings();
+        Map<Long, Integer> ratings = product.getRatings();
         if (ratings == null || !ratings.containsKey(userId)) {
             return false;
         }
