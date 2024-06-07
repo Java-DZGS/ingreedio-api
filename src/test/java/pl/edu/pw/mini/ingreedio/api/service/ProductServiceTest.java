@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,7 @@ import pl.edu.pw.mini.ingreedio.api.product.service.ProductService;
 import pl.edu.pw.mini.ingreedio.api.review.dto.ReviewDto;
 import pl.edu.pw.mini.ingreedio.api.review.model.Review;
 import pl.edu.pw.mini.ingreedio.api.user.model.User;
+import pl.edu.pw.mini.ingreedio.api.user.service.UserService;
 
 public class ProductServiceTest extends IntegrationTest {
 
@@ -42,7 +44,14 @@ public class ProductServiceTest extends IntegrationTest {
     private ProductRepository productRepository;
 
     @Autowired
+    private UserService userService;
+
     private User user;
+
+    @BeforeEach
+    public void setupData() {
+        user = userService.createUser("Dummy", "dummy@example.com");
+    }
 
     /**
      * Please refer to <a href="https://github.com/Java-DZGS/ingreedio-api/pull/81#issuecomment-2115445411">this</a> PR comment.

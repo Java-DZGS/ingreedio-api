@@ -24,7 +24,14 @@ public class IngredientServiceTest extends IntegrationTest {
     private IngredientService ingredientService;
 
     @Autowired
+    private UserService userService;
+
     private User user;
+
+    @BeforeEach
+    public void setupData() {
+        user = userService.createUser("Dummy", "dummy@example.com");
+    }
 
     @Test
     public void givenIngredientObject_whenSaveIngredient_thenReturnIngredientObject() {

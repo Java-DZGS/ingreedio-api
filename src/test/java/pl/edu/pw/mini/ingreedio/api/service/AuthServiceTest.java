@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.catchException;
 
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -24,6 +25,7 @@ import pl.edu.pw.mini.ingreedio.api.auth.service.JwtService;
 import pl.edu.pw.mini.ingreedio.api.auth.service.RefreshTokenService;
 import pl.edu.pw.mini.ingreedio.api.auth.service.RoleService;
 import pl.edu.pw.mini.ingreedio.api.user.model.User;
+import pl.edu.pw.mini.ingreedio.api.user.service.UserService;
 
 public class AuthServiceTest extends IntegrationTest {
     @Autowired
@@ -38,9 +40,15 @@ public class AuthServiceTest extends IntegrationTest {
     private JwtService jwtService;
     @Autowired
     private JwtClaimsService jwtClaimsService;
-
     @Autowired
+    private UserService userService;
+
     private User user;
+
+    @BeforeEach
+    public void setupData() {
+        user = userService.createUser("Dummy", "dummy@example.com");
+    }
 
     @Test
     public void givenValidSignupData_whenRegister_thenSuccess() {
