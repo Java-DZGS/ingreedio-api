@@ -182,6 +182,7 @@ public class ProductService {
         Set<Long> likedBy = product.getLikedBy();
         if (likedBy == null) {
             likedBy = new HashSet<>();
+            product.setLikedBy(likedBy);
         }
 
         likedBy.add(user.getId());

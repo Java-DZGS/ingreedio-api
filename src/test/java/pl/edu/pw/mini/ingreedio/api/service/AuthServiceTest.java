@@ -47,7 +47,7 @@ public class AuthServiceTest extends IntegrationTest {
 
     @BeforeEach
     public void setupData() {
-        user = userService.getUserByUsername("user");
+        user = userService.createUser("Dummy", "dummy@example.com");
     }
 
     @Test
